@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Watch — UX-HUB</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .watch-layout { max-width: 1100px; margin: 0 auto; padding: 28px 20px; }
+    .video-player-wrap {
+      width: 100%; background: #000; border-radius: 12px;
+      overflow: hidden; aspect-ratio: 16/9;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 20px; font-size: 48px; color: #333;
+    }
+    video { width: 100%; height: 100%; outline: none; }
+    .video-page-title { font-family: var(--font-display); font-size: 30px; margin-bottom: 8px; }
+    .video-page-meta { color: var(--muted); font-size: 13px; margin-bottom: 16px; display: flex; gap: 16px; flex-wrap: wrap; }
+    .video-page-actions { display: flex; gap: 10px; margin-bottom: 24px; }
+    .video-page-desc { color: var(--muted); font-size: 14px; line-height: 1.7; background: var(--card); padding: 16px; border-radius: 10px; }
+    .back-to-home { display: inline-block; color: var(--muted); font-size: 13px; margin-bottom: 20px; }
+    .back-to-home:hover { color: var(--text); }
+    .premium-wall {
+      text-align: center; padding: 60px 20px;
+      background: var(--card); border-radius: 12px; margin-bottom: 24px;
+    }
+    .premium-wall h2 { font-family: var(--font-display); font-size: 36px; margin-bottom: 12px; }
+    .premium-wall p { color: var(--muted); margin-bottom: 24px; }
+  </style>
+</head>
+<body>
+<header id="mainHeader">
+  <div class="header-inner">
+    <a href="index.html" class="logo-text">UX<span class="logo-accent">HUB</span></a>
+    <div class="header-right">
+      <div class="header-actions" id="headerActions"></div>
+    </div>
+  </div>
+</header>
+
+<div class="watch-layout">
+  <a href="index.html" class="back-to-home">← Back to videos</a>
+  <div id="videoContent">
+    <div class="loading-state"><div class="spinner"></div><p>Loading video...</p></div>
+  </div>
+</div>
+
+<script>
+  const API = 'http://localhost:5000/api';
+  function getToken() { return localStorage.getItem('uxhub_token'); }
+  function getUser() { const u = localStorage.getItem('uxhub_user'); return u ? JSON.parse(u) : null; }
+
+  function renderHeaderActions() {
+    const container = document.getElementById('headerActions');
+    const user = getUser();
+    if (user) {
+      container.innerHTML = `<span class="user-greeting">👤 ${user.username}${user.isPremium?' ⭐':''}</span>
+        <button class="btn-outline" onclick="logout()">Logout</button>`;
+    } else {
+      container.innerHTML = `<a href="login.html" class="btn-outline">Login</a>
+        <a href="register.html" class="btn-primary">Register</a>`;
+    }
+  }
+
+  function logout() {
+    localStorage.removeItem('uxhub_token');
+    localStorage.removeItem('uxhub_user');
+    window.location.href = 'index.html';
+  }
+
+  async function loadVideo() {
+    const id = new URLSearchParams(window.location.search).get('id');
+    if (!id) { document.getElementById('videoContent').innerHTML = '<p style="color:var(--muted)">No video ID.</p>'; return; }
+
+    try {
+      const res = await fetch(`${API}/videos/${id}`, {
+        headers: getToken() ? { 'Authorization': `Bearer ${getToken()}` } : {},
+      });
+      const data = await res.json();
+
+      if (!data.success) {
+        if (res.status === 403) {
+          document.getElementById('videoContent').innerHTML = `
+            <div class="premium-wall">
+              <h2>⭐ Premium Content</h2>
+              <p>This video is available to premium subscribers only.</p>
+              <a href="premium.html" class="btn-primary" style="font-size:15px;padding:14px 32px">Upgrade to Premium</a>
+            </div>`;
+        } else {
+          document.getElementById('videoContent').innerHTML = `<p style="color:var(--muted)">${data.message}</p>`;
+        }
+        return;
+      }
+
+      const v = data.video;
+      const videoSrc = `${API.replace('/api','')}/uploads/${v.filename}`;
+      const views = v.views >= 1000000 ? `${(v.views/1e6).toFixed(1)}M` : v.views >= 1000 ? `${(v.views/1000).toFixed(1)}K` : v.views;
+
+      document.title = `${v.title} — UX-HUB`;
+      document.getElementById('videoContent').innerHTML = `
+        <div class="video-player-wrap">
+          <video controls autoplay>
+            <source src="${videoSrc}" type="video/mp4" />
+            Your browser does not support HTML5 video.
+          </video>
+        </div>
+        <h1 class="video-page-title">${escHtml(v.title)}</h1>
+        <div class="video-page-meta">
+          <span>👁 ${views} views</span>
+          <span>👤 ${v.uploader?.username || 'Unknown'}</span>
+          <span>📅 ${new Date(v.createdAt).toLocaleDateString()}</span>
+          <span>🎬 ${v.resolution}</span>
+          ${v.isPremium ? '<span style="color:var(--gold)">⭐ Premium</span>' : ''}
+        </div>
+        <div class="video-page-actions">
+          <button class="btn-outline" onclick="reportVideo('${v._id}')">⚑ Report</button>
+        </div>
+        ${v.description ? `<div class="video-page-desc">${escHtml(v.description)}</div>` : ''}
+      `;
+    } catch {
+      document.getElementById('videoContent').innerHTML = '<p style="color:var(--muted)">Failed to load video.</p>';
+    }
+  }
+
+  async function reportVideo(id) {
+    if (!getToken()) { window.location.href = 'login.html'; return; }
+    const reason = prompt('Why are you reporting this video?');
+    if (!reason) return;
+    const res = await fetch(`${API}/videos/${id}/report`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+      body: JSON.stringify({ reason }),
+    });
+    const data = await res.json();
+    alert(data.message);
+  }
+
+  function escHtml(str) {
+    if (!str) return '';
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  renderHeaderActions();
+  loadVideo();
+</script>
+</body>
+</html>

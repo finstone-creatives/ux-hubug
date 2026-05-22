@@ -1,0 +1,104 @@
+/* ─── PREMIUM PAGE ───────────────────────────────────────────────────────────── */
+.premium-page {
+  display: flex; align-items: flex-start; justify-content: center;
+  min-height: 100vh; padding: 40px 20px;
+}
+.premium-container {
+  width: 100%; max-width: 520px;
+}
+.back-link {
+  display: inline-block; color: var(--muted); font-size: 13px;
+  margin-bottom: 28px; transition: color var(--transition);
+}
+.back-link:hover { color: var(--text); }
+.premium-header { text-align: center; margin-bottom: 28px; }
+.premium-header .logo-text {
+  font-family: var(--font-display); font-size: 44px; display: block; margin-bottom: 8px;
+}
+.premium-header h1 {
+  font-family: var(--font-display); font-size: 40px; margin-bottom: 8px;
+}
+.premium-header p { color: var(--muted); font-size: 15px; }
+
+.plan-toggle {
+  display: flex; background: var(--card2); border: 1px solid var(--border2);
+  border-radius: 50px; padding: 4px; margin-bottom: 20px; width: fit-content; margin: 0 auto 20px;
+}
+.plan-btn {
+  padding: 9px 24px; border-radius: 50px; border: none;
+  font-size: 14px; font-weight: 600; cursor: pointer;
+  background: transparent; color: var(--muted);
+  transition: var(--transition); position: relative;
+}
+.plan-btn.active { background: var(--red); color: #fff; }
+.save-badge {
+  background: var(--gold); color: #000; font-size: 10px; font-weight: 700;
+  padding: 2px 6px; border-radius: 4px; margin-left: 6px; vertical-align: middle;
+}
+.price-display { text-align: center; margin: 16px 0 4px; }
+.price-amount { font-family: var(--font-display); font-size: 64px; color: var(--red); }
+.price-period { color: var(--muted); font-size: 18px; }
+.price-ugx { text-align: center; color: var(--muted); font-size: 14px; margin-bottom: 24px; }
+
+.premium-features {
+  list-style: none; background: var(--card); border: 1px solid var(--border2);
+  border-radius: var(--radius-lg); padding: 20px 24px; margin-bottom: 28px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.premium-features li { font-size: 14px; color: var(--text); }
+
+.payment-section {
+  background: var(--card); border: 1px solid var(--border2);
+  border-radius: var(--radius-lg); padding: 24px;
+}
+.payment-section h3 { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+
+.payment-tabs {
+  display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;
+}
+.pay-tab {
+  padding: 8px 14px; border-radius: var(--radius);
+  border: 1px solid var(--border2); background: var(--card2);
+  color: var(--muted); font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: var(--transition);
+}
+.pay-tab.active { background: var(--red); border-color: var(--red); color: #fff; }
+
+.pay-panel { display: none; }
+.pay-panel.active { display: block; }
+
+.form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.form-group label { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.form-group input {
+  background: var(--card2); border: 1px solid var(--border2);
+  color: var(--text); padding: 12px 14px; border-radius: var(--radius);
+  font-size: 14px; outline: none; width: 100%;
+  transition: border-color var(--transition);
+}
+.form-group input:focus { border-color: var(--red); }
+
+.stripe-card-input {
+  background: var(--card2); border: 1px solid var(--border2);
+  border-radius: var(--radius); padding: 14px;
+  transition: border-color var(--transition);
+}
+.stripe-card-input:focus-within { border-color: var(--red); }
+.card-error { color: #ff6b6b; font-size: 13px; margin-top: 6px; }
+
+.pay-btn { width: 100%; padding: 14px; font-size: 15px; }
+.pay-note { font-size: 12px; color: var(--muted); margin-top: 10px; text-align: center; }
+
+.verify-section {
+  margin-top: 14px; padding: 14px;
+  background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.25);
+  border-radius: var(--radius); text-align: center;
+}
+.verify-section p { font-size: 13px; color: var(--muted); margin-bottom: 10px; }
+.verify-btn {
+  display: inline-block; padding: 10px 24px;
+  border: 1px solid #22c55e; color: #22c55e;
+  background: transparent; border-radius: var(--radius);
+  font-size: 13px; font-weight: 700; cursor: pointer;
+  transition: var(--transition);
+}
+.verify-btn:hover { background: #22c55e; color: #000; }

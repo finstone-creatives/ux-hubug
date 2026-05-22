@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UX-HUB cPanel — Admin Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">UX<span>HUB</span> <small>cPanel</small></div>
+
+  <nav class="sidebar-nav">
+    <button class="nav-item active" onclick="showSection('dashboard')">
+      <span class="nav-icon">📊</span> Dashboard
+    </button>
+    <button class="nav-item" onclick="showSection('users')">
+      <span class="nav-icon">👥</span> Users
+    </button>
+    <button class="nav-item" onclick="showSection('videos')">
+      <span class="nav-icon">🎬</span> Video Moderation
+    </button>
+    <button class="nav-item" onclick="showSection('ads')">
+      <span class="nav-icon">📢</span> Ad Management
+    </button>
+    <button class="nav-item" onclick="showSection('revenue')">
+      <span class="nav-icon">💰</span> Revenue
+    </button>
+  </nav>
+
+  <div class="sidebar-footer">
+    <span id="adminName">Admin</span>
+    <button onclick="adminLogout()">Logout</button>
+  </div>
+</aside>
+
+<!-- MOBILE TOP BAR -->
+<div class="topbar">
+  <button class="topbar-toggle" onclick="toggleSidebar()">☰</button>
+  <span class="topbar-title">UX-HUB cPanel</span>
+</div>
+
+<!-- MAIN -->
+<div class="cpanel-main" id="cpanelMain">
+
+  <!-- ─── DASHBOARD ─────────────────────────────────────────────────────────── -->
+  <section class="section active" id="section-dashboard">
+    <div class="section-head">
+      <h1>Dashboard</h1>
+      <p>Overview of your platform</p>
+    </div>
+
+    <div class="stat-grid" id="statGrid">
+      <div class="stat-card loading">Loading...</div>
+    </div>
+
+    <div class="chart-area">
+      <h3>Monthly Revenue (Last 6 Months)</h3>
+      <div class="chart-wrap">
+        <canvas id="revenueChart"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── USERS ─────────────────────────────────────────────────────────────── -->
+  <section class="section" id="section-users">
+    <div class="section-head">
+      <h1>User Management</h1>
+      <p>Manage, verify, ban, and assign roles to users</p>
+    </div>
+
+    <div class="toolbar">
+      <input type="text" id="userSearch" placeholder="Search by username or email..." onkeydown="if(event.key==='Enter') loadUsers()" />
+      <select id="userStatusFilter" onchange="loadUsers()">
+        <option value="">All Statuses</option>
+        <option value="active">Active</option>
+        <option value="banned">Banned</option>
+        <option value="suspended">Suspended</option>
+      </select>
+      <button class="btn-primary" onclick="loadUsers()">Search</button>
+    </div>
+
+    <div class="table-wrap">
+      <table class="data-table" id="usersTable">
+        <thead>
+          <tr>
+            <th>Username</th><th>Email</th><th>Role</th>
+            <th>Status</th><th>Premium</th><th>Joined</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="usersBody">
+          <tr><td colspan="7" class="table-empty">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="table-pagination" id="usersPagination"></div>
+  </section>
+
+  <!-- ─── VIDEOS ────────────────────────────────────────────────────────────── -->
+  <section class="section" id="section-videos">
+    <div class="section-head">
+      <h1>Video Moderation</h1>
+      <p>Approve, reject, and manage uploaded videos</p>
+    </div>
+
+    <div class="toolbar">
+      <select id="videoStatusFilter" onchange="loadPendingVideos()">
+        <option value="pending">Pending Review</option>
+        <option value="approved">Approved</option>
+        <option value="rejected">Rejected</option>
+        <option value="flagged">Flagged</option>
+      </select>
+      <button class="btn-primary" onclick="loadPendingVideos()">Refresh</button>
+    </div>
+
+    <div class="video-mod-grid" id="videoModGrid">
+      <div class="table-empty">Loading...</div>
+    </div>
+  </section>
+
+  <!-- ─── ADS ──────────────────────────────────────────────────────────────── -->
+  <section class="section" id="section-ads">
+    <div class="section-head">
+      <h1>Ad Management</h1>
+      <p>Create and manage ad campaigns</p>
+    </div>
+
+    <button class="btn-primary" onclick="openAdModal()" style="margin-bottom:20px">+ Create New Ad</button>
+
+    <div class="table-wrap">
+      <table class="data-table" id="adsTable">
+        <thead>
+          <tr>
+            <th>Title</th><th>Advertiser</th><th>Placement</th>
+            <th>Status</th><th>Impressions</th><th>Clicks</th><th>Budget</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="adsBody">
+          <tr><td colspan="8" class="table-empty">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Ad Form Modal -->
+    <div class="modal-overlay" id="adModal">
+      <div class="modal">
+        <button class="modal-close" onclick="closeAdModal()">✕</button>
+        <h3 id="adModalTitle">Create Ad</h3>
+        <form id="adForm" onsubmit="saveAd(event)">
+          <input type="hidden" id="adId" />
+          <div class="form-row">
+            <div class="form-group">
+              <label>Ad Title</label>
+              <input type="text" id="adTitle" required />
+            </div>
+            <div class="form-group">
+              <label>Advertiser</label>
+              <input type="text" id="adAdvertiser" required />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Destination URL</label>
+            <input type="url" id="adLink" required />
+          </div>
+          <div class="form-group">
+            <label>Image URL (optional)</label>
+            <input type="url" id="adImage" />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Placement</label>
+              <select id="adPlacement">
+                <option value="banner_top">Banner Top</option>
+                <option value="banner_bottom">Banner Bottom</option>
+                <option value="sidebar">Sidebar</option>
+                <option value="footer">Footer</option>
+                <option value="in_video">In-Video</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Budget (USD)</label>
+              <input type="number" id="adBudget" min="0" step="0.01" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Status</label>
+            <select id="adStatus">
+              <option value="active">Active</option>
+              <option value="paused">Paused</option>
+            </select>
+          </div>
+          <button type="submit" class="btn-primary">Save Ad</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── REVENUE ───────────────────────────────────────────────────────────── -->
+  <section class="section" id="section-revenue">
+    <div class="section-head">
+      <h1>Revenue & Subscriptions</h1>
+      <p>Track earnings and payment methods</p>
+    </div>
+
+    <div class="stat-grid" id="revStatGrid">
+      <div class="stat-card loading">Loading...</div>
+    </div>
+
+    <div class="rev-breakdown" id="revBreakdown"></div>
+
+    <div class="table-wrap" style="margin-top:28px">
+      <h3 style="margin-bottom:14px">Recent Subscriptions</h3>
+      <table class="data-table" id="revenueTable">
+        <thead>
+          <tr>
+            <th>User</th><th>Plan</th><th>Method</th>
+            <th>Amount</th><th>Currency</th><th>Date</th><th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="revenueBody">
+          <tr><td colspan="7" class="table-empty">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</div><!-- /cpanel-main -->
+
+<script src="app.js"></script>
+</body>
+</html>

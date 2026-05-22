@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Moderation — UX-HUB Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css">
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <style>
+    .admin-wrap{display:flex;min-height:100vh}
+    .admin-sidebar{width:240px;background:var(--bg2);border-right:1px solid var(--border);position:fixed;top:0;left:0;bottom:0;display:flex;flex-direction:column;z-index:100;overflow-y:auto}
+    .admin-main{margin-left:240px;flex:1}
+    .admin-header{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--border);padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between;z-index:80}
+    .admin-content{padding:28px 24px}
+    .mod-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;transition:border-color var(--t)}
+    .mod-card:hover{border-color:var(--border2)}
+    .mod-media{height:180px;background:var(--surface2);display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer}
+    .mod-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity var(--t)}
+    .mod-media:hover .mod-overlay{opacity:1}
+  </style>
+</head>
+<body>
+<div class="admin-wrap">
+  <aside class="admin-sidebar" id="adminSidebar"></aside>
+  <div class="admin-main">
+    <div class="admin-header">
+      <div style="display:flex;align-items:center;gap:12px">
+        <h2 style="font-size:1.1rem;font-weight:700">Content Moderation</h2>
+        <span class="badge badge-brand">14 pending</span>
+      </div>
+      <button class="theme-toggle"><i class="ti ti-moon" data-theme-icon></i></button>
+    </div>
+    <div class="admin-content">
+
+      <div class="tabs" style="margin-bottom:24px">
+        <button class="tab active" onclick="switchTab('pending',this)"><i class="ti ti-clock"></i> Pending (14)</button>
+        <button class="tab" onclick="switchTab('approved',this)"><i class="ti ti-check"></i> Approved</button>
+        <button class="tab" onclick="switchTab('rejected',this)"><i class="ti ti-x"></i> Rejected</button>
+        <button class="tab" onclick="switchTab('flagged',this)"><i class="ti ti-flag"></i> Flagged (3)</button>
+      </div>
+
+      <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap">
+        <select class="select" style="width:160px" id="typeFilter" onchange="renderItems()">
+          <option value="">All Types</option>
+          <option value="photo">Photos</option>
+          <option value="video">Videos</option>
+          <option value="profile">Profiles</option>
+        </select>
+        <div class="input-group" style="flex:1;max-width:320px"><i class="ti ti-search"></i><input class="input" type="text" placeholder="Search creator..." id="modSearch" oninput="renderItems()" /></div>
+        <button class="btn btn-success btn-sm" onclick="approveAll()"><i class="ti ti-checks"></i> Approve All</button>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px" id="modGrid"></div>
+    </div>
+  </div>
+</div>
+
+<script src="/assets/js/app.js"></script>
+<script src="/admin/admin-layout.js"></script>
+<script>
+  Theme.init();
+  document.querySelectorAll('.theme-toggle').forEach(b => b.addEventListener('click', Theme.toggle));
+  AdminLayout.init();
+
+  const creators = ['Amara K.','Bella U.','Zara L.','Rose M.','Jade P.','Tina R.','Keisha A.','Naomi V.'];
+  const types    = ['photo','video','profile','photo','video','photo','video','profile'];
+  let currentTab = 'pending';
+
+  const items = Array.from({length:14}, (_,i) => ({
+    id: i+1,
+    creator: creators[i % creators.length],
+    type: types[i % types.length],
+    submitted: ['2m','15m','1h','2h','3h','5h'][i%6] + ' ago',
+    status: 'pending',
+    reports: Math.floor(Math.random()*5),
+  }));
+
+  function renderItems() {
+    const tf = document.getElementById('typeFilter').value;
+    const q  = document.getElementById('modSearch').value.toLowerCase();
+    const filtered = items.filter(item =>
+      item.status === currentTab &&
+      (!tf || item.type === tf) &&
+      (!q  || item.creator.toLowerCase().includes(q))
+    );
+
+    document.getElementById('modGrid').innerHTML = filtered.length ? filtered.map(item => `
+      <div class="mod-card" id="modCard${item.id}">
+        <div class="mod-media">
+          <div style="font-size:${item.type==='video'?'48px':'40px'};color:var(--surface3)">
+            <i class="ti ti-${item.type==='video'?'video':item.type==='profile'?'user-circle':'photo'}"></i>
+          </div>
+          <div class="mod-overlay"><i class="ti ti-eye" style="font-size:28px;color:#fff"></i></div>
+          <div style="position:absolute;top:10px;left:10px"><span class="tag tag-surface" style="font-size:0.7rem"><i class="ti ti-${item.type==='video'?'video':'photo'}"></i> ${item.type}</span></div>
+          ${item.reports > 0 ? `<div style="position:absolute;top:10px;right:10px"><span class="tag tag-red" style="font-size:0.7rem"><i class="ti ti-flag"></i> ${item.reports} reports</span></div>` : ''}
+        </div>
+        <div style="padding:14px">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+            <div class="avatar avatar-xs" style="background:var(--gradient)">${item.creator[0]}</div>
+            <div><div style="font-size:0.85rem;font-weight:700">${item.creator}</div><div style="font-size:0.72rem;color:var(--text3)">${item.submitted}</div></div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-success btn-sm" style="flex:1" onclick="moderate(${item.id},'approved')"><i class="ti ti-check"></i> Approve</button>
+            <button class="btn btn-danger btn-sm"  style="flex:1" onclick="moderate(${item.id},'rejected')"><i class="ti ti-x"></i> Reject</button>
+            <button class="btn btn-icon btn-sm" onclick="moderate(${item.id},'flagged')" title="Flag"><i class="ti ti-flag"></i></button>
+          </div>
+        </div>
+      </div>`).join('') : `<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--text3)"><i class="ti ti-check-circle" style="font-size:48px;display:block;margin-bottom:12px"></i>No items in this queue</div>`;
+  }
+
+  function switchTab(tab, btn) {
+    currentTab = tab;
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    renderItems();
+  }
+
+  function moderate(id, action) {
+    const item = items.find(i => i.id === id);
+    if (item) { item.status = action; renderItems(); }
+    Toast.show(`Content ${action}.`, action==='approved'?'success':'error');
+  }
+
+  function approveAll() {
+    items.filter(i => i.status === currentTab).forEach(i => i.status = 'approved');
+    renderItems();
+    Toast.show('All items approved.', 'success');
+  }
+
+  renderItems();
+</script>
+</body>
+</html>

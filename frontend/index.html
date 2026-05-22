@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UX-HUB — Uganda's Premier Adult Creator Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css">
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <link rel="stylesheet" href="/assets/css/explore.css" />
+</head>
+<body>
+
+<!-- AGE GATE -->
+<div class="age-gate" id="ageGate">
+  <div class="age-gate-inner fade-in">
+    <span class="logo-name" style="font-size:2.4rem">UX<span>HUB</span></span>
+    <h2>Adults Only — 18+</h2>
+    <p>This platform contains adult content strictly intended for persons aged 18 years and above. By entering you confirm you meet the age requirement and agree to our Terms of Service.</p>
+    <div class="age-gate-btns">
+      <button class="btn btn-brand btn-lg btn-full" onclick="ageAccept()">
+        <i class="ti ti-door-enter"></i> I am 18 or older — Enter
+      </button>
+      <button class="btn btn-outline btn-md btn-full" onclick="ageDeny()">
+        <i class="ti ti-x"></i> I am under 18 — Leave
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- COOKIE BANNER -->
+<div id="cookieBanner" style="position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:center;gap:16px;z-index:200;flex-wrap:wrap;font-size:0.85rem;">
+  <i class="ti ti-cookie" style="color:var(--brand);font-size:18px"></i>
+  <span style="color:var(--text2)">We use cookies to enhance your experience. <a href="/pages/privacy.html" style="color:var(--brand)">Privacy Policy</a></span>
+  <button class="btn btn-brand btn-sm" onclick="cookieAccept()">Accept</button>
+</div>
+
+<!-- SIDEBAR OVERLAY -->
+<div class="sidebar-overlay" onclick="Sidebar.close()"></div>
+
+<!-- SIDEBAR -->
+<aside class="app-sidebar" id="appSidebar"></aside>
+
+<!-- HEADER -->
+<header class="app-header" id="appHeader"></header>
+
+<!-- MAIN -->
+<div class="page-wrap">
+  <main class="main-content">
+
+    <!-- HERO SECTION -->
+    <section class="explore-hero">
+      <div class="hero-content">
+        <div class="hero-text">
+          <div class="hero-eyebrow">
+            <span class="badge badge-live"><span class="live-dot"></span> 247 Live Now</span>
+            <span class="tag tag-brand">Uganda & East Africa</span>
+          </div>
+          <h1 class="hero-title">Africa's Most<br><span class="text-gradient">Exclusive</span> Creator<br>Platform</h1>
+          <p class="hero-sub">Connect with creators, subscribe to exclusive content, book private sessions, and experience live interactions.</p>
+          <div class="hero-cta">
+            <a href="/register.html" class="btn btn-brand btn-lg">
+              <i class="ti ti-user-plus"></i> Join Free
+            </a>
+            <a href="/pages/explore.html" class="btn btn-outline btn-lg">
+              <i class="ti ti-compass"></i> Explore Creators
+            </a>
+          </div>
+          <div class="hero-stats">
+            <div class="hero-stat"><strong>2,400+</strong><span>Creators</span></div>
+            <div class="hero-stat"><strong>58K+</strong><span>Members</span></div>
+            <div class="hero-stat"><strong>247</strong><span>Live Now</span></div>
+          </div>
+        </div>
+        <div class="hero-cards" id="heroCards">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+    </section>
+
+    <div class="inner-lg">
+
+      <!-- LIVE NOW STRIP -->
+      <section class="section-block">
+        <div class="section-header-row">
+          <div>
+            <div class="label">Right Now</div>
+            <h2 class="section-title">
+              <span class="badge badge-live" style="font-size:0.8rem;vertical-align:middle;margin-right:8px"><span class="live-dot"></span> Live</span>
+              Creators Online
+            </h2>
+          </div>
+          <a href="/pages/live.html" class="btn btn-outline btn-sm">
+            View All <i class="ti ti-arrow-right"></i>
+          </a>
+        </div>
+        <div class="live-strip" id="liveStrip">
+          <!-- Skeleton loading -->
+          <div class="live-card skeleton" style="height:200px;border-radius:var(--radius-lg)"></div>
+          <div class="live-card skeleton" style="height:200px;border-radius:var(--radius-lg)"></div>
+          <div class="live-card skeleton" style="height:200px;border-radius:var(--radius-lg)"></div>
+          <div class="live-card skeleton" style="height:200px;border-radius:var(--radius-lg)"></div>
+        </div>
+      </section>
+
+      <!-- CATEGORIES -->
+      <section class="section-block">
+        <div class="section-header-row">
+          <div>
+            <div class="label">Browse</div>
+            <h2 class="section-title">Categories</h2>
+          </div>
+        </div>
+        <div class="categories-scroll" id="categoriesRow">
+          <button class="cat-chip active" data-cat="">
+            <i class="ti ti-layout-grid"></i> All
+          </button>
+          <button class="cat-chip" data-cat="escort">
+            <i class="ti ti-diamond"></i> Escorts
+          </button>
+          <button class="cat-chip" data-cat="content-creator">
+            <i class="ti ti-camera"></i> Content Creators
+          </button>
+          <button class="cat-chip" data-cat="live">
+            <i class="ti ti-live-view"></i> Live Shows
+          </button>
+          <button class="cat-chip" data-cat="premium">
+            <i class="ti ti-crown"></i> Premium
+          </button>
+          <button class="cat-chip" data-cat="new">
+            <i class="ti ti-sparkles"></i> New Faces
+          </button>
+          <button class="cat-chip" data-cat="verified">
+            <i class="ti ti-shield-check"></i> Verified
+          </button>
+          <button class="cat-chip" data-cat="kampala">
+            <i class="ti ti-map-pin"></i> Kampala
+          </button>
+          <button class="cat-chip" data-cat="nairobi">
+            <i class="ti ti-map-pin"></i> Nairobi
+          </button>
+        </div>
+      </section>
+
+      <!-- FEATURED CREATORS GRID -->
+      <section class="section-block">
+        <div class="section-header-row">
+          <div>
+            <div class="label">Featured</div>
+            <h2 class="section-title">Top Creators</h2>
+          </div>
+          <div class="flex items-center gap-10">
+            <select class="select input-sm" id="sortSelect" onchange="loadCreators()" style="width:150px">
+              <option value="popular">Most Popular</option>
+              <option value="new">Newest</option>
+              <option value="price_low">Price: Low</option>
+              <option value="price_high">Price: High</option>
+              <option value="online">Online Now</option>
+            </select>
+            <a href="/pages/explore.html" class="btn btn-outline btn-sm">
+              See All <i class="ti ti-arrow-right"></i>
+            </a>
+          </div>
+        </div>
+        <div class="grid-auto" id="creatorsGrid">
+          <!-- Creator cards rendered by JS -->
+        </div>
+        <div class="text-center mt-24">
+          <button class="btn btn-outline btn-md" id="loadMoreBtn" onclick="loadMore()">
+            <i class="ti ti-refresh"></i> Load More Creators
+          </button>
+        </div>
+      </section>
+
+      <!-- HOW IT WORKS -->
+      <section class="section-block how-it-works">
+        <div class="section-header-row" style="margin-bottom:32px">
+          <div>
+            <div class="label">Simple</div>
+            <h2 class="section-title">How It Works</h2>
+          </div>
+        </div>
+        <div class="grid-3" style="gap:24px">
+          <div class="how-card">
+            <div class="how-icon"><i class="ti ti-user-plus"></i></div>
+            <h3>1. Create Account</h3>
+            <p>Sign up in seconds. Verify your age and set up your profile to access all features.</p>
+          </div>
+          <div class="how-card">
+            <div class="how-icon"><i class="ti ti-compass"></i></div>
+            <h3>2. Discover Creators</h3>
+            <p>Browse thousands of verified creators. Filter by location, type, price, and availability.</p>
+          </div>
+          <div class="how-card">
+            <div class="how-icon"><i class="ti ti-heart"></i></div>
+            <h3>3. Subscribe & Connect</h3>
+            <p>Subscribe for exclusive content, book private sessions, or join live streams and tip your favourites.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- BECOME A CREATOR CTA -->
+      <section class="creator-cta-banner">
+        <div class="cta-inner">
+          <div class="cta-text">
+            <h2>Are You a Creator?</h2>
+            <p>Join thousands of creators earning serious income on UX-HUB. Set up your profile, post content, go live, and receive bookings — all in one platform.</p>
+            <div class="cta-stats">
+              <div class="cta-stat"><strong>$2,400</strong><span>avg monthly earnings</span></div>
+              <div class="cta-stat"><strong>Free</strong><span>to join</span></div>
+              <div class="cta-stat"><strong>80%</strong><span>revenue share</span></div>
+            </div>
+            <a href="/pages/become-creator.html" class="btn btn-brand btn-lg mt-20">
+              <i class="ti ti-rocket"></i> Start Earning Today
+            </a>
+          </div>
+          <div class="cta-visual">
+            <div class="cta-card-stack">
+              <div class="cta-earnings-card">
+                <div class="label mb-8">This Month</div>
+                <div style="font-family:var(--font-display);font-size:2.4rem;font-weight:800;color:var(--green)">$3,840</div>
+                <div class="text-sm text-muted mt-4">+24% from last month</div>
+                <div class="mt-16" style="display:flex;gap:10px;flex-wrap:wrap">
+                  <span class="tag tag-green"><i class="ti ti-trending-up"></i> Subscriptions $2,100</span>
+                  <span class="tag tag-brand">Tips $940</span>
+                  <span class="tag tag-gold">Bookings $800</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div><!-- /inner-lg -->
+  </main>
+</div>
+
+<!-- FOOTER -->
+<footer class="app-footer">
+  <div class="inner-lg">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="logo-name" style="font-size:1.8rem;margin-bottom:10px">UX<span>HUB</span></div>
+        <p>Africa's most exclusive adult creator platform. For verified adults 18+ only.</p>
+        <div class="footer-social">
+          <a href="#" class="btn btn-icon"><i class="ti ti-brand-twitter"></i></a>
+          <a href="#" class="btn btn-icon"><i class="ti ti-brand-instagram"></i></a>
+          <a href="#" class="btn btn-icon"><i class="ti ti-brand-telegram"></i></a>
+        </div>
+      </div>
+      <div class="footer-links-col">
+        <h5>Platform</h5>
+        <a href="/index.html">Explore</a>
+        <a href="/pages/live.html">Live</a>
+        <a href="/pages/search.html">Search</a>
+        <a href="/pages/trending.html">Trending</a>
+      </div>
+      <div class="footer-links-col">
+        <h5>Creators</h5>
+        <a href="/pages/become-creator.html">Become a Creator</a>
+        <a href="/creator/dashboard.html">Creator Dashboard</a>
+        <a href="/pages/pricing.html">Pricing</a>
+      </div>
+      <div class="footer-links-col">
+        <h5>Legal</h5>
+        <a href="/pages/terms.html">Terms of Service</a>
+        <a href="/pages/privacy.html">Privacy Policy</a>
+        <a href="/pages/dmca.html">DMCA</a>
+        <a href="/pages/2257.html">18 U.S.C. 2257</a>
+        <a href="/pages/contact.html">Contact</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 UX-HUB. All rights reserved. This site is for adults 18+.</p>
+      <p style="font-size:0.75rem;color:var(--text3);margin-top:4px">UX-HUB is committed to a safe, verified, adults-only platform.</p>
+    </div>
+  </div>
+</footer>
+
+<script src="/assets/js/app.js"></script>
+<script src="/assets/js/layout.js"></script>
+<script>
+  Layout.init();
+
+  let creators = [];
+  let liveVideos = [];
+
+  function getCoverColor(seed) {
+    const colors = ['#2D1B69', '#1A2D1A', '#2D2D1A', '#1A1A2D', '#2D2A1A', '#1A2D2D', '#2A1A2D'];
+    const index = seed.split('').reduce((sum, ch) => sum + ch.charCodeAt(0), 0) % colors.length;
+    return colors[index];
+  }
+
+  function avatarHtml(c) {
+    if (c.avatar) return `<img src="${c.avatar}" />`;
+    return `<span>${fmt.initials(c.username || c.displayName)}</span>`;
+  }
+
+  function renderCreatorCard(c) {
+    const displayName = c.username || 'Creator';
+    const coverColor = c.coverColor || getCoverColor(displayName);
+    const posts = c.uploadCount || 0;
+    const followers = c.followers || (posts * 120 + 500);
+    const price = c.isPremium ? 25 : 12;
+    const tags = [c.isPremium ? 'Premium' : 'Creator', 'Live', 'Verified'].slice(0, 3);
+    const location = c.location || 'East Africa';
+    return `
+      <div class="creator-card card-hover" onclick="window.location='/pages/profile.html?id=${c._id}'">
+        <div class="creator-card-cover" style="background:${coverColor}">
+          ${c.isOnline ? `<div style="position:absolute;top:10px;right:10px;z-index:2"><span class="tag tag-online" style="font-size:0.7rem"><span class="live-dot" style="width:6px;height:6px;display:inline-block;margin-right:4px"></span>Online</span></div>` : ''}
+        </div>
+        <div class="creator-card-body">
+          <div class="creator-card-top">
+            <div class="avatar creator-card-avatar" style="background:${coverColor}">${avatarHtml(c)}</div>
+            <div style="margin-top:10px;display:flex;gap:6px">
+              ${c.isPremium ? `<span class="badge badge-verified" title="Premium"><i class="ti ti-crown"></i></span>` : ''}
+            </div>
+          </div>
+          <div class="creator-card-name">${fmt.esc(displayName)}</div>
+          <div class="creator-card-handle">
+            <i class="ti ti-map-pin" style="font-size:12px"></i> ${fmt.esc(location)}
+          </div>
+          <div class="creator-card-stats">
+            <div class="creator-stat"><i class="ti ti-users"></i> <strong>${fmt.num(followers)}</strong> followers</div>
+            <div class="creator-stat"><i class="ti ti-files"></i> <strong>${posts}</strong> posts</div>
+            <div class="creator-stat"><i class="ti ti-star-filled" style="color:var(--gold)"></i> <strong>4.${Math.floor(5 + (posts % 5))}</strong></div>
+          </div>
+          <div class="creator-card-tags">
+            ${tags.map(t => `<span class="tag tag-surface">${t}</span>`).join('')}
+          </div>
+          <div style="margin-top:14px;display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:0.8rem;color:var(--text3)">From <strong style="color:var(--text);font-size:0.95rem">$${price}</strong>/mo</span>
+            <button class="btn btn-brand btn-sm">Subscribe</button>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function renderLiveCard(c) {
+    const displayName = c.uploader?.username || 'Creator';
+    const coverColor = c.coverColor || getCoverColor(displayName);
+    return `
+      <div class="live-card" onclick="window.location='/pages/live-watch.html?id=${c._id}'" style="cursor:pointer">
+        <div class="live-thumb" style="background:${coverColor}">
+          <div class="live-overlay">
+            <span class="badge badge-live"><span class="live-dot"></span> LIVE</span>
+            <span class="live-viewers"><i class="ti ti-eye"></i> ${fmt.num(c.views || 0)}</span>
+          </div>
+          <div class="live-play"><i class="ti ti-player-play-filled"></i></div>
+        </div>
+        <div class="live-info">
+          <div class="avatar avatar-xs" style="background:#333;flex-shrink:0">${fmt.initials(displayName)}</div>
+          <div style="min-width:0">
+            <div class="truncate" style="font-size:0.82rem;font-weight:600">${fmt.esc(displayName)}</div>
+            <div class="truncate" style="font-size:0.72rem;color:var(--text3)">${fmt.esc(c.title || 'Live stream')}</div>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function renderCreatorList(list) {
+    const grid = document.getElementById('creatorsGrid');
+    if (!list.length) {
+      grid.innerHTML = '<div class="empty-state" style="display:flex;">No creators found.</div>';
+      return;
+    }
+    grid.innerHTML = list.map(renderCreatorCard).join('');
+  }
+
+  function renderLiveList(list) {
+    const grid = document.getElementById('liveStrip');
+    if (!list.length) {
+      grid.innerHTML = '<div class="empty-state" style="display:flex;">No live sessions available.</div>';
+      return;
+    }
+    grid.innerHTML = list.map(renderLiveCard).join('');
+  }
+
+  async function fetchCreators() {
+    try {
+      const response = await api.get('/users?role=creator&limit=12');
+      creators = response.users || [];
+      renderCreatorList(creators);
+    } catch (err) {
+      console.error(err);
+      document.getElementById('creatorsGrid').innerHTML = '<div class="empty-state" style="display:flex;">Unable to load creators.</div>';
+    }
+  }
+
+  async function fetchLive() {
+    try {
+      const response = await api.get('/videos?limit=12');
+      liveVideos = (response.videos || []).filter(video => {
+        const text = `${video.title || ''} ${video.category || ''} ${video.tags?.join(' ') || ''}`.toLowerCase();
+        return text.includes('live') || text.includes('stream') || video.category?.toLowerCase() === 'live';
+      });
+      renderLiveList(liveVideos.slice(0, 4));
+    } catch (err) {
+      console.error(err);
+      document.getElementById('liveStrip').innerHTML = '<div class="empty-state" style="display:flex;">Unable to load live streams.</div>';
+    }
+  }
+
+  function filterCreators(category) {
+    if (!category || category === '') return renderCreatorList(creators);
+    const filtered = creators.filter(c => {
+      const value = (c.category || c.role || 'creator').toLowerCase();
+      return value.includes(category.toLowerCase()) || (category === 'new' && new Date(c.createdAt) > Date.now() - 1000 * 60 * 60 * 24 * 30);
+    });
+    renderCreatorList(filtered);
+  }
+
+  document.querySelectorAll('.cat-chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.cat-chip').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      filterCreators(btn.dataset.cat || '');
+    });
+  });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    fetchCreators();
+    fetchLive();
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Checkout — UX-HUB</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css">
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script src="https://js.stripe.com/v3/"></script>
+  <style>
+    .checkout-layout{display:grid;grid-template-columns:1fr 400px;gap:32px;max-width:960px;margin:0 auto;padding:32px 20px}
+    .payment-tab{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 12px;border:1.5px solid var(--border);border-radius:var(--radius-lg);cursor:pointer;transition:all var(--t);font-size:0.82rem;font-weight:600;color:var(--text2);flex:1}
+    .payment-tab .ti{font-size:22px}
+    .payment-tab.active,.payment-tab:hover{border-color:var(--brand);background:var(--brand-light);color:var(--brand)}
+    .pay-panel{display:none}
+    .pay-panel.active{display:block}
+    .order-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)}
+    .order-row:last-of-type{border-bottom:none}
+    .stripe-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;transition:border-color var(--t)}
+    .stripe-card:focus-within{border-color:var(--brand)}
+    @media(max-width:720px){.checkout-layout{grid-template-columns:1fr}}
+  </style>
+</head>
+<body class="no-sidebar">
+<div class="app-header" style="position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--border);height:64px;display:flex;align-items:center;padding:0 24px;justify-content:space-between;z-index:80;left:0">
+  <a href="/index.html" class="logo-name" style="font-size:1.4rem;text-decoration:none">UX<span style="color:var(--brand)">HUB</span></a>
+  <div style="display:flex;align-items:center;gap:8px;font-size:0.82rem;color:var(--text3)"><i class="ti ti-lock" style="color:var(--green)"></i> Secure Checkout</div>
+</div>
+
+<div style="padding-top:0">
+  <div class="checkout-layout">
+
+    <!-- LEFT -->
+    <div>
+      <h1 style="font-size:1.6rem;margin-bottom:4px">Complete Your Order</h1>
+      <p style="margin-bottom:28px" id="checkoutSub">Choose your payment method below.</p>
+
+      <div id="alertBox" style="display:none;margin-bottom:16px"></div>
+
+      <!-- Payment method tabs -->
+      <div style="display:flex;gap:10px;margin-bottom:24px">
+        <div class="payment-tab active" onclick="switchPay('mtn',this)"><i class="ti ti-device-mobile"></i> MTN MoMo</div>
+        <div class="payment-tab" onclick="switchPay('airtel',this)"><i class="ti ti-device-mobile-vibration"></i> Airtel</div>
+        <div class="payment-tab" onclick="switchPay('card',this)"><i class="ti ti-credit-card"></i> Card</div>
+      </div>
+
+      <!-- MTN -->
+      <div class="pay-panel active" id="panel-mtn">
+        <div class="card"><div class="card-body" style="display:flex;flex-direction:column;gap:16px">
+          <div style="display:flex;align-items:center;gap:10px;padding:12px;background:var(--gold-bg);border-radius:var(--radius)">
+            <i class="ti ti-device-mobile" style="font-size:24px;color:var(--gold)"></i>
+            <div><div style="font-weight:700;font-size:0.9rem">MTN Mobile Money</div><div style="font-size:0.78rem;color:var(--text3)">You will receive a payment prompt on your MTN line</div></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">MTN Phone Number</label>
+            <div class="input-group"><i class="ti ti-phone"></i><input class="input" type="tel" id="mtnPhone" placeholder="e.g. 0771234567" /></div>
+          </div>
+          <button class="btn btn-brand btn-lg btn-full" onclick="payMTN()"><i class="ti ti-send"></i> Send Payment Request</button>
+          <div id="mtnVerifyWrap" style="display:none;padding:16px;background:var(--green-bg);border:1px solid rgba(16,217,111,0.25);border-radius:var(--radius);text-align:center">
+            <div style="font-weight:700;margin-bottom:8px">Check your phone and approve the prompt</div>
+            <p style="font-size:0.82rem;color:var(--text3);margin-bottom:14px">Once approved, click below to confirm</p>
+            <button class="btn btn-success btn-md" onclick="verifyMTN()"><i class="ti ti-circle-check"></i> Confirm Payment</button>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- Airtel -->
+      <div class="pay-panel" id="panel-airtel">
+        <div class="card"><div class="card-body" style="display:flex;flex-direction:column;gap:16px">
+          <div style="display:flex;align-items:center;gap:10px;padding:12px;background:var(--red-bg);border-radius:var(--radius)">
+            <i class="ti ti-device-mobile-vibration" style="font-size:24px;color:var(--red)"></i>
+            <div><div style="font-weight:700;font-size:0.9rem">Airtel Money</div><div style="font-size:0.78rem;color:var(--text3)">You will receive a payment prompt on your Airtel line</div></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Airtel Phone Number</label>
+            <div class="input-group"><i class="ti ti-phone"></i><input class="input" type="tel" id="airtelPhone" placeholder="e.g. 0701234567" /></div>
+          </div>
+          <button class="btn btn-brand btn-lg btn-full" onclick="payAirtel()"><i class="ti ti-send"></i> Send Payment Request</button>
+          <div id="airtelVerifyWrap" style="display:none;padding:16px;background:var(--green-bg);border:1px solid rgba(16,217,111,0.25);border-radius:var(--radius);text-align:center">
+            <div style="font-weight:700;margin-bottom:8px">Approve on your Airtel phone</div>
+            <button class="btn btn-success btn-md" onclick="verifyAirtel()"><i class="ti ti-circle-check"></i> Confirm Payment</button>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- Card -->
+      <div class="pay-panel" id="panel-card">
+        <div class="card"><div class="card-body" style="display:flex;flex-direction:column;gap:16px">
+          <div style="display:flex;align-items:center;gap:10px;padding:12px;background:var(--blue-bg);border-radius:var(--radius)">
+            <i class="ti ti-credit-card" style="font-size:24px;color:var(--blue)"></i>
+            <div><div style="font-weight:700;font-size:0.9rem">Credit / Debit Card</div><div style="font-size:0.78rem;color:var(--text3)">Powered by Stripe — we never store your card details</div></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Card Details</label>
+            <div class="stripe-card" id="cardElement"></div>
+            <div id="cardErrors" style="font-size:0.78rem;color:var(--red);margin-top:6px"></div>
+          </div>
+          <button class="btn btn-brand btn-lg btn-full" onclick="payCard()"><i class="ti ti-credit-card"></i> Pay Now</button>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Order Summary -->
+    <div>
+      <div class="card" style="position:sticky;top:80px">
+        <div class="card-header"><h3><i class="ti ti-shopping-cart" style="color:var(--brand)"></i> Order Summary</h3></div>
+        <div class="card-body">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border)">
+            <div class="avatar avatar-md" style="background:var(--gradient)" id="orderAvatar">A</div>
+            <div id="orderCreatorInfo">
+              <div style="font-weight:700" id="orderCreatorName">Creator</div>
+              <div style="font-size:0.78rem;color:var(--text3)" id="orderPlanLabel">Monthly Subscription</div>
+            </div>
+          </div>
+          <div class="order-row"><span style="color:var(--text2)">Subtotal</span><strong id="orderSubtotal">$25.00</strong></div>
+          <div class="order-row"><span style="color:var(--text2)">Platform fee</span><strong style="color:var(--text3)">$0.00</strong></div>
+          <div class="order-row" style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">
+            <span style="font-weight:700">Total</span>
+            <span style="font-family:var(--font-display);font-size:1.4rem;color:var(--brand)" id="orderTotal">$25.00</span>
+          </div>
+          <div style="margin-top:16px;padding:12px;background:var(--surface2);border-radius:var(--radius);font-size:0.78rem;color:var(--text3);display:flex;gap:8px">
+            <i class="ti ti-shield-check" style="color:var(--green);flex-shrink:0;font-size:16px"></i>
+            Your payment is encrypted and secure. Cancel your subscription anytime.
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="/assets/js/app.js"></script>
+<script>
+  Theme.init();
+  Auth.requireAuth('/login.html');
+
+  const params = new URLSearchParams(window.location.search);
+  const type = params.get('type') || 'subscription';
+  const amount = parseFloat(params.get('amount') || params.get('price') || '25');
+  const plan = params.get('plan') || 'monthly';
+
+  document.getElementById('orderSubtotal').textContent = `$${amount.toFixed(2)}`;
+  document.getElementById('orderTotal').textContent     = `$${amount.toFixed(2)}`;
+  document.getElementById('orderPlanLabel').textContent = type === 'tip' ? `Tip to creator` : `${plan.charAt(0).toUpperCase()+plan.slice(1)} Subscription`;
+
+  let mtnRef = null, airtelRef = null, stripe = null, cardEl = null;
+
+  function switchPay(method, el) {
+    document.querySelectorAll('.payment-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.pay-panel').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById(`panel-${method}`).classList.add('active');
+    if (method === 'card') initStripe();
+  }
+
+  function initStripe() {
+    if (stripe) return;
+    stripe = Stripe('pk_test_your_stripe_publishable_key_here');
+    const els = stripe.elements();
+    cardEl = els.create('card', { style: { base: { color: getComputedStyle(document.documentElement).getPropertyValue('--text').trim(), fontFamily:'Outfit, sans-serif', fontSize:'15px', '::placeholder':{ color:'#606078' } }, invalid:{ color:'#FF4444' } } });
+    cardEl.mount('#cardElement');
+    cardEl.on('change', ({error}) => { document.getElementById('cardErrors').textContent = error ? error.message : ''; });
+  }
+
+  async function payMTN() {
+    const phone = document.getElementById('mtnPhone').value.trim();
+    if (!phone) return showAlert('alertBox', 'Enter your MTN phone number.', 'error');
+    showAlert('alertBox', 'Payment request sent to your MTN phone. Approve the prompt.', 'success');
+    mtnRef = 'demo-ref-' + Date.now();
+    document.getElementById('mtnVerifyWrap').style.display = 'block';
+  }
+
+  async function verifyMTN() {
+    showAlert('alertBox', 'Verifying payment...', 'info');
+    await new Promise(r => setTimeout(r, 1500));
+    onSuccess();
+  }
+
+  async function payAirtel() {
+    const phone = document.getElementById('airtelPhone').value.trim();
+    if (!phone) return showAlert('alertBox', 'Enter your Airtel phone number.', 'error');
+    showAlert('alertBox', 'Payment request sent to your Airtel phone.', 'success');
+    airtelRef = 'demo-ref-' + Date.now();
+    document.getElementById('airtelVerifyWrap').style.display = 'block';
+  }
+
+  async function verifyAirtel() {
+    showAlert('alertBox', 'Verifying payment...', 'info');
+    await new Promise(r => setTimeout(r, 1500));
+    onSuccess();
+  }
+
+  async function payCard() {
+    if (!stripe || !cardEl) return showAlert('alertBox', 'Card element not loaded.', 'error');
+    showAlert('alertBox', 'Processing payment...', 'info');
+    // In production: call backend to create PaymentIntent, then confirmCardPayment
+    await new Promise(r => setTimeout(r, 2000));
+    onSuccess();
+  }
+
+  function onSuccess() {
+    document.getElementById('alertBox').style.display = 'none';
+    document.querySelector('.checkout-layout').innerHTML = `
+      <div style="grid-column:1/-1;text-align:center;padding:60px 20px">
+        <div style="width:80px;height:80px;border-radius:50%;background:var(--green-bg);display:flex;align-items:center;justify-content:center;margin:0 auto 24px;font-size:36px;color:var(--green)"><i class="ti ti-circle-check"></i></div>
+        <h2 style="font-size:2rem;margin-bottom:12px">Payment Successful!</h2>
+        <p style="color:var(--text3);margin-bottom:28px">Your ${type === 'tip' ? 'tip has been sent' : 'subscription is now active'}. Enjoy exclusive content.</p>
+        <a href="/index.html" class="btn btn-brand btn-lg"><i class="ti ti-home"></i> Back to Home</a>
+      </div>`;
+  }
+</script>
+</body>
+</html>

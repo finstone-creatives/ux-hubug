@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Messages — UX-HUB</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css">
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <style>
+    .msg-layout{display:grid;grid-template-columns:320px 1fr;height:calc(100vh - var(--header-h));overflow:hidden}
+    .msg-list-panel{border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+    .msg-list-header{padding:16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+    .msg-list-search{padding:10px 14px;border-bottom:1px solid var(--border)}
+    .msg-list{flex:1;overflow-y:auto}
+    .msg-thread-item{display:flex;align-items:center;gap:12px;padding:12px 16px;cursor:pointer;transition:background var(--t);border-bottom:1px solid var(--border)}
+    .msg-thread-item:hover,.msg-thread-item.active{background:var(--surface2)}
+    .msg-thread-meta{flex:1;min-width:0}
+    .msg-thread-row{display:flex;justify-content:space-between;align-items:center}
+    .msg-thread-name{font-size:0.9rem;font-weight:700}
+    .msg-thread-time{font-size:0.72rem;color:var(--text3)}
+    .msg-thread-preview{font-size:0.78rem;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+    .msg-main-panel{display:flex;flex-direction:column;overflow:hidden}
+    .msg-main-header{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;flex-shrink:0}
+    .msg-messages{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:12px}
+    .msg-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--text3);gap:12px}
+    .msg-empty .ti{font-size:56px}
+    .msg-input-area{padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:10px;align-items:flex-end;flex-shrink:0}
+    .msg-input-area .input-group{flex:1}
+    .tip-quick{display:flex;gap:6px;padding:8px 20px 0;flex-wrap:wrap}
+    .tip-quick button{padding:5px 12px;border-radius:var(--radius-full);border:1px solid var(--border);background:var(--surface2);font-size:0.75rem;font-weight:700;cursor:pointer;transition:all var(--t);color:var(--text2)}
+    .tip-quick button:hover{border-color:var(--gold);color:var(--gold)}
+    @media(max-width:768px){.msg-layout{grid-template-columns:1fr}.msg-list-panel{display:none}.msg-list-panel.mobile-show{display:flex}}
+  </style>
+</head>
+<body>
+<div class="sidebar-overlay" onclick="Sidebar.close()"></div>
+<aside class="app-sidebar" id="appSidebar"></aside>
+<header class="app-header" id="appHeader"></header>
+<div class="page-wrap">
+  <main class="main-content" style="display:flex;flex-direction:column">
+    <div class="msg-layout">
+
+      <!-- THREAD LIST -->
+      <div class="msg-list-panel" id="threadPanel">
+        <div class="msg-list-header">
+          <h3 style="font-size:1rem">Messages</h3>
+          <button class="btn btn-brand btn-sm" onclick="newMessage()"><i class="ti ti-edit"></i> New</button>
+        </div>
+        <div class="msg-list-search">
+          <div class="input-group">
+            <i class="ti ti-search"></i>
+            <input class="input input-sm" type="text" placeholder="Search conversations..." id="threadSearch" oninput="filterThreads(this.value)" />
+          </div>
+        </div>
+        <div class="msg-list" id="threadList"></div>
+      </div>
+
+      <!-- CHAT AREA -->
+      <div class="msg-main-panel" id="chatPanel">
+        <div class="msg-empty" id="emptyState">
+          <i class="ti ti-messages"></i>
+          <p style="font-size:0.95rem;font-weight:600">Select a conversation</p>
+          <p style="font-size:0.82rem">Choose a creator to message or start a new one</p>
+        </div>
+        <div id="activeChat" style="display:none;flex-direction:column;height:100%">
+          <div class="msg-main-header" id="chatHeader"></div>
+          <div class="tip-quick" id="tipQuick"></div>
+          <div class="msg-messages" id="messagesList"></div>
+          <div class="msg-input-area">
+            <div class="input-group">
+              <button type="button" class="btn btn-icon btn-sm" onclick="attachMedia()" style="border:none;background:none"><i class="ti ti-paperclip" style="font-size:18px;color:var(--text3)"></i></button>
+              <input class="input" type="text" id="msgInput" placeholder="Type a message..." onkeydown="if(event.key==='Enter')sendMessage()" style="flex:1" />
+            </div>
+            <button class="btn btn-brand btn-md" onclick="sendMessage()"><i class="ti ti-send"></i></button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+<script src="/assets/js/app.js"></script>
+<script src="/assets/js/layout.js"></script>
+<script>
+  Auth.requireAuth('/login.html');
+  Layout.init('Messages');
+
+  const myUser = Auth.getUser();
+
+  const threads = [
+    { id:'1', name:'Amara K.', handle:'Amara_Official', isOnline:true,  isCreator:true,  lastMsg:'Thank you so much!', time:'2m', unread:3, msgs:[
+      { from:'them', text:'Hey! Thanks for subscribing', time:'10:30 AM' },
+      { from:'me',   text:'Of course! Love your content', time:'10:31 AM' },
+      { from:'them', text:'That means a lot 💖 more content dropping tonight', time:'10:32 AM' },
+      { from:'me',   text:'Can\'t wait!', time:'10:33 AM' },
+      { from:'them', text:'Thank you so much!', time:'10:34 AM' },
+    ]},
+    { id:'2', name:'Zara Lux',  handle:'ZaraLux',        isOnline:true,  isCreator:true,  lastMsg:'I\'ll check my schedule', time:'1h',  unread:0, msgs:[
+      { from:'me',   text:'Hi Zara! I would like to book you for a private session', time:'Yesterday' },
+      { from:'them', text:'Hi! Yes I do private sessions. What did you have in mind?', time:'Yesterday' },
+      { from:'me',   text:'A video call, 30 minutes', time:'Yesterday' },
+      { from:'them', text:'I\'ll check my schedule', time:'Yesterday' },
+    ]},
+    { id:'3', name:'Naomi V.', handle:'NaomiVibes',      isOnline:false, isCreator:true,  lastMsg:'New post is up!', time:'3h',  unread:1, msgs:[
+      { from:'them', text:'New post is up! Check it out', time:'3h ago' },
+    ]},
+  ];
+
+  let activeThread = null;
+
+  function renderThreads(list) {
+    document.getElementById('threadList').innerHTML = list.map(t => `
+      <div class="msg-thread-item ${activeThread?.id===t.id?'active':''}" onclick="openThread('${t.id}')">
+        <div class="avatar avatar-sm ${t.isOnline?'avatar-online':''}" style="background:var(--gradient)">${fmt.initials(t.name)}</div>
+        <div class="msg-thread-meta">
+          <div class="msg-thread-row">
+            <span class="msg-thread-name">${t.name}</span>
+            <span class="msg-thread-time">${t.time}</span>
+          </div>
+          <div class="msg-thread-row" style="margin-top:2px">
+            <span class="msg-thread-preview">${t.lastMsg}</span>
+            ${t.unread > 0 ? `<span class="chat-item-unread">${t.unread}</span>` : ''}
+          </div>
+        </div>
+      </div>`).join('');
+  }
+
+  function openThread(id) {
+    activeThread = threads.find(t => t.id === id);
+    if (!activeThread) return;
+    activeThread.unread = 0;
+    renderThreads(threads);
+
+    document.getElementById('emptyState').style.display = 'none';
+    const ac = document.getElementById('activeChat');
+    ac.style.display = 'flex';
+
+    document.getElementById('chatHeader').innerHTML = `
+      <div class="avatar avatar-md ${activeThread.isOnline?'avatar-online':''}" style="background:var(--gradient)">${fmt.initials(activeThread.name)}</div>
+      <div style="flex:1">
+        <div style="font-weight:700">${activeThread.name}</div>
+        <div style="font-size:0.75rem;color:${activeThread.isOnline?'var(--green)':'var(--text3)'}">${activeThread.isOnline?'Online now':'Offline'}</div>
+      </div>
+      <a href="/pages/profile.html?id=${activeThread.id}" class="btn btn-surface btn-sm"><i class="ti ti-user"></i> Profile</a>
+      <button class="btn btn-icon btn-sm" onclick="clearChat()"><i class="ti ti-trash"></i></button>`;
+
+    document.getElementById('tipQuick').innerHTML = activeThread.isCreator ? `
+      <span style="font-size:0.72rem;color:var(--text3);line-height:32px">Quick Tip:</span>
+      ${[5,10,20,50].map(a => `<button onclick="quickTip(${a})"><i class="ti ti-coin" style="color:var(--gold)"></i> $${a}</button>`).join('')}` : '';
+
+    renderMessages();
+  }
+
+  function renderMessages() {
+    if (!activeThread) return;
+    document.getElementById('messagesList').innerHTML = activeThread.msgs.map(m => `
+      <div class="msg ${m.from==='me'?'mine':''}" style="max-width:75%;align-self:${m.from==='me'?'flex-end':'flex-start'}">
+        ${m.from!=='me'?`<div class="avatar avatar-xs" style="background:var(--gradient);flex-shrink:0;align-self:flex-end">${fmt.initials(activeThread.name)}</div>`:''}
+        <div>
+          <div class="msg-bubble">${fmt.esc(m.text)}</div>
+          <div class="msg-time">${m.time}</div>
+        </div>
+      </div>`).join('');
+    const ml = document.getElementById('messagesList');
+    ml.scrollTop = ml.scrollHeight;
+  }
+
+  function sendMessage() {
+    const input = document.getElementById('msgInput');
+    const text  = input.value.trim();
+    if (!text || !activeThread) return;
+    activeThread.msgs.push({ from:'me', text, time:'Now' });
+    activeThread.lastMsg = text;
+    input.value = '';
+    renderMessages();
+    renderThreads(threads);
+    // Simulate reply after 2s
+    setTimeout(() => {
+      const replies = ['Got it!','Thanks for the message!','I\'ll respond soon','Check my latest post!'];
+      activeThread.msgs.push({ from:'them', text: replies[Math.floor(Math.random()*replies.length)], time:'Now' });
+      renderMessages();
+    }, 2000);
+  }
+
+  function quickTip(amount) {
+    Toast.show(`Sending $${amount} tip to ${activeThread.name}...`, 'success');
+    activeThread.msgs.push({ from:'me', text:`Sent a $${amount} tip`, time:'Now' });
+    renderMessages();
+  }
+
+  function filterThreads(q) {
+    const filtered = threads.filter(t => t.name.toLowerCase().includes(q.toLowerCase()));
+    renderThreads(filtered);
+  }
+
+  function newMessage()  { Toast.show('Search for a creator on their profile page to message them.', 'info'); }
+  function clearChat()   { if (!activeThread) return; activeThread.msgs = []; renderMessages(); }
+  function attachMedia() { Toast.show('Media attachment coming soon.', 'info'); }
+
+  renderThreads(threads);
+
+  // Auto-open from URL param
+  const urlUser = new URLSearchParams(window.location.search).get('user');
+  if (urlUser) {
+    const t = threads.find(th => th.handle === urlUser);
+    if (t) openThread(t.id);
+  }
+</script>
+</body>
+</html>

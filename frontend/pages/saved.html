@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Saved — UX-HUB</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <style>
+    .page-panel { display:flex; flex-direction:column; gap:18px; }
+    .panel-card { background:var(--surface); border:1px solid var(--border); border-radius:1rem; padding:24px; }
+    .panel-list { display:grid; gap:14px; }
+    .panel-item { background:var(--surface2); border:1px solid var(--border); border-radius:0.95rem; padding:18px; }
+    .placeholder { color:var(--text3); }
+  </style>
+</head>
+<body>
+  <div class="sidebar-overlay" onclick="Sidebar.close()"></div>
+  <aside class="app-sidebar" id="appSidebar"></aside>
+  <header class="app-header" id="appHeader"></header>
+  <div class="page-wrap">
+    <main class="main-content">
+      <div class="inner-lg">
+        <div class="page-header" style="margin-bottom:24px; display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+          <div>
+            <h1>Saved</h1>
+            <p>Quick access to your favorite creators and saved content.</p>
+          </div>
+        </div>
+        <div class="page-panel">
+          <div class="panel-card">
+            <h2>Saved items</h2>
+            <div class="panel-list">
+              <div class="panel-item">
+                <strong>You haven’t saved anything yet.</strong>
+                <p class="placeholder">Tap the save button on a creator or video to keep it here.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  <script src="/assets/js/app.js"></script>
+  <script src="/assets/js/layout.js"></script>
+  <script>
+    Auth.requireAuth('/login.html');
+    Layout.init('Saved');
+  </script>
+</body>
+</html>

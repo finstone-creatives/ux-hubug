@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Go Premium — UX-HUB</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body class="premium-page">
+
+<div class="premium-container">
+  <a href="index.html" class="back-link">← Back to Home</a>
+
+  <div class="premium-header">
+    <div class="logo-text">UX<span class="logo-accent">HUB</span></div>
+    <h1>Unlock Premium</h1>
+    <p>Unlimited HD & 4K content, no ads, upload priority</p>
+  </div>
+
+  <!-- PLAN TOGGLE -->
+  <div class="plan-toggle">
+    <button class="plan-btn active" id="btnMonthly" onclick="selectPlan('monthly')">Monthly</button>
+    <button class="plan-btn" id="btnYearly" onclick="selectPlan('yearly')">Yearly <span class="save-badge">Save 17%</span></button>
+  </div>
+
+  <div class="price-display">
+    <span class="price-amount" id="priceAmount">$9.99</span>
+    <span class="price-period" id="pricePeriod">/ month</span>
+  </div>
+  <p class="price-ugx" id="priceUgx">≈ UGX 37,000</p>
+
+  <!-- FEATURES -->
+  <ul class="premium-features">
+    <li>✅ Unlimited HD & 4K video access</li>
+    <li>✅ Zero ads while watching</li>
+    <li>✅ Priority video uploads</li>
+    <li>✅ Premium-only exclusive content</li>
+    <li>✅ Download for offline viewing</li>
+    <li>✅ Cancel anytime</li>
+  </ul>
+
+  <div class="alert" id="alertBox" style="display:none"></div>
+
+  <!-- PAYMENT METHODS -->
+  <div class="payment-section">
+    <h3>Choose Payment Method</h3>
+
+    <div class="payment-tabs">
+      <button class="pay-tab active" onclick="showPayMethod('mtn')">📱 MTN MoMo</button>
+      <button class="pay-tab" onclick="showPayMethod('airtel')">📱 Airtel Money</button>
+      <button class="pay-tab" onclick="showPayMethod('card')">💳 Card / Stripe</button>
+    </div>
+
+    <!-- MTN -->
+    <div class="pay-panel active" id="panel-mtn">
+      <div class="form-group">
+        <label>MTN Phone Number</label>
+        <input type="tel" id="mtnPhone" placeholder="e.g. 0771234567" />
+      </div>
+      <button class="btn-primary pay-btn" onclick="payMTN()">
+        📱 Pay with MTN MoMo
+      </button>
+      <p class="pay-note">You'll receive a prompt on your MTN line to approve the payment.</p>
+      <div class="verify-section" id="mtnVerify" style="display:none">
+        <p>After approving on your phone:</p>
+        <button class="btn-outline verify-btn" onclick="verifyMTN()">✓ Confirm MTN Payment</button>
+      </div>
+    </div>
+
+    <!-- AIRTEL -->
+    <div class="pay-panel" id="panel-airtel">
+      <div class="form-group">
+        <label>Airtel Phone Number</label>
+        <input type="tel" id="airtelPhone" placeholder="e.g. 0701234567" />
+      </div>
+      <button class="btn-primary pay-btn" onclick="payAirtel()">
+        📱 Pay with Airtel Money
+      </button>
+      <p class="pay-note">You'll receive a prompt on your Airtel line to approve the payment.</p>
+      <div class="verify-section" id="airtelVerify" style="display:none">
+        <p>After approving on your phone:</p>
+        <button class="btn-outline verify-btn" onclick="verifyAirtel()">✓ Confirm Airtel Payment</button>
+      </div>
+    </div>
+
+    <!-- STRIPE / CARD -->
+    <div class="pay-panel" id="panel-card">
+      <div class="form-group">
+        <label>Card Details</label>
+        <div id="card-element" class="stripe-card-input"></div>
+        <div id="card-errors" class="card-error"></div>
+      </div>
+      <button class="btn-primary pay-btn" onclick="payStripe()">
+        💳 Pay with Card
+      </button>
+      <p class="pay-note">Secured by Stripe. We never store your card details.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  const API = 'http://localhost:5000/api';
+  let selectedPlan = 'monthly';
+  let mtnReferenceId = null;
+  let airtelTransactionId = null;
+  let stripe = null;
+  let cardElement = null;
+
+  function getToken() { return localStorage.getItem('uxhub_token'); }
+
+  // Redirect if not logged in
+  if (!getToken()) window.location.href = 'login.html';
+
+  function selectPlan(plan) {
+    selectedPlan = plan;
+    document.getElementById('btnMonthly').classList.toggle('active', plan === 'monthly');
+    document.getElementById('btnYearly').classList.toggle('active', plan === 'yearly');
+    document.getElementById('priceAmount').textContent = plan === 'monthly' ? '$9.99' : '$99.99';
+    document.getElementById('pricePeriod').textContent = plan === 'monthly' ? '/ month' : '/ year';
+    document.getElementById('priceUgx').textContent = plan === 'monthly' ? '≈ UGX 37,000' : '≈ UGX 370,000';
+  }
+
+  function showPayMethod(method) {
+    document.querySelectorAll('.pay-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.pay-panel').forEach(p => p.classList.remove('active'));
+    event.target.classList.add('active');
+    document.getElementById(`panel-${method}`).classList.add('active');
+    if (method === 'card') initStripe();
+  }
+
+  function showAlert(msg, type) {
+    const box = document.getElementById('alertBox');
+    box.textContent = msg;
+    box.className = `alert alert-${type}`;
+    box.style.display = 'block';
+    box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  // ─── MTN ──────────────────────────────────────────────────────────────────
+
+  async function payMTN() {
+    const phone = document.getElementById('mtnPhone').value.trim();
+    if (!phone) return showAlert('Enter your MTN phone number.', 'error');
+
+    showAlert('Sending payment request to MTN...', 'success');
+
+    try {
+      const res = await fetch(`${API}/payments/mtn/request`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+        body: JSON.stringify({ phoneNumber: phone, plan: selectedPlan }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        mtnReferenceId = data.referenceId;
+        showAlert('✅ Check your MTN phone and approve the payment prompt, then click confirm below.', 'success');
+        document.getElementById('mtnVerify').style.display = 'block';
+      } else {
+        showAlert(data.message, 'error');
+      }
+    } catch { showAlert('Network error. Try again.', 'error'); }
+  }
+
+  async function verifyMTN() {
+    if (!mtnReferenceId) return;
+    showAlert('Verifying MTN payment...', 'success');
+    try {
+      const res = await fetch(`${API}/payments/mtn/verify/${mtnReferenceId}`, {
+        headers: { 'Authorization': `Bearer ${getToken()}` },
+      });
+      const data = await res.json();
+      if (data.success) {
+        showAlert('🎉 Premium activated! Enjoy UX-HUB.', 'success');
+        setTimeout(() => window.location.href = 'index.html', 2000);
+      } else {
+        showAlert(data.message || 'Payment not confirmed yet. Please try again.', 'error');
+      }
+    } catch { showAlert('Verification error. Try again.', 'error'); }
+  }
+
+  // ─── AIRTEL ───────────────────────────────────────────────────────────────
+
+  async function payAirtel() {
+    const phone = document.getElementById('airtelPhone').value.trim();
+    if (!phone) return showAlert('Enter your Airtel phone number.', 'error');
+
+    showAlert('Sending payment request to Airtel...', 'success');
+
+    try {
+      const res = await fetch(`${API}/payments/airtel/request`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+        body: JSON.stringify({ phoneNumber: phone, plan: selectedPlan }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        airtelTransactionId = data.transactionId;
+        showAlert('✅ Check your Airtel phone and approve the payment, then click confirm below.', 'success');
+        document.getElementById('airtelVerify').style.display = 'block';
+      } else {
+        showAlert(data.message, 'error');
+      }
+    } catch { showAlert('Network error. Try again.', 'error'); }
+  }
+
+  async function verifyAirtel() {
+    if (!airtelTransactionId) return;
+    showAlert('Verifying Airtel payment...', 'success');
+    try {
+      const res = await fetch(`${API}/payments/airtel/verify/${airtelTransactionId}`, {
+        headers: { 'Authorization': `Bearer ${getToken()}` },
+      });
+      const data = await res.json();
+      if (data.success) {
+        showAlert('🎉 Premium activated! Enjoy UX-HUB.', 'success');
+        setTimeout(() => window.location.href = 'index.html', 2000);
+      } else {
+        showAlert(data.message || 'Payment not confirmed yet. Please try again.', 'error');
+      }
+    } catch { showAlert('Verification error. Try again.', 'error'); }
+  }
+
+  // ─── STRIPE / CARD ─────────────────────────────────────────────────────────
+
+  function initStripe() {
+    if (stripe) return;
+    // Replace with your Stripe publishable key
+    stripe = Stripe('pk_test_your_stripe_publishable_key');
+    const elements = stripe.elements();
+    cardElement = elements.create('card', {
+      style: {
+        base: {
+          color: '#f0f0f0', fontFamily: 'DM Sans, sans-serif', fontSize: '15px',
+          '::placeholder': { color: '#555' },
+        },
+        invalid: { color: '#ff6b6b' },
+      },
+    });
+    cardElement.mount('#card-element');
+    cardElement.on('change', ({ error }) => {
+      document.getElementById('card-errors').textContent = error ? error.message : '';
+    });
+  }
+
+  async function payStripe() {
+    if (!cardElement) return showAlert('Card element not loaded.', 'error');
+
+    showAlert('Processing card payment...', 'success');
+
+    try {
+      // 1. Create payment intent
+      const intentRes = await fetch(`${API}/payments/stripe/create-intent`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+        body: JSON.stringify({ plan: selectedPlan }),
+      });
+      const intentData = await intentRes.json();
+      if (!intentData.success) return showAlert(intentData.message, 'error');
+
+      // 2. Confirm with card
+      const { error, paymentIntent } = await stripe.confirmCardPayment(intentData.clientSecret, {
+        payment_method: { card: cardElement },
+      });
+
+      if (error) return showAlert(error.message, 'error');
+
+      // 3. Confirm on backend
+      const confirmRes = await fetch(`${API}/payments/stripe/confirm`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+        body: JSON.stringify({ paymentIntentId: paymentIntent.id, plan: selectedPlan }),
+      });
+      const confirmData = await confirmRes.json();
+
+      if (confirmData.success) {
+        showAlert('🎉 Premium activated! Enjoy UX-HUB.', 'success');
+        setTimeout(() => window.location.href = 'index.html', 2000);
+      } else {
+        showAlert(confirmData.message, 'error');
+      }
+    } catch (err) {
+      showAlert('Payment error: ' + err.message, 'error');
+    }
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Search — UX-HUB</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <style>
+    .search-page { display:flex; flex-direction:column; gap:24px; }
+    .search-panel { display:flex; gap:14px; flex-wrap:wrap; align-items:center; margin-bottom:20px; }
+    .search-panel .input-group { flex:1; min-width:250px; }
+    .search-panel input { width:100%; }
+    .search-results { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:20px; }
+    .search-result { background:var(--surface); border:1px solid var(--border); border-radius:1rem; overflow:hidden; cursor:pointer; transition:transform var(--t),box-shadow var(--t); }
+    .search-result:hover { transform:translateY(-3px); box-shadow:var(--shadow); }
+    .search-result-body { padding:16px; }
+    .search-title { margin:0 0 8px; font-size:1rem; font-weight:700; }
+    .search-meta { color:var(--text3); font-size:0.85rem; margin-bottom:12px; }
+    .search-empty { display:none; min-height:220px; align-items:center; justify-content:center; text-align:center; gap:12px; color:var(--text3); }
+    .search-empty .ti { font-size:40px; color:var(--text2); }
+    @media(max-width:1024px){ .search-results { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+    @media(max-width:720px){ .search-results { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <div class="sidebar-overlay" onclick="Sidebar.close()"></div>
+  <aside class="app-sidebar" id="appSidebar"></aside>
+  <header class="app-header" id="appHeader"></header>
+  <div class="page-wrap">
+    <main class="main-content">
+      <div class="inner-lg">
+        <div class="page-header" style="margin-bottom:24px; display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+          <div>
+            <h1>Search</h1>
+            <p>Find creators, videos, and live experiences across the platform.</p>
+          </div>
+        </div>
+        <div class="search-page">
+          <div class="search-panel">
+            <div class="input-group">
+              <i class="ti ti-search"></i>
+              <input id="searchInput" class="input" type="text" placeholder="Search creators, videos, streams..." />
+            </div>
+            <button class="btn btn-brand btn-md" id="searchButton">Search</button>
+          </div>
+          <div id="searchState" class="search-empty">
+            <i class="ti ti-search"></i>
+            <div>
+              <strong>No search query yet.</strong>
+              <p>Type a keyword and hit search to discover creators and trending videos.</p>
+            </div>
+          </div>
+          <div id="searchResults" class="search-results"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+  <script src="/assets/js/app.js"></script>
+  <script src="/assets/js/layout.js"></script>
+  <script>
+    Layout.init('Search');
+
+    const searchInput = document.getElementById('searchInput');
+    const searchButton = document.getElementById('searchButton');
+    const resultsContainer = document.getElementById('searchResults');
+    const searchState = document.getElementById('searchState');
+
+    function getQueryParam(name) {
+      return new URLSearchParams(window.location.search).get(name) || '';
+    }
+
+    function renderSearchItem(video) {
+      const creator = video.uploader?.username || 'Creator';
+      return `
+        <div class="search-result" onclick="window.location='/pages/live-watch.html?id=${video._id}'">
+          <div class="search-result-body">
+            <div class="search-title">${video.title ? video.title.replace(/</g,'&lt;').replace(/>/g,'&gt;') : 'Untitled video'}</div>
+            <div class="search-meta">${creator} · ${video.category || 'Creator content'} · ${video.views || 0} views</div>
+            <p style="margin:0;color:var(--text3);font-size:0.92rem;line-height:1.6;">${video.description ? video.description.replace(/</g,'&lt;').replace(/>/g,'&gt;').substring(0,100) + '...' : 'No description available.'}</p>
+          </div>
+        </div>`;
+    }
+
+    async function runSearch(query) {
+      resultsContainer.innerHTML = '';
+      if (!query.trim()) {
+        searchState.style.display = 'flex';
+        return;
+      }
+      searchState.style.display = 'none';
+      try {
+        const response = await api.get(`/videos?search=${encodeURIComponent(query.trim())}`);
+        const videos = response.videos || [];
+        if (!videos.length) {
+          searchState.innerHTML = `<i class="ti ti-alert-circle"></i><div><strong>No results found for “${query}”.</strong><p>Try a broader keyword or search for a different creator.</p></div>`;
+          searchState.style.display = 'flex';
+          return;
+        }
+        resultsContainer.innerHTML = videos.map(renderSearchItem).join('');
+      } catch (err) {
+        searchState.innerHTML = `<i class="ti ti-alert-circle"></i><div><strong>Unable to complete search.</strong><p>Please try again in a moment.</p></div>`;
+        searchState.style.display = 'flex';
+      }
+    }
+
+    function startSearch() {
+      const query = searchInput.value.trim();
+      if (!query) return;
+      window.history.replaceState({}, '', `/pages/search.html?q=${encodeURIComponent(query)}`);
+      runSearch(query);
+    }
+
+    searchButton.addEventListener('click', startSearch);
+    searchInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') startSearch();
+    });
+
+    const initialQuery = getQueryParam('q');
+    if (initialQuery) {
+      searchInput.value = initialQuery;
+      runSearch(initialQuery);
+    }
+  </script>
+</body>
+</html>

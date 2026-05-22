@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Users — UX-HUB Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css">
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <link rel="stylesheet" href="/admin/admin.css" />
+</head>
+<body>
+<div class="admin-wrap">
+  <aside class="admin-sidebar" id="adminSidebar"></aside>
+  <div class="admin-main">
+    <div class="admin-header">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button onclick="document.getElementById('adminSidebar').classList.toggle('open')" class="btn btn-icon"><i class="ti ti-menu-2"></i></button>
+        <h2 style="font-size:1.1rem;font-weight:700">User Management</h2>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-brand btn-sm" onclick="exportUsers()"><i class="ti ti-download"></i> Export CSV</button>
+        <button class="theme-toggle"><i class="ti ti-moon" data-theme-icon></i></button>
+      </div>
+    </div>
+    <div class="admin-content">
+
+      <!-- STATS -->
+      <div class="stat-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:24px">
+        <div class="stat-card"><div class="stat-card-header"><div class="stat-card-icon blue"><i class="ti ti-users"></i></div></div><div class="stat-card-value">2,441</div><div class="stat-card-label">Total Users</div></div>
+        <div class="stat-card"><div class="stat-card-header"><div class="stat-card-icon green"><i class="ti ti-user-check"></i></div></div><div class="stat-card-value">2,318</div><div class="stat-card-label">Active</div></div>
+        <div class="stat-card"><div class="stat-card-header"><div class="stat-card-icon red"><i class="ti ti-user-off"></i></div></div><div class="stat-card-value">87</div><div class="stat-card-label">Banned</div></div>
+        <div class="stat-card"><div class="stat-card-header"><div class="stat-card-icon orange"><i class="ti ti-clock"></i></div></div><div class="stat-card-value">36</div><div class="stat-card-label">Pending Verify</div></div>
+      </div>
+
+      <!-- FILTERS -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-body" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+          <div class="input-group" style="flex:1;min-width:200px"><i class="ti ti-search"></i><input class="input" type="text" id="userSearch" placeholder="Search by name or email..." oninput="filterUsers()" /></div>
+          <select class="select" id="roleFilter" onchange="filterUsers()" style="width:150px">
+            <option value="">All Roles</option>
+            <option value="fan">Fan</option>
+            <option value="creator">Creator</option>
+            <option value="moderator">Moderator</option>
+            <option value="admin">Admin</option>
+          </select>
+          <select class="select" id="statusFilter" onchange="filterUsers()" style="width:150px">
+            <option value="">All Statuses</option>
+            <option value="active">Active</option>
+            <option value="banned">Banned</option>
+            <option value="pending">Pending</option>
+          </select>
+          <button class="btn btn-outline btn-sm" onclick="resetFilters()"><i class="ti ti-x"></i> Clear</button>
+        </div>
+      </div>
+
+      <!-- TABLE -->
+      <div class="card">
+        <div class="table-wrap" style="border:none">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th><input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)" style="accent-color:var(--brand)" /></th>
+                <th>User</th><th>Role</th><th>Status</th><th>Premium</th><th>Joined</th><th>Last Active</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="usersTableBody"></tbody>
+          </table>
+        </div>
+        <div class="card-footer" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+          <span style="font-size:0.82rem;color:var(--text3)" id="tableInfo">Showing 1–20 of 2,441</span>
+          <div style="display:flex;gap:8px" id="pagination"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BAN MODAL -->
+<div class="modal-backdrop" id="banModal">
+  <div class="modal-box" style="max-width:420px">
+    <button class="modal-close" onclick="closeModal('banModal')"><i class="ti ti-x"></i></button>
+    <div class="modal-title">Ban User</div>
+    <p class="modal-sub" id="banModalSub">You are about to ban this user.</p>
+    <div class="form-group" style="margin-bottom:16px">
+      <label class="form-label">Reason</label>
+      <select class="select" id="banReason">
+        <option>Violated Terms of Service</option>
+        <option>Underage Content</option>
+        <option>Spam / Fraud</option>
+        <option>Harassment</option>
+        <option>Other</option>
+      </select>
+    </div>
+    <div class="form-group" style="margin-bottom:20px">
+      <label class="form-label">Additional Notes</label>
+      <textarea class="textarea" id="banNotes" rows="2" placeholder="Optional details..."></textarea>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-danger btn-md btn-full" onclick="confirmBan()"><i class="ti ti-user-off"></i> Confirm Ban</button>
+      <button class="btn btn-outline btn-md" onclick="closeModal('banModal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script src="/assets/js/app.js"></script>
+<script src="/admin/admin-layout.js"></script>
+<script>
+  Theme.init();
+  document.querySelectorAll('.theme-toggle').forEach(b => b.addEventListener('click', Theme.toggle));
+  AdminLayout.init();
+
+  let allUsers = [], selectedUser = null, currentPage = 1;
+  const PER_PAGE = 20;
+
+  // Demo data
+  const names = ['Sarah K.','Mike T.','Amara J.','Zara L.','James O.','Rose M.','Naomi V.','Bella U.','Keisha A.','Tom W.','Jade P.','Tina R.','Alex M.','Grace N.','Liam D.','Emma S.','Noah K.','Olivia F.','Ethan B.','Ava C.'];
+  allUsers = Array.from({length:50}, (_,i) => ({
+    id: i+1,
+    name: names[i % names.length] + (i > 19 ? ` ${i}` : ''),
+    email: `user${i+1}@example.com`,
+    role: ['fan','fan','fan','creator','creator','moderator'][i % 6] || 'fan',
+    status: i % 12 === 0 ? 'banned' : i % 8 === 0 ? 'pending' : 'active',
+    isPremium: i % 4 === 0,
+    joined: `${['Jan','Feb','Mar','Apr','May','Jun'][i%6]} ${2025 + (i > 25 ? 1 : 0)}`,
+    lastActive: ['Just now','2h ago','1d ago','3d ago'][i%4],
+  }));
+
+  function renderUsers(users) {
+    const start = (currentPage-1)*PER_PAGE;
+    const slice = users.slice(start, start+PER_PAGE);
+    document.getElementById('usersTableBody').innerHTML = slice.map(u => `
+      <tr>
+        <td><input type="checkbox" class="row-check" data-id="${u.id}" style="accent-color:var(--brand)" /></td>
+        <td>
+          <div class="td-user">
+            <div class="avatar avatar-xs" style="background:var(--gradient)">${fmt.initials(u.name)}</div>
+            <div><div class="td-user-name">${u.name}</div><div class="td-user-sub">${u.email}</div></div>
+          </div>
+        </td>
+        <td>
+          <select class="select input-sm" style="width:120px" onchange="changeRole(${u.id},this.value)">
+            ${['fan','creator','moderator','admin'].map(r => `<option ${u.role===r?'selected':''}>${r}</option>`).join('')}
+          </select>
+        </td>
+        <td><span class="badge" style="background:${u.status==='active'?'var(--green-bg)':u.status==='banned'?'var(--red-bg)':'var(--orange-bg)'};color:${u.status==='active'?'var(--green)':u.status==='banned'?'var(--red)':'var(--orange)'};font-size:0.65rem">${u.status}</span></td>
+        <td>${u.isPremium ? '<span class="badge badge-premium" style="font-size:0.65rem"><i class="ti ti-crown"></i> Yes</span>' : '<span style="color:var(--text3);font-size:0.8rem">—</span>'}</td>
+        <td style="color:var(--text3);font-size:0.8rem">${u.joined}</td>
+        <td style="color:var(--text3);font-size:0.8rem">${u.lastActive}</td>
+        <td>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-icon btn-sm" title="View profile" onclick="viewUser(${u.id})"><i class="ti ti-eye"></i></button>
+            ${u.status !== 'banned'
+              ? `<button class="btn btn-danger btn-xs" onclick="banUser(${u.id},'${u.name}')"><i class="ti ti-user-off"></i> Ban</button>`
+              : `<button class="btn btn-success btn-xs" onclick="unbanUser(${u.id},'${u.name}')"><i class="ti ti-user-check"></i> Unban</button>`}
+          </div>
+        </td>
+      </tr>`).join('');
+    document.getElementById('tableInfo').textContent = `Showing ${start+1}–${Math.min(start+PER_PAGE,users.length)} of ${users.length}`;
+    renderPagination(Math.ceil(users.length/PER_PAGE));
+  }
+
+  function renderPagination(pages) {
+    document.getElementById('pagination').innerHTML = Array.from({length:Math.min(pages,5)}, (_,i) => `
+      <button class="btn btn-${i+1===currentPage?'brand':'surface'} btn-sm" onclick="gotoPage(${i+1})">${i+1}</button>`).join('');
+  }
+
+  function filterUsers() {
+    const q  = document.getElementById('userSearch').value.toLowerCase();
+    const r  = document.getElementById('roleFilter').value;
+    const s  = document.getElementById('statusFilter').value;
+    const filtered = allUsers.filter(u =>
+      (!q || u.name.toLowerCase().includes(q) || u.email.includes(q)) &&
+      (!r || u.role === r) &&
+      (!s || u.status === s)
+    );
+    currentPage = 1;
+    renderUsers(filtered);
+  }
+
+  function gotoPage(p) { currentPage = p; filterUsers(); }
+  function resetFilters() {
+    document.getElementById('userSearch').value = '';
+    document.getElementById('roleFilter').value = '';
+    document.getElementById('statusFilter').value = '';
+    filterUsers();
+  }
+
+  function banUser(id, name) {
+    selectedUser = allUsers.find(u => u.id === id);
+    document.getElementById('banModalSub').textContent = `You are about to ban "${name}".`;
+    openModal('banModal');
+  }
+
+  function confirmBan() {
+    if (!selectedUser) return;
+    selectedUser.status = 'banned';
+    closeModal('banModal');
+    filterUsers();
+    Toast.show(`${selectedUser.name} has been banned.`, 'error');
+  }
+
+  function unbanUser(id, name) {
+    const u = allUsers.find(u => u.id === id);
+    if (u) { u.status = 'active'; filterUsers(); Toast.show(`${name} has been unbanned.`, 'success'); }
+  }
+
+  function changeRole(id, role) {
+    const u = allUsers.find(u => u.id === id);
+    if (u) { u.role = role; Toast.show(`Role updated to ${role}.`, 'success'); }
+  }
+
+  function viewUser(id)    { Toast.show('User detail view — connect to API.', 'info'); }
+  function exportUsers()   { Toast.show('CSV export — connect to API.', 'info'); }
+  function toggleSelectAll(cb) { document.querySelectorAll('.row-check').forEach(c => c.checked = cb.checked); }
+
+  const fmt = { initials: n => n ? n.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase() : '?' };
+
+  renderUsers(allUsers);
+</script>
+</body>
+</html>

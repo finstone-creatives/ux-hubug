@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Settings — UX-HUB</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css">
+  <link rel="stylesheet" href="/assets/css/main.css" />
+</head>
+<body>
+<div class="sidebar-overlay" onclick="Sidebar.close()"></div>
+<aside class="app-sidebar" id="appSidebar"></aside>
+<header class="app-header" id="appHeader"></header>
+<div class="page-wrap">
+  <main class="main-content">
+    <div class="inner-sm">
+      <h1 style="font-size:1.8rem;margin-bottom:4px">Account Settings</h1>
+      <p style="margin-bottom:28px">Manage your profile, privacy, and preferences</p>
+
+      <div class="tabs tabs-pill" style="margin-bottom:24px">
+        <button class="tab active" onclick="showTab('profile',this)"><i class="ti ti-user"></i> Profile</button>
+        <button class="tab" onclick="showTab('security',this)"><i class="ti ti-shield"></i> Security</button>
+        <button class="tab" onclick="showTab('privacy',this)"><i class="ti ti-eye-off"></i> Privacy</button>
+        <button class="tab" onclick="showTab('notifications',this)"><i class="ti ti-bell"></i> Alerts</button>
+        <button class="tab" onclick="showTab('appearance',this)"><i class="ti ti-palette"></i> Theme</button>
+      </div>
+
+      <!-- PROFILE TAB -->
+      <div id="tab-profile" class="tab-content active">
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-header"><h3>Profile Photo & Cover</h3></div>
+          <div class="card-body">
+            <div style="position:relative;margin-bottom:40px">
+              <div style="height:120px;background:linear-gradient(135deg,#2D1B69,#A020F0);border-radius:var(--radius-lg);cursor:pointer;display:flex;align-items:center;justify-content:center" onclick="changeCover()">
+                <span style="font-size:0.8rem;color:rgba(255,255,255,0.7)"><i class="ti ti-camera"></i> Change Cover</span>
+              </div>
+              <div style="position:absolute;bottom:-32px;left:20px;display:flex;align-items:flex-end;gap:12px">
+                <div class="avatar avatar-lg" style="border:4px solid var(--surface);cursor:pointer;background:var(--gradient)" onclick="changeAvatar()" id="avatarPreview">
+                  <i class="ti ti-camera" style="font-size:24px"></i>
+                </div>
+                <button class="btn btn-surface btn-sm" onclick="changeAvatar()"><i class="ti ti-upload"></i> Upload Photo</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-header"><h3>Basic Information</h3></div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:16px">
+            <div id="profileAlert" style="display:none"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <div class="form-group">
+                <label class="form-label">Username</label>
+                <div class="input-group"><i class="ti ti-at"></i><input class="input" type="text" id="settUsername" /></div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Display Name</label>
+                <div class="input-group"><i class="ti ti-user"></i><input class="input" type="text" id="settDisplayName" /></div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email</label>
+              <div class="input-group"><i class="ti ti-mail"></i><input class="input" type="email" id="settEmail" /></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Bio</label>
+              <textarea class="textarea" id="settBio" rows="3" placeholder="Tell people about yourself..."></textarea>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <div class="form-group">
+                <label class="form-label">Location</label>
+                <div class="input-group"><i class="ti ti-map-pin"></i><input class="input" type="text" id="settLocation" placeholder="City, Country" /></div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Website</label>
+                <div class="input-group"><i class="ti ti-link"></i><input class="input" type="url" id="settWebsite" placeholder="https://" /></div>
+              </div>
+            </div>
+            <button class="btn btn-brand btn-md" onclick="saveProfile()"><i class="ti ti-device-floppy"></i> Save Profile</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECURITY TAB -->
+      <div id="tab-security" class="tab-content">
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-header"><h3>Change Password</h3></div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:14px">
+            <div id="secAlert" style="display:none"></div>
+            <div class="form-group">
+              <label class="form-label">Current Password</label>
+              <div class="input-group"><i class="ti ti-lock"></i><input class="input" type="password" id="currentPw" /></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">New Password</label>
+              <div class="input-group"><i class="ti ti-lock-plus"></i><input class="input" type="password" id="newPw" /></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Confirm New Password</label>
+              <div class="input-group"><i class="ti ti-lock-check"></i><input class="input" type="password" id="confirmPw" /></div>
+            </div>
+            <button class="btn btn-brand btn-md" onclick="changePassword()"><i class="ti ti-shield-check"></i> Update Password</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>Danger Zone</h3></div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:12px">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+              <div><div style="font-weight:600;font-size:0.9rem">Deactivate Account</div><div style="font-size:0.8rem;color:var(--text3)">Temporarily disable your account</div></div>
+              <button class="btn btn-warning btn-sm"><i class="ti ti-user-off"></i> Deactivate</button>
+            </div>
+            <div class="divider" style="margin:4px 0"></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+              <div><div style="font-weight:600;font-size:0.9rem;color:var(--red)">Delete Account</div><div style="font-size:0.8rem;color:var(--text3)">Permanently delete all data. Cannot be undone.</div></div>
+              <button class="btn btn-danger btn-sm" onclick="deleteAccount()"><i class="ti ti-trash"></i> Delete</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PRIVACY TAB -->
+      <div id="tab-privacy" class="tab-content">
+        <div class="card">
+          <div class="card-header"><h3>Privacy Settings</h3></div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:18px">
+            ${[
+              { label:'Profile Visibility', sub:'Who can see your profile', id:'privProfile' },
+              { label:'Show Online Status', sub:'Let others see when you\'re active', id:'privOnline' },
+              { label:'Allow Messages from Non-subscribers', sub:'Fans can message you before subscribing', id:'privMsg' },
+              { label:'Show subscriber count', sub:'Display number of subscribers on your profile', id:'privSubCount' },
+            ].map(s => `
+              <div style="display:flex;align-items:center;justify-content:space-between">
+                <div><div style="font-weight:600;font-size:0.9rem">${s.label}</div><div style="font-size:0.78rem;color:var(--text3)">${s.sub}</div></div>
+                <label style="position:relative;width:44px;height:24px;cursor:pointer">
+                  <input type="checkbox" id="${s.id}" checked style="opacity:0;width:0;height:0" onchange="saveSetting('${s.id}',this.checked)" />
+                  <span style="position:absolute;inset:0;background:var(--surface3);border-radius:12px;transition:var(--t)" id="${s.id}Track"></span>
+                  <span style="position:absolute;width:18px;height:18px;border-radius:50%;background:#fff;top:3px;left:3px;transition:var(--t)" id="${s.id}Thumb"></span>
+                </label>
+              </div>`).join('<div class="divider" style="margin:2px 0"></div>')}
+          </div>
+        </div>
+      </div>
+
+      <!-- NOTIFICATIONS TAB -->
+      <div id="tab-notifications" class="tab-content">
+        <div class="card">
+          <div class="card-header"><h3>Notification Preferences</h3></div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:16px">
+            ${[
+              { label:'New subscriber', icon:'ti-user-plus', on:true },
+              { label:'New message', icon:'ti-message', on:true },
+              { label:'New tip received', icon:'ti-coin', on:true },
+              { label:'Creator goes live', icon:'ti-live-view', on:true },
+              { label:'New post from subscriptions', icon:'ti-bell', on:false },
+              { label:'Promotions & offers', icon:'ti-speakerphone', on:false },
+            ].map(n => `
+              <div style="display:flex;align-items:center;gap:12px">
+                <div style="width:36px;height:36px;border-radius:var(--radius);background:var(--brand-light);display:flex;align-items:center;justify-content:center;color:var(--brand)"><i class="ti ${n.icon}"></i></div>
+                <span style="flex:1;font-size:0.9rem;font-weight:500">${n.label}</span>
+                <input type="checkbox" ${n.on?'checked':''} style="accent-color:var(--brand);width:17px;height:17px;cursor:pointer" />
+              </div>`).join('')}
+            <button class="btn btn-brand btn-md mt-8"><i class="ti ti-device-floppy"></i> Save Preferences</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- APPEARANCE TAB -->
+      <div id="tab-appearance" class="tab-content">
+        <div class="card">
+          <div class="card-header"><h3>Appearance</h3></div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:20px">
+            <div>
+              <div class="label mb-12">Theme</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                <div class="theme-option" id="darkTheme" onclick="setTheme('dark')" style="border:2px solid var(--brand);border-radius:var(--radius-lg);padding:20px;cursor:pointer;background:var(--surface2);text-align:center">
+                  <i class="ti ti-moon" style="font-size:28px;display:block;margin-bottom:8px;color:var(--brand)"></i>
+                  <strong>Dark Mode</strong>
+                </div>
+                <div class="theme-option" id="lightTheme" onclick="setTheme('light')" style="border:1.5px solid var(--border);border-radius:var(--radius-lg);padding:20px;cursor:pointer;background:var(--surface);text-align:center">
+                  <i class="ti ti-sun" style="font-size:28px;display:block;margin-bottom:8px"></i>
+                  <strong>Light Mode</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+<script src="/assets/js/app.js"></script>
+<script src="/assets/js/layout.js"></script>
+<script>
+  Auth.requireAuth('/login.html');
+  Layout.init('Settings');
+
+  const user = Auth.getUser();
+  if (user) {
+    document.getElementById('settUsername').value    = user.username || '';
+    document.getElementById('settDisplayName').value = user.displayName || user.username || '';
+    document.getElementById('settEmail').value       = user.email || '';
+    document.getElementById('settBio').value         = user.bio || '';
+    document.getElementById('settLocation').value    = user.location || '';
+  }
+
+  function showTab(name, btn) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(`tab-${name}`).classList.add('active');
+  }
+
+  function saveProfile() { Toast.show('Profile saved successfully!', 'success'); }
+  function changePassword() {
+    const np = document.getElementById('newPw').value;
+    const cp = document.getElementById('confirmPw').value;
+    if (np !== cp) return showAlert('secAlert', 'Passwords do not match.', 'error');
+    if (np.length < 8) return showAlert('secAlert', 'Password must be at least 8 characters.', 'error');
+    Toast.show('Password updated!', 'success');
+  }
+  function deleteAccount() {
+    if (confirm('Are you sure? This cannot be undone.')) {
+      if (confirm('Last warning — permanently delete your account?')) {
+        Auth.clear(); window.location.href = '/index.html';
+      }
+    }
+  }
+  function saveSetting(id, val) { Toast.show(`Setting updated.`, 'success'); }
+  function changeAvatar()  { Toast.show('Avatar upload coming with backend integration.', 'info'); }
+  function changeCover()   { Toast.show('Cover photo upload coming with backend integration.', 'info'); }
+  function setTheme(t) {
+    Theme.set(t);
+    document.getElementById('darkTheme').style.borderColor  = t==='dark'  ? 'var(--brand)' : 'var(--border)';
+    document.getElementById('lightTheme').style.borderColor = t==='light' ? 'var(--brand)' : 'var(--border)';
+  }
+  // Set initial theme indicator
+  const ct = Theme.get();
+  document.getElementById(`${ct}Theme`).style.borderColor = 'var(--brand)';
+  document.getElementById(`${ct==='dark'?'light':'dark'}Theme`).style.borderColor = 'var(--border)';
+</script>
+</body>
+</html>

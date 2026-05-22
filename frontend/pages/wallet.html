@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wallet — UX-HUB</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <style>
+    .wallet-grid { display:grid; grid-template-columns:1fr 320px; gap:24px; }
+    .wallet-card { background:var(--surface); border:1px solid var(--border); border-radius:1rem; padding:24px; }
+    .wallet-stats { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; margin-top:18px; }
+    .stat-box { background:var(--surface2); border:1px solid var(--border); border-radius:1rem; padding:18px; }
+    .stat-box h3 { margin:0 0 8px; font-size:1.2rem; }
+    .placeholder { color:var(--text3); }
+    @media(max-width:1024px){ .wallet-grid { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <div class="sidebar-overlay" onclick="Sidebar.close()"></div>
+  <aside class="app-sidebar" id="appSidebar"></aside>
+  <header class="app-header" id="appHeader"></header>
+  <div class="page-wrap">
+    <main class="main-content">
+      <div class="inner-lg">
+        <div class="page-header" style="margin-bottom:24px; display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+          <div>
+            <h1>Wallet</h1>
+            <p>View your balance, payments, and transaction history for UX-HUB.</p>
+          </div>
+        </div>
+        <div class="wallet-grid">
+          <div class="wallet-card">
+            <h2>Balance</h2>
+            <p class="placeholder">$0.00</p>
+            <div class="wallet-stats">
+              <div class="stat-box">
+                <h3>Pending</h3>
+                <p class="placeholder">$0.00</p>
+              </div>
+              <div class="stat-box">
+                <h3>Available</h3>
+                <p class="placeholder">$0.00</p>
+              </div>
+            </div>
+          </div>
+          <div class="wallet-card">
+            <h2>Recent activity</h2>
+            <p class="placeholder">No transactions yet. Once you make a purchase or earn revenue, they’ll appear here.</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  <script src="/assets/js/app.js"></script>
+  <script src="/assets/js/layout.js"></script>
+  <script>
+    Auth.requireAuth('/login.html');
+    Layout.init('Wallet');
+  </script>
+</body>
+</html>

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Revenue — UX-HUB Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css">
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <style>
+    .admin-wrap{display:flex;min-height:100vh}
+    .admin-sidebar{width:240px;background:var(--bg2);border-right:1px solid var(--border);position:fixed;top:0;left:0;bottom:0;display:flex;flex-direction:column;z-index:100;overflow-y:auto}
+    .admin-main{margin-left:240px;flex:1}
+    .admin-header{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--border);padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between;z-index:80}
+    .admin-content{padding:28px 24px;max-width:1400px}
+  </style>
+</head>
+<body>
+<div class="admin-wrap">
+  <aside class="admin-sidebar" id="adminSidebar"></aside>
+  <div class="admin-main">
+    <div class="admin-header">
+      <h2 style="font-size:1.1rem;font-weight:700">Revenue & Payments</h2>
+      <div style="display:flex;gap:10px">
+        <select class="select input-sm" id="periodSelect" onchange="loadRevenue()" style="width:140px">
+          <option value="month">This Month</option>
+          <option value="quarter">This Quarter</option>
+          <option value="year">This Year</option>
+          <option value="all">All Time</option>
+        </select>
+        <button class="btn btn-brand btn-sm" onclick="exportRevenue()"><i class="ti ti-download"></i> Export</button>
+        <button class="theme-toggle"><i class="ti ti-moon" data-theme-icon></i></button>
+      </div>
+    </div>
+    <div class="admin-content">
+
+      <!-- TOP STATS -->
+      <div class="stat-grid" style="margin-bottom:24px">
+        <div class="stat-card"><div class="stat-card-header"><div class="stat-card-icon gold"><i class="ti ti-currency-dollar"></i></div></div><div class="stat-card-value">$48,200</div><div class="stat-card-label">Gross Revenue</div></div>
+        <div class="stat-card"><div class="stat-card-header"><div class="stat-card-icon green"><i class="ti ti-trending-up"></i></div></div><div class="stat-card-value">$9,640</div><div class="stat-card-label">Platform Earnings (20%)</div></div>
+        <div class="stat-card"><div class="stat-card-header"><div class="stat-card-icon brand"><i class="ti ti-cash"></i></div></div><div class="stat-card-value">$38,560</div><div class="stat-card-label">Creator Payouts (80%)</div></div>
+        <div class="stat-card"><div class="stat-card-header"><div class="stat-card-icon blue"><i class="ti ti-crown"></i></div></div><div class="stat-card-value">1,204</div><div class="stat-card-label">Active Subscriptions</div></div>
+        <div class="stat-card"><div class="stat-card-header"><div class="stat-card-icon purple"><i class="ti ti-coin"></i></div></div><div class="stat-card-value">$9,200</div><div class="stat-card-label">Tips This Month</div></div>
+        <div class="stat-card"><div class="stat-card-header"><div class="stat-card-icon orange"><i class="ti ti-speakerphone"></i></div></div><div class="stat-card-value">$3,300</div><div class="stat-card-label">Ad Revenue</div></div>
+      </div>
+
+      <!-- CHARTS -->
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;margin-bottom:24px">
+        <div class="card">
+          <div class="card-header"><h3><i class="ti ti-chart-bar" style="color:var(--gold)"></i> Revenue by Month</h3></div>
+          <div class="card-body">
+            <div style="display:flex;align-items:flex-end;gap:8px;height:180px;padding-bottom:24px" id="bigRevChart"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>By Payment Method</h3></div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:14px" id="methodChart"></div>
+        </div>
+      </div>
+
+      <!-- TRANSACTIONS TABLE -->
+      <div class="card">
+        <div class="card-header">
+          <h3><i class="ti ti-list" style="color:var(--brand)"></i> Recent Transactions</h3>
+          <div class="input-group" style="width:260px"><i class="ti ti-search"></i><input class="input input-sm" type="text" placeholder="Search transactions..." /></div>
+        </div>
+        <div class="table-wrap" style="border:none">
+          <table class="data-table">
+            <thead><tr><th>ID</th><th>User</th><th>Creator</th><th>Type</th><th>Method</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
+            <tbody id="txTable"></tbody>
+          </table>
+        </div>
+        <div class="card-footer" style="display:flex;justify-content:flex-end;gap:8px">
+          <button class="btn btn-surface btn-sm"><i class="ti ti-chevron-left"></i></button>
+          <button class="btn btn-brand btn-sm">1</button>
+          <button class="btn btn-surface btn-sm">2</button>
+          <button class="btn btn-surface btn-sm">3</button>
+          <button class="btn btn-surface btn-sm"><i class="ti ti-chevron-right"></i></button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="/assets/js/app.js"></script>
+<script src="/admin/admin-layout.js"></script>
+<script>
+  Theme.init();
+  document.querySelectorAll('.theme-toggle').forEach(b => b.addEventListener('click', Theme.toggle));
+  AdminLayout.init();
+
+  // Big chart
+  const months = ['Jan','Feb','Mar','Apr','May','Jun'];
+  const rev    = [28000,34000,30000,42000,38000,48200];
+  const maxR   = Math.max(...rev);
+  document.getElementById('bigRevChart').innerHTML = months.map((m,i) => `
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px">
+      <div style="font-size:0.68rem;color:var(--text3);font-weight:600">$${(rev[i]/1000).toFixed(0)}K</div>
+      <div style="width:100%;background:var(--gradient-btn);border-radius:5px 5px 0 0;height:${Math.round((rev[i]/maxR)*140)}px;min-height:6px"></div>
+      <div style="font-size:0.7rem;color:var(--text3)">${m}</div>
+    </div>`).join('');
+
+  // Method chart
+  const methods = [
+    { name:'MTN MoMo',  pct:38, val:'$18.3K', color:'var(--gold)'   },
+    { name:'Airtel',    pct:22, val:'$10.6K', color:'var(--red)'    },
+    { name:'Stripe',    pct:28, val:'$13.5K', color:'var(--blue)'   },
+    { name:'Card',      pct:12, val:'$5.8K',  color:'var(--green)'  },
+  ];
+  document.getElementById('methodChart').innerHTML = methods.map(m => `
+    <div>
+      <div style="display:flex;justify-content:space-between;font-size:0.82rem;margin-bottom:6px">
+        <span>${m.name}</span><strong style="color:${m.color}">${m.val} (${m.pct}%)</strong>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${m.pct}%;background:${m.color}"></div></div>
+    </div>`).join('');
+
+  // Transactions
+  const users = ['Sarah K.','Mike T.','James O.','Rose M.','Bella U.'];
+  const creators = ['Amara K.','Zara L.','Naomi V.','Jade P.','Keisha A.'];
+  const txTypes  = ['Subscription','Tip','Pay-Per-View','Subscription','Tip'];
+  const txMethods = ['MTN MoMo','Stripe','Airtel','Card','MTN MoMo'];
+  const txAmounts = ['$25.00','$10.00','$5.00','$9.99','$20.00'];
+
+  document.getElementById('txTable').innerHTML = Array.from({length:20}, (_,i) => `
+    <tr>
+      <td style="font-size:0.75rem;color:var(--text3)">TXN-${String(1000+i).padStart(4,'0')}</td>
+      <td><div class="td-user"><div class="avatar avatar-xs" style="background:var(--gradient)">${users[i%5][0]}</div>${users[i%5]}</div></td>
+      <td><div class="td-user"><div class="avatar avatar-xs" style="background:var(--brand-light);color:var(--brand)">${creators[i%5][0]}</div>${creators[i%5]}</div></td>
+      <td><span class="tag tag-surface" style="font-size:0.7rem">${txTypes[i%5]}</span></td>
+      <td style="font-size:0.8rem;color:var(--text2)">${txMethods[i%5]}</td>
+      <td style="font-weight:700;color:var(--green)">${txAmounts[i%5]}</td>
+      <td><span class="badge" style="background:var(--green-bg);color:var(--green);font-size:0.65rem">Completed</span></td>
+      <td style="font-size:0.78rem;color:var(--text3)">${['2m','15m','1h','3h','1d'][i%5]} ago</td>
+    </tr>`).join('');
+
+  function exportRevenue() { Toast.show('Revenue CSV exported.', 'success'); }
+  function loadRevenue()   { Toast.show('Period changed.', 'info'); }
+</script>
+</body>
+</html>

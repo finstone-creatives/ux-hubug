@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create Account — UX-HUB</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css">
+  <link rel="stylesheet" href="/assets/css/main.css">
+</head>
+<body class="no-sidebar">
+<div class="auth-layout" style="padding:40px 20px">
+  <div class="auth-card fade-in" style="max-width:480px">
+    <div class="auth-logo-wrap">
+      <a href="/index.html" class="logo-name">UX<span style="color:var(--brand)">HUB</span></a>
+      <p class="text-sm" style="color:var(--text3);margin-top:6px">Create your free account — 18+ only</p>
+    </div>
+    <div id="alertBox" style="display:none;margin-bottom:16px"></div>
+    <form onsubmit="handleRegister(event)">
+      <div class="flex-col gap-14">
+        <div class="grid-2" style="gap:14px">
+          <div class="form-group">
+            <label class="form-label">Username</label>
+            <div class="input-group"><i class="ti ti-at"></i><input class="input" id="username" type="text" placeholder="your_handle" minlength="3" required /></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Display Name</label>
+            <div class="input-group"><i class="ti ti-user"></i><input class="input" id="displayName" type="text" placeholder="Your Name" required /></div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email address</label>
+          <div class="input-group"><i class="ti ti-mail"></i><input class="input" id="email" type="email" placeholder="you@example.com" required /></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <div class="input-group"><i class="ti ti-lock"></i><input class="input" type="password" id="password" placeholder="Min. 6 characters" minlength="6" required />
+          <button type="button" onclick="togglePw(this)" style="background:none;border:none;padding:0 12px;cursor:pointer;color:var(--text3)"><i class="ti ti-eye"></i></button></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Date of Birth</label>
+          <div class="input-group"><i class="ti ti-calendar"></i><input class="input" id="dob" type="date" required /></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">I am joining as</label>
+          <select class="select" id="accountType">
+            <option value="fan">Fan / Viewer</option>
+            <option value="creator">Creator / Performer</option>
+          </select>
+        </div>
+        <label class="checkbox-wrap">
+          <input type="checkbox" id="ageConfirm" required />
+          <span>I confirm I am <strong>18 years or older</strong> and agree to the <a href="/pages/terms.html" style="color:var(--brand)">Terms of Service</a> and <a href="/pages/privacy.html" style="color:var(--brand)">Privacy Policy</a>.</span>
+        </label>
+        <button type="submit" class="btn btn-brand btn-md btn-full" id="regBtn">
+          <i class="ti ti-user-plus"></i> Create Account
+        </button>
+      </div>
+    </form>
+    <div class="divider-text">or</div>
+    <p class="text-sm text-center" style="color:var(--text3)">Already have an account? <a href="/login.html" style="color:var(--brand);font-weight:600">Sign in</a></p>
+  </div>
+</div>
+<script src="/assets/js/app.js"></script>
+<script>
+  Theme.init();
+  async function handleRegister(e) {
+    e.preventDefault();
+    const dob = new Date(document.getElementById('dob').value);
+    const age = Math.floor((Date.now() - dob) / (365.25*24*60*60*1000));
+    if (age < 18) return showAlert('alertBox','You must be 18 or older to register.','error');
+    const btn = document.getElementById('regBtn');
+    btn.innerHTML = '<i class="ti ti-loader-2" style="animation:spin 0.6s linear infinite"></i> Creating...';
+    btn.disabled = true;
+    try {
+      const data = await api.post('/auth/register', {
+        username: document.getElementById('username').value,
+        displayName: document.getElementById('displayName').value,
+        email: document.getElementById('email').value,
+        password: document.getElementById('password').value,
+        dateOfBirth: document.getElementById('dob').value,
+        ageConfirmed: true,
+        accountType: document.getElementById('accountType').value,
+      });
+      if (data.success) {
+        Auth.setSession(data.token, data.user);
+        window.location.href = data.user.accountType === 'creator' ? '/pages/become-creator.html' : '/index.html';
+      } else {
+        showAlert('alertBox', data.message, 'error');
+        btn.innerHTML = '<i class="ti ti-user-plus"></i> Create Account'; btn.disabled = false;
+      }
+    } catch (err) {
+      const message = err?.message || 'Server error.';
+      showAlert('alertBox', message, 'error');
+      console.error('Registration error:', err);
+      btn.innerHTML = '<i class="ti ti-user-plus"></i> Create Account';
+      btn.disabled = false;
+    }
+  }
+  function togglePw(btn) {
+    const input = btn.closest('.input-group').querySelector('input');
+    input.type = input.type === 'password' ? 'text' : 'password';
+    btn.querySelector('i').className = `ti ti-eye${input.type === 'text' ? '-off' : ''}`;
+  }
+</script>
+</body></html>

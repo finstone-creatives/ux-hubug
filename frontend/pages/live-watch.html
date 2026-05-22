@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Watch Live — UX-HUB</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <style>
+    .watch-grid { display:grid; grid-template-columns:1fr 320px; gap:24px; }
+    .watch-card { background:var(--surface); border:1px solid var(--border); border-radius:1rem; overflow:hidden; }
+    .watch-player { width:100%; background:#000; min-height:320px; display:flex; align-items:center; justify-content:center; }
+    .watch-player video { width:100%; height:100%; max-height:520px; }
+    .watch-details { padding:20px; display:flex; flex-direction:column; gap:16px; }
+    .watch-title { margin:0; font-size:1.45rem; font-weight:700; }
+    .watch-meta { display:flex; flex-wrap:wrap; gap:12px; color:var(--text3); font-size:0.9rem; }
+    .watch-description { color:var(--text3); line-height:1.8; }
+    .watch-sidebar { display:flex; flex-direction:column; gap:18px; padding:20px; }
+    .watch-info-box { background:var(--surface2); border:1px solid var(--border); border-radius:1rem; padding:18px; }
+    .watch-info-box h4 { margin:0 0 10px; font-size:1rem; }
+    .watch-info-box p { margin:0; color:var(--text3); font-size:0.95rem; line-height:1.7; }
+    .watch-error { min-height:360px; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:12px; color:var(--text3); text-align:center; }
+    @media(max-width:1024px){ .watch-grid { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <div class="sidebar-overlay" onclick="Sidebar.close()"></div>
+  <aside class="app-sidebar" id="appSidebar"></aside>
+  <header class="app-header" id="appHeader"></header>
+  <div class="page-wrap">
+    <main class="main-content">
+      <div class="inner-lg">
+        <div class="page-header" style="margin-bottom:24px; display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+          <div>
+            <h1>Watch Live</h1>
+            <p>Stream the selected creator session and follow the latest live content from UX-HUB.</p>
+          </div>
+        </div>
+        <div id="watchContainer" class="watch-grid"></div>
+        <div id="watchError" class="watch-error" style="display:none;">
+          <i class="ti ti-alert-circle"></i>
+          <div>
+            <strong>Unable to load this stream.</strong>
+            <p>The video may not be available, or the creator stream ended. Try another live session.</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  <script src="/assets/js/app.js"></script>
+  <script src="/assets/js/layout.js"></script>
+  <script>
+    Layout.init('Watch Live');
+
+    function getQueryParam(name) {
+      return new URLSearchParams(window.location.search).get(name) || '';
+    }
+
+    function createWatchCard(video) {
+      const creator = video.uploader?.username || 'Creator';
+      const views = video.views || 0;
+      const description = video.description ? video.description.replace(/</g,'&lt;').replace(/>/g,'&gt;') : 'No description available yet.';
+      return `
+        <div class="watch-card">
+          <div class="watch-player">
+            ${video.filename ? `<video controls src="/uploads/${encodeURIComponent(video.filename)}" poster="" preload="metadata"></video>` : '<div style="color:#fff;font-size:1rem;">Live video unavailable</div>'}
+          </div>
+          <div class="watch-details">
+            <h2 class="watch-title">${video.title ? video.title.replace(/</g,'&lt;').replace(/>/g,'&gt;') : 'Live session'}</h2>
+            <div class="watch-meta"><span>${creator}</span><span>${video.category || 'Live content'}</span><span>${views} views</span></div>
+            <p class="watch-description">${description}</p>
+          </div>
+        </div>
+        <aside class="watch-sidebar">
+          <div class="watch-info-box">
+            <h4>Creator</h4>
+            <p>${creator}</p>
+          </div>
+          <div class="watch-info-box">
+            <h4>Category</h4>
+            <p>${video.category || 'Live stream'}</p>
+          </div>
+          <div class="watch-info-box">
+            <h4>Uploaded</h4>
+            <p>${new Date(video.createdAt || Date.now()).toLocaleDateString()}</p>
+          </div>
+        </aside>`;
+    }
+
+    async function loadWatchPage() {
+      const id = getQueryParam('id');
+      const container = document.getElementById('watchContainer');
+      const error = document.getElementById('watchError');
+      container.innerHTML = '';
+      error.style.display = 'none';
+      if (!id) {
+        error.style.display = 'flex';
+        return;
+      }
+      try {
+        const response = await api.get(`/videos/${encodeURIComponent(id)}`);
+        if (!response.success || !response.video) throw new Error('Video not found');
+        container.innerHTML = createWatchCard(response.video);
+      } catch (err) {
+        error.style.display = 'flex';
+      }
+    }
+
+    loadWatchPage();
+  </script>
+</body>
+</html>
