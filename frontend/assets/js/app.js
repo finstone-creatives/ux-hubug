@@ -2,7 +2,7 @@
    UX-HUB — Shared App Utilities
 ════════════════════════════════════════════════════════════════════════════ */
 
-const API = window.UX_API || 'http://localhost:5000/api';
+const API = window.UX_API || '/api';
 
 // ── AUTH ──────────────────────────────────────────────────────────────────────
 const Auth = {

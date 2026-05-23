@@ -1,4 +1,4 @@
-const API = 'http://localhost:5000/api';
+const API = '/api';
 
 function getToken() { return localStorage.getItem('uxhub_token'); }
 function getUser() { const u = localStorage.getItem('uxhub_user'); return u ? JSON.parse(u) : null; }
