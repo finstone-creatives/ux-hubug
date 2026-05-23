@@ -64,7 +64,12 @@
         showAlert('alertBox', data.message, 'error');
         btn.innerHTML = '<i class="ti ti-login"></i> Sign In'; btn.disabled = false;
       }
-    } catch { showAlert('alertBox', 'Server error.', 'error'); btn.innerHTML = '<i class="ti ti-login"></i> Sign In'; btn.disabled = false; }
+    } catch (err) {
+      const message = err?.message || 'Server error.';
+      showAlert('alertBox', message, 'error');
+      console.error('Login error:', err);
+      btn.innerHTML = '<i class="ti ti-login"></i> Sign In'; btn.disabled = false;
+    }
   }
   function togglePw(btn) {
     const input = btn.closest('.input-group').querySelector('input');
