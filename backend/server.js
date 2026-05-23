@@ -12,6 +12,10 @@ const jwt = require('jsonwebtoken');
 const socketManager = require('./socket');
 
 const app = express();
+const frontendPath = path.join(__dirname, '../frontend');
+
+// Serve frontend static files
+app.use(express.static(frontendPath));
 
 // Connect DB
 connectDB();
