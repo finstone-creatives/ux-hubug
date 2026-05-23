@@ -131,6 +131,17 @@ const Layout = {
     if (sidebar) sidebar.innerHTML = this.buildSidebar();
     if (header)  header.innerHTML  = this.buildHeader(pageTitle);
 
+    if (Auth.isLoggedIn()) {
+      api.get('/notifications/unread-count').then(res => {
+        if (res.success && typeof res.count === 'number') {
+          const dot = document.getElementById('notifDot');
+          if (dot) {
+            dot.style.display = res.count > 0 ? 'block' : 'none';
+          }
+        }
+      }).catch(() => {});
+    }
+
     // Global search
     const gs = document.getElementById('globalSearch');
     if (gs) {

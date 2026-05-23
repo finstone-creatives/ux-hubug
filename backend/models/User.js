@@ -10,6 +10,12 @@ const userSchema = new mongoose.Schema({
     minlength: 3,
     maxlength: 30,
   },
+  displayName: {
+    type: String,
+    trim: true,
+    maxlength: 100,
+    default: '',
+  },
   email: {
     type: String,
     required: [true, 'Email is required'],
@@ -25,7 +31,7 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['user', 'moderator', 'admin'],
+    enum: ['user', 'creator', 'moderator', 'admin'],
     default: 'user',
   },
   status: {
@@ -68,6 +74,74 @@ const userSchema = new mongoose.Schema({
   avatar: {
     type: String,
     default: null,
+  },
+  coverImage: {
+    type: String,
+    default: null,
+  },
+  bio: {
+    type: String,
+    default: ''
+  },
+  creatorCategory: {
+    type: String,
+    trim: true,
+    maxlength: 120,
+    default: ''
+  },
+  creatorPitch: {
+    type: String,
+    trim: true,
+    maxlength: 500,
+    default: ''
+  },
+  location: {
+    type: String,
+    default: ''
+  },
+  privacySettings: {
+    privProfile: {
+      type: Boolean,
+      default: true,
+    },
+    privOnline: {
+      type: Boolean,
+      default: true,
+    },
+    privMsg: {
+      type: Boolean,
+      default: true,
+    },
+    privSubCount: {
+      type: Boolean,
+      default: true,
+    },
+  },
+  notificationPreferences: {
+    notifSubscriber: {
+      type: Boolean,
+      default: true,
+    },
+    notifMessage: {
+      type: Boolean,
+      default: true,
+    },
+    notifTip: {
+      type: Boolean,
+      default: true,
+    },
+    notifLive: {
+      type: Boolean,
+      default: true,
+    },
+    notifPost: {
+      type: Boolean,
+      default: false,
+    },
+    notifPromos: {
+      type: Boolean,
+      default: false,
+    },
   },
   banReason: {
     type: String,

@@ -68,7 +68,7 @@
         <div class="profile-actions">
           <button class="btn btn-outline btn-sm" id="followBtn" onclick="toggleFollow()"><i class="ti ti-heart"></i> Follow</button>
           <button class="btn btn-surface btn-sm" onclick="openModal('tipModal')"><i class="ti ti-coin"></i> Tip</button>
-          <a href="/pages/messages.html" class="btn btn-surface btn-sm"><i class="ti ti-message"></i> Message</a>
+          <a href="/pages/messages.html" id="msgBtn" class="btn btn-surface btn-sm"><i class="ti ti-message"></i> Message</a>
           <button class="btn btn-brand btn-sm" onclick="openModal('subscribeModal')"><i class="ti ti-crown"></i> Subscribe</button>
         </div>
       </div>
@@ -240,6 +240,9 @@
       <div class="profile-stat"><strong>${fmt.num(user.uploadCount ? (user.uploadCount * 120 + 800) : 1200)}</strong><span>Followers</span></div>
       <div class="profile-stat"><strong>4.8</strong><span>Rating</span></div>`;
     document.getElementById('subCreatorName').textContent = displayName;
+    // wire message button to open/create conversation with this user
+    const msgBtn = document.getElementById('msgBtn');
+    if (msgBtn) msgBtn.href = `/pages/messages.html?userid=${user._id}`;
   }
 
   function renderTiers(user) {
@@ -360,11 +363,26 @@
     window.location.href = `/pages/checkout.html?tier=${tier}&price=${price}&creator=${profileData?._id || ''}`;
   }
 
-  function sendTip() {
+  async function sendTip() {
     const amt = selectedTip || parseInt(document.getElementById('customTip').value) || 0;
     if (!amt) return Toast.show('Select a tip amount','warning');
-    Toast.show(`Tip of $${amt} sent!`,'success');
-    closeModal('tipModal');
+    if (!Auth.isLoggedIn()) return window.location.href = '/login.html';
+
+    try {
+      await api.post('/payments/tips', {
+        creatorId: profileData?._id,
+        amount: amt,
+        message: document.getElementById('tipMsg').value.trim(),
+      });
+      Toast.show(`Tip of $${amt} sent!`, 'success');
+      closeModal('tipModal');
+      selectedTip = 0;
+      document.querySelectorAll('.tip-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('customTip').value = '';
+      document.getElementById('tipMsg').value = '';
+    } catch (err) {
+      Toast.show(err.message || 'Unable to send tip', 'error');
+    }
   }
 
   function submitReport() {

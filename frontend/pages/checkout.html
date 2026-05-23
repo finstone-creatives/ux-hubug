@@ -139,6 +139,7 @@
   const type = params.get('type') || 'subscription';
   const amount = parseFloat(params.get('amount') || params.get('price') || '25');
   const plan = params.get('plan') || 'monthly';
+  const creatorId = params.get('creator');
 
   document.getElementById('orderSubtotal').textContent = `$${amount.toFixed(2)}`;
   document.getElementById('orderTotal').textContent     = `$${amount.toFixed(2)}`;
@@ -199,7 +200,27 @@
     onSuccess();
   }
 
-  function onSuccess() {
+  async function recordTip() {
+    if (type !== 'tip' || !creatorId) return true;
+    try {
+      await api.post('/payments/tips', {
+        creatorId,
+        amount,
+        message: 'Tip via checkout',
+      });
+      return true;
+    } catch (err) {
+      showAlert('alertBox', `Tip recording failed: ${err.message || 'Unable to save tip.'}`, 'error');
+      return false;
+    }
+  }
+
+  async function onSuccess() {
+    if (type === 'tip') {
+      const saved = await recordTip();
+      if (!saved) return;
+    }
+
     document.getElementById('alertBox').style.display = 'none';
     document.querySelector('.checkout-layout').innerHTML = `
       <div style="grid-column:1/-1;text-align:center;padding:60px 20px">

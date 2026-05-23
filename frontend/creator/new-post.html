@@ -139,6 +139,7 @@
 <script src="/assets/js/layout.js"></script>
 <script>
   Auth.requireAuth('/login.html');
+  Auth.requireCreator();
   Layout.init('New Post');
 
   let selectedFiles = [];

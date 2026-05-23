@@ -82,129 +82,193 @@
 </div>
 <script src="/assets/js/app.js"></script>
 <script src="/assets/js/layout.js"></script>
+<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
 <script>
   Auth.requireAuth('/login.html');
   Layout.init('Messages');
-
   const myUser = Auth.getUser();
 
-  const threads = [
-    { id:'1', name:'Amara K.', handle:'Amara_Official', isOnline:true,  isCreator:true,  lastMsg:'Thank you so much!', time:'2m', unread:3, msgs:[
-      { from:'them', text:'Hey! Thanks for subscribing', time:'10:30 AM' },
-      { from:'me',   text:'Of course! Love your content', time:'10:31 AM' },
-      { from:'them', text:'That means a lot 💖 more content dropping tonight', time:'10:32 AM' },
-      { from:'me',   text:'Can\'t wait!', time:'10:33 AM' },
-      { from:'them', text:'Thank you so much!', time:'10:34 AM' },
-    ]},
-    { id:'2', name:'Zara Lux',  handle:'ZaraLux',        isOnline:true,  isCreator:true,  lastMsg:'I\'ll check my schedule', time:'1h',  unread:0, msgs:[
-      { from:'me',   text:'Hi Zara! I would like to book you for a private session', time:'Yesterday' },
-      { from:'them', text:'Hi! Yes I do private sessions. What did you have in mind?', time:'Yesterday' },
-      { from:'me',   text:'A video call, 30 minutes', time:'Yesterday' },
-      { from:'them', text:'I\'ll check my schedule', time:'Yesterday' },
-    ]},
-    { id:'3', name:'Naomi V.', handle:'NaomiVibes',      isOnline:false, isCreator:true,  lastMsg:'New post is up!', time:'3h',  unread:1, msgs:[
-      { from:'them', text:'New post is up! Check it out', time:'3h ago' },
-    ]},
-  ];
-
+  let conversations = [];
   let activeThread = null;
 
-  function renderThreads(list) {
-    document.getElementById('threadList').innerHTML = list.map(t => `
-      <div class="msg-thread-item ${activeThread?.id===t.id?'active':''}" onclick="openThread('${t.id}')">
-        <div class="avatar avatar-sm ${t.isOnline?'avatar-online':''}" style="background:var(--gradient)">${fmt.initials(t.name)}</div>
-        <div class="msg-thread-meta">
-          <div class="msg-thread-row">
-            <span class="msg-thread-name">${t.name}</span>
-            <span class="msg-thread-time">${t.time}</span>
-          </div>
-          <div class="msg-thread-row" style="margin-top:2px">
-            <span class="msg-thread-preview">${t.lastMsg}</span>
-            ${t.unread > 0 ? `<span class="chat-item-unread">${t.unread}</span>` : ''}
-          </div>
-        </div>
-      </div>`).join('');
+  async function loadConversations() {
+    try {
+      const res = await api.get('/messages/conversations');
+      conversations = res.conversations || [];
+      renderThreads(conversations);
+    } catch (err) {
+      console.error('Failed to load conversations', err);
+      Toast.show(err.message || 'Unable to load conversations', 'error');
+    }
   }
 
-  function openThread(id) {
-    activeThread = threads.find(t => t.id === id);
-    if (!activeThread) return;
-    activeThread.unread = 0;
-    renderThreads(threads);
+  function renderThreads(list) {
+    document.getElementById('threadList').innerHTML = list.map(t => {
+      const other = (t.participants || []).find(p => String(p._id || p) !== String(myUser?._id));
+      const name = other ? (other.username || 'User') : 'Conversation';
+      const last = t.lastMessage?.text || '';
+      const time = t.lastMessage?.createdAt ? fmt.timeAgo(t.lastMessage.createdAt) : '';
+      const unread = t.unread ? (t.unread[myUser._id] || t.unread[String(myUser._id)] || 0) : 0;
+      return `
+      <div class="msg-thread-item ${activeThread?.id===t._id?'active':''}" onclick="openThread('${t._id}')">
+        <div class="avatar avatar-sm" style="background:var(--gradient)">${fmt.initials(name)}</div>
+        <div class="msg-thread-meta">
+          <div class="msg-thread-row">
+            <span class="msg-thread-name">${fmt.esc(name)}</span>
+            <span class="msg-thread-time">${time}</span>
+          </div>
+          <div class="msg-thread-row" style="margin-top:2px">
+            <span class="msg-thread-preview">${fmt.esc(last)}</span>
+            ${unread > 0 ? `<span class="chat-item-unread">${unread}</span>` : ''}
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
 
-    document.getElementById('emptyState').style.display = 'none';
-    const ac = document.getElementById('activeChat');
-    ac.style.display = 'flex';
+  async function openThread(id) {
+    try {
+      const conv = conversations.find(c => String(c._id) === String(id));
+      if (!conv) return;
+      activeThread = { ...conv, id: conv._id };
+      // mark unread locally
+      if (activeThread.unread) activeThread.unread[myUser._id] = 0;
+      renderThreads(conversations);
 
-    document.getElementById('chatHeader').innerHTML = `
-      <div class="avatar avatar-md ${activeThread.isOnline?'avatar-online':''}" style="background:var(--gradient)">${fmt.initials(activeThread.name)}</div>
+      // load messages
+      const res = await api.get(`/messages/conversations/${id}/messages`);
+      activeThread.msgs = res.messages || [];
+
+      document.getElementById('emptyState').style.display = 'none';
+      const ac = document.getElementById('activeChat');
+      ac.style.display = 'flex';
+
+      const other = (activeThread.participants || []).find(p => String(p._id || p) !== String(myUser?._id));
+      const name = other ? (other.username || 'User') : 'Conversation';
+
+      document.getElementById('chatHeader').innerHTML = `
+      <div class="avatar avatar-md" style="background:var(--gradient)">${fmt.initials(name)}</div>
       <div style="flex:1">
-        <div style="font-weight:700">${activeThread.name}</div>
-        <div style="font-size:0.75rem;color:${activeThread.isOnline?'var(--green)':'var(--text3)'}">${activeThread.isOnline?'Online now':'Offline'}</div>
+        <div style="font-weight:700">${fmt.esc(name)}</div>
+        <div style="font-size:0.75rem;color:var(--text3)">${other ? 'Member' : ''}</div>
       </div>
-      <a href="/pages/profile.html?id=${activeThread.id}" class="btn btn-surface btn-sm"><i class="ti ti-user"></i> Profile</a>
+      <a href="/pages/profile.html?id=${other?._id || ''}" class="btn btn-surface btn-sm"><i class="ti ti-user"></i> Profile</a>
       <button class="btn btn-icon btn-sm" onclick="clearChat()"><i class="ti ti-trash"></i></button>`;
 
-    document.getElementById('tipQuick').innerHTML = activeThread.isCreator ? `
-      <span style="font-size:0.72rem;color:var(--text3);line-height:32px">Quick Tip:</span>
-      ${[5,10,20,50].map(a => `<button onclick="quickTip(${a})"><i class="ti ti-coin" style="color:var(--gold)"></i> $${a}</button>`).join('')}` : '';
+      document.getElementById('tipQuick').innerHTML = '';
 
-    renderMessages();
+      renderMessages();
+      // mark as read on server
+      api.post(`/messages/conversations/${id}/read`).catch(()=>{});
+    } catch (err) {
+      console.error(err);
+      Toast.show(err.message || 'Unable to open conversation','error');
+    }
   }
 
   function renderMessages() {
     if (!activeThread) return;
-    document.getElementById('messagesList').innerHTML = activeThread.msgs.map(m => `
-      <div class="msg ${m.from==='me'?'mine':''}" style="max-width:75%;align-self:${m.from==='me'?'flex-end':'flex-start'}">
-        ${m.from!=='me'?`<div class="avatar avatar-xs" style="background:var(--gradient);flex-shrink:0;align-self:flex-end">${fmt.initials(activeThread.name)}</div>`:''}
+    document.getElementById('messagesList').innerHTML = (activeThread.msgs || []).map(m => {
+      const mine = String(m.sender._id || m.sender) === String(myUser?._id);
+      return `
+      <div class="msg ${mine ? 'mine' : ''}" style="max-width:75%;align-self:${mine ? 'flex-end' : 'flex-start'}">
+        ${!mine ? `<div class="avatar avatar-xs" style="background:var(--gradient);flex-shrink:0;align-self:flex-end">${fmt.initials(m.sender.username || '')}</div>` : ''}
         <div>
           <div class="msg-bubble">${fmt.esc(m.text)}</div>
-          <div class="msg-time">${m.time}</div>
+          <div class="msg-time">${new Date(m.createdAt).toLocaleString()}</div>
         </div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
     const ml = document.getElementById('messagesList');
     ml.scrollTop = ml.scrollHeight;
   }
 
-  function sendMessage() {
+  async function sendMessage() {
     const input = document.getElementById('msgInput');
     const text  = input.value.trim();
     if (!text || !activeThread) return;
-    activeThread.msgs.push({ from:'me', text, time:'Now' });
-    activeThread.lastMsg = text;
-    input.value = '';
-    renderMessages();
-    renderThreads(threads);
-    // Simulate reply after 2s
-    setTimeout(() => {
-      const replies = ['Got it!','Thanks for the message!','I\'ll respond soon','Check my latest post!'];
-      activeThread.msgs.push({ from:'them', text: replies[Math.floor(Math.random()*replies.length)], time:'Now' });
+    try {
+      const res = await api.post(`/messages/conversations/${activeThread._id}/messages`, { text });
+      activeThread.msgs.push(res.message);
+      activeThread.lastMessage = res.conversation.lastMessage || { text };
+      input.value = '';
       renderMessages();
-    }, 2000);
-  }
-
-  function quickTip(amount) {
-    Toast.show(`Sending $${amount} tip to ${activeThread.name}...`, 'success');
-    activeThread.msgs.push({ from:'me', text:`Sent a $${amount} tip`, time:'Now' });
-    renderMessages();
+      loadConversations();
+    } catch (err) {
+      console.error(err);
+      Toast.show(err.message || 'Failed to send message','error');
+    }
   }
 
   function filterThreads(q) {
-    const filtered = threads.filter(t => t.name.toLowerCase().includes(q.toLowerCase()));
+    const filtered = conversations.filter(t => {
+      const other = (t.participants || []).find(p => String(p._id || p).toLowerCase().includes(q.toLowerCase()) || (p.username||'').toLowerCase().includes(q.toLowerCase()));
+      return !!other;
+    });
     renderThreads(filtered);
   }
 
-  function newMessage()  { Toast.show('Search for a creator on their profile page to message them.', 'info'); }
+  async function newMessage()  {
+    const id = prompt('Enter the user ID of the creator you want to message');
+    if (!id) return;
+    try {
+      const res = await api.post('/messages/conversations', { recipientId: id });
+      // reload conversations and open
+      await loadConversations();
+      openThread(res.conversation._id);
+    } catch (err) {
+      Toast.show(err.message || 'Unable to start conversation','error');
+    }
+  }
+
   function clearChat()   { if (!activeThread) return; activeThread.msgs = []; renderMessages(); }
   function attachMedia() { Toast.show('Media attachment coming soon.', 'info'); }
 
-  renderThreads(threads);
+  // initial load
+  loadConversations();
 
-  // Auto-open from URL param
-  const urlUser = new URLSearchParams(window.location.search).get('user');
-  if (urlUser) {
-    const t = threads.find(th => th.handle === urlUser);
-    if (t) openThread(t.id);
+  // --- Socket.IO realtime ---
+  const SOCKET_URL = API.replace('/api', '') ;
+  try {
+    const socket = io(SOCKET_URL, { auth: { token: Auth.getToken() } });
+    socket.on('connect_error', (err) => { console.warn('Socket connect error', err); });
+    socket.on('message', (data) => {
+      // incoming message
+      const convId = String(data.message.conversation || data.conversationId || data.message.conversation);
+      if (activeThread && String(activeThread._id) === String(convId)) {
+        activeThread.msgs.push(data.message);
+        renderMessages();
+      } else {
+        // increment unread locally and refresh conversations
+        loadConversations();
+        Toast.show('New message received', 'info');
+      }
+    });
+    socket.on('conversation:update', (data) => {
+      loadConversations();
+    });
+
+    // join conversation when opened
+    const origOpenThread = openThread;
+    openThread = async function(id) {
+      if (socket && activeThread) socket.emit('leave:conversation', activeThread._id || activeThread.id);
+      if (socket) socket.emit('join:conversation', id);
+      return origOpenThread(id);
+    };
+  } catch (e) {
+    console.warn('Socket init failed', e);
+  }
+
+  // Auto-open from URL param (userid or user)
+  const urlUserId = new URLSearchParams(window.location.search).get('userid') || new URLSearchParams(window.location.search).get('user');
+  if (urlUserId) {
+    (async () => {
+      try {
+        const res = await api.post('/messages/conversations', { recipientId: urlUserId });
+        await loadConversations();
+        openThread(res.conversation._id);
+      } catch (err) { console.error(err); }
+    })();
   }
 </script>
 </body>

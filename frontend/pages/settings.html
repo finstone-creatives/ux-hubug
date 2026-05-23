@@ -123,22 +123,7 @@
       <div id="tab-privacy" class="tab-content">
         <div class="card">
           <div class="card-header"><h3>Privacy Settings</h3></div>
-          <div class="card-body" style="display:flex;flex-direction:column;gap:18px">
-            ${[
-              { label:'Profile Visibility', sub:'Who can see your profile', id:'privProfile' },
-              { label:'Show Online Status', sub:'Let others see when you\'re active', id:'privOnline' },
-              { label:'Allow Messages from Non-subscribers', sub:'Fans can message you before subscribing', id:'privMsg' },
-              { label:'Show subscriber count', sub:'Display number of subscribers on your profile', id:'privSubCount' },
-            ].map(s => `
-              <div style="display:flex;align-items:center;justify-content:space-between">
-                <div><div style="font-weight:600;font-size:0.9rem">${s.label}</div><div style="font-size:0.78rem;color:var(--text3)">${s.sub}</div></div>
-                <label style="position:relative;width:44px;height:24px;cursor:pointer">
-                  <input type="checkbox" id="${s.id}" checked style="opacity:0;width:0;height:0" onchange="saveSetting('${s.id}',this.checked)" />
-                  <span style="position:absolute;inset:0;background:var(--surface3);border-radius:12px;transition:var(--t)" id="${s.id}Track"></span>
-                  <span style="position:absolute;width:18px;height:18px;border-radius:50%;background:#fff;top:3px;left:3px;transition:var(--t)" id="${s.id}Thumb"></span>
-                </label>
-              </div>`).join('<div class="divider" style="margin:2px 0"></div>')}
-          </div>
+          <div class="card-body" id="privacySettingsContainer" style="display:flex;flex-direction:column;gap:18px"></div>
         </div>
       </div>
 
@@ -146,22 +131,7 @@
       <div id="tab-notifications" class="tab-content">
         <div class="card">
           <div class="card-header"><h3>Notification Preferences</h3></div>
-          <div class="card-body" style="display:flex;flex-direction:column;gap:16px">
-            ${[
-              { label:'New subscriber', icon:'ti-user-plus', on:true },
-              { label:'New message', icon:'ti-message', on:true },
-              { label:'New tip received', icon:'ti-coin', on:true },
-              { label:'Creator goes live', icon:'ti-live-view', on:true },
-              { label:'New post from subscriptions', icon:'ti-bell', on:false },
-              { label:'Promotions & offers', icon:'ti-speakerphone', on:false },
-            ].map(n => `
-              <div style="display:flex;align-items:center;gap:12px">
-                <div style="width:36px;height:36px;border-radius:var(--radius);background:var(--brand-light);display:flex;align-items:center;justify-content:center;color:var(--brand)"><i class="ti ${n.icon}"></i></div>
-                <span style="flex:1;font-size:0.9rem;font-weight:500">${n.label}</span>
-                <input type="checkbox" ${n.on?'checked':''} style="accent-color:var(--brand);width:17px;height:17px;cursor:pointer" />
-              </div>`).join('')}
-            <button class="btn btn-brand btn-md mt-8"><i class="ti ti-device-floppy"></i> Save Preferences</button>
-          </div>
+          <div class="card-body" id="notificationSettingsContainer" style="display:flex;flex-direction:column;gap:16px"></div>
         </div>
       </div>
 
@@ -196,6 +166,22 @@
   Auth.requireAuth('/login.html');
   Layout.init('Settings');
 
+  const settingsKey = 'uxhub_settings';
+  const privacySettings = [
+    { label:'Profile Visibility', sub:'Who can see your profile', id:'privProfile' },
+    { label:'Show Online Status', sub:'Let others see when you\'re active', id:'privOnline' },
+    { label:'Allow Messages from Non-subscribers', sub:'Fans can message you before subscribing', id:'privMsg' },
+    { label:'Show subscriber count', sub:'Display number of subscribers on your profile', id:'privSubCount' },
+  ];
+  const notificationSettings = [
+    { label:'New subscriber', icon:'ti-user-plus', id:'notifSubscriber', on:true },
+    { label:'New message', icon:'ti-message', id:'notifMessage', on:true },
+    { label:'New tip received', icon:'ti-coin', id:'notifTip', on:true },
+    { label:'Creator goes live', icon:'ti-live-view', id:'notifLive', on:true },
+    { label:'New post from subscriptions', icon:'ti-bell', id:'notifPost', on:false },
+    { label:'Promotions & offers', icon:'ti-speakerphone', id:'notifPromos', on:false },
+  ];
+
   const user = Auth.getUser();
   if (user) {
     document.getElementById('settUsername').value    = user.username || '';
@@ -205,6 +191,86 @@
     document.getElementById('settLocation').value    = user.location || '';
   }
 
+  function getStoredSettings() {
+    const raw = localStorage.getItem(settingsKey);
+    const user = Auth.getUser();
+    if (!raw) {
+      return {
+        privacy: user?.privacySettings || {},
+        notifications: user?.notificationPreferences || {},
+      };
+    }
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return {
+        privacy: user?.privacySettings || {},
+        notifications: user?.notificationPreferences || {},
+      };
+    }
+  }
+
+  function storeSettings(settings) {
+    localStorage.setItem(settingsKey, JSON.stringify(settings));
+  }
+
+  async function persistSettings(payload) {
+    try {
+      const res = await api.put('/users/me', payload);
+      if (res.success) {
+        const token = Auth.getToken();
+        const mergedUser = { ...Auth.getUser(), ...res.user };
+        Auth.setSession(token, mergedUser);
+        return mergedUser;
+      }
+      throw new Error(res.message || 'Unable to save settings.');
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  function renderPrivacySettings() {
+    const settings = getStoredSettings();
+    const html = privacySettings.map((setting, index) => {
+      const checked = settings.privacy[setting.id] ?? true;
+      return `
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div><div style="font-weight:600;font-size:0.9rem">${setting.label}</div><div style="font-size:0.78rem;color:var(--text3)">${setting.sub}</div></div>
+          <label style="position:relative;width:44px;height:24px;cursor:pointer">
+            <input type="checkbox" id="${setting.id}" ${checked ? 'checked' : ''} style="opacity:0;width:0;height:0" onchange="saveSetting('${setting.id}', this.checked)" />
+            <span style="position:absolute;inset:0;background:var(--surface3);border-radius:12px;transition:var(--t)"></span>
+            <span style="position:absolute;width:18px;height:18px;border-radius:50%;background:#fff;top:3px;left:${checked ? '23px' : '3px'};transition:var(--t)"></span>
+          </label>
+        </div>
+        ${index < privacySettings.length-1 ? '<div class="divider" style="margin:2px 0"></div>' : ''}`;
+    }).join('');
+    document.getElementById('privacySettingsContainer').innerHTML = html;
+  }
+
+  function renderNotificationSettings() {
+    const settings = getStoredSettings();
+    const html = notificationSettings.map((setting, index) => {
+      const checked = settings.notifications[setting.id] ?? setting.on;
+      return `
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="width:36px;height:36px;border-radius:var(--radius);background:var(--brand-light);display:flex;align-items:center;justify-content:center;color:var(--brand)"><i class="ti ${setting.icon}"></i></div>
+          <span style="flex:1;font-size:0.9rem;font-weight:500">${setting.label}</span>
+          <input type="checkbox" id="${setting.id}" ${checked ? 'checked' : ''} onchange="saveNotificationSetting('${setting.id}', this.checked)" style="accent-color:var(--brand);width:17px;height:17px;cursor:pointer" />
+        </div>
+        ${index < notificationSettings.length-1 ? '<div class="divider" style="margin:2px 0"></div>' : ''}`;
+    }).join('');
+    document.getElementById('notificationSettingsContainer').innerHTML = html + '<button class="btn btn-brand btn-md mt-8" onclick="saveAllNotificationPreferences()"><i class="ti ti-device-floppy"></i> Save Preferences</button>';
+  }
+
+  function initSettingsUI() {
+    const stored = getStoredSettings();
+    if (!localStorage.getItem(settingsKey) && Auth.getUser()) {
+      storeSettings(stored);
+    }
+    renderPrivacySettings();
+    renderNotificationSettings();
+  }
+
   function showTab(name, btn) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
@@ -212,7 +278,29 @@
     document.getElementById(`tab-${name}`).classList.add('active');
   }
 
-  function saveProfile() { Toast.show('Profile saved successfully!', 'success'); }
+  async function saveProfile() {
+    const payload = {
+      username: document.getElementById('settUsername').value.trim(),
+      displayName: document.getElementById('settDisplayName').value.trim(),
+      email: document.getElementById('settEmail').value.trim(),
+      bio: document.getElementById('settBio').value.trim(),
+      location: document.getElementById('settLocation').value.trim(),
+    };
+    try {
+      const res = await api.put('/users/me', payload);
+      if (res.success) {
+        const token = Auth.getToken();
+        Auth.setSession(token, res.user);
+        Toast.show('Profile saved successfully!', 'success');
+        return;
+      }
+      showAlert('profileAlert', res.message || 'Unable to save profile.', 'error');
+    } catch (err) {
+      console.error('Save profile error', err);
+      showAlert('profileAlert', err.message || 'Server error', 'error');
+    }
+  }
+
   function changePassword() {
     const np = document.getElementById('newPw').value;
     const cp = document.getElementById('confirmPw').value;
@@ -220,6 +308,7 @@
     if (np.length < 8) return showAlert('secAlert', 'Password must be at least 8 characters.', 'error');
     Toast.show('Password updated!', 'success');
   }
+
   function deleteAccount() {
     if (confirm('Are you sure? This cannot be undone.')) {
       if (confirm('Last warning — permanently delete your account?')) {
@@ -227,18 +316,121 @@
       }
     }
   }
-  function saveSetting(id, val) { Toast.show(`Setting updated.`, 'success'); }
-  function changeAvatar()  { Toast.show('Avatar upload coming with backend integration.', 'info'); }
-  function changeCover()   { Toast.show('Cover photo upload coming with backend integration.', 'info'); }
+
+  async function saveSetting(id, val) {
+    const settings = getStoredSettings();
+    settings.privacy = settings.privacy || {};
+    settings.privacy[id] = val;
+    storeSettings(settings);
+    renderPrivacySettings();
+
+    try {
+      await persistSettings({ privacySettings: { [id]: val } });
+      Toast.show('Privacy setting saved.', 'success');
+    } catch (err) {
+      settings.privacy[id] = !val;
+      storeSettings(settings);
+      renderPrivacySettings();
+      Toast.show(err.message || 'Unable to save privacy setting.', 'error');
+    }
+  }
+
+  async function saveNotificationSetting(id, val) {
+    const settings = getStoredSettings();
+    settings.notifications = settings.notifications || {};
+    settings.notifications[id] = val;
+    storeSettings(settings);
+    renderNotificationSettings();
+
+    try {
+      await persistSettings({ notificationPreferences: { [id]: val } });
+      Toast.show('Notification preference saved.', 'success');
+    } catch (err) {
+      settings.notifications[id] = !val;
+      storeSettings(settings);
+      renderNotificationSettings();
+      Toast.show(err.message || 'Unable to save notification preference.', 'error');
+    }
+  }
+
+  async function saveAllNotificationPreferences() {
+    const settings = getStoredSettings();
+    settings.notifications = settings.notifications || {};
+    notificationSettings.forEach(setting => {
+      const checkbox = document.getElementById(setting.id);
+      if (checkbox) settings.notifications[setting.id] = checkbox.checked;
+    });
+    storeSettings(settings);
+    renderNotificationSettings();
+
+    try {
+      await persistSettings({ notificationPreferences: settings.notifications });
+      Toast.show('Notification preferences saved.', 'success');
+    } catch (err) {
+      showAlert('notificationAlert', err.message || 'Unable to save notification preferences.', 'error');
+    }
+  }
+
+  function changeAvatar() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const form = new FormData();
+      form.append('avatar', file);
+      try {
+        const res = await api.upload('/users/me/avatar', form);
+        if (res.success) {
+          document.getElementById('avatarPreview').innerHTML = `<img src="${res.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%"/>`;
+          const u = Auth.getUser() || {};
+          u.avatar = res.avatar;
+          Auth.setSession(Auth.getToken(), u);
+          Toast.show('Avatar uploaded', 'success');
+        }
+      } catch (err) {
+        console.error('Avatar upload error', err);
+        Toast.show(err.message || 'Upload failed', 'error');
+      }
+    };
+    input.click();
+  }
+
+  function changeCover() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const form = new FormData();
+      form.append('cover', file);
+      try {
+        const res = await api.upload('/users/me/cover', form);
+        if (res.success) {
+          Toast.show('Cover uploaded', 'success');
+        }
+      } catch (err) {
+        console.error('Cover upload error', err);
+        Toast.show(err.message || 'Upload failed', 'error');
+      }
+    };
+    input.click();
+  }
+
   function setTheme(t) {
     Theme.set(t);
     document.getElementById('darkTheme').style.borderColor  = t==='dark'  ? 'var(--brand)' : 'var(--border)';
     document.getElementById('lightTheme').style.borderColor = t==='light' ? 'var(--brand)' : 'var(--border)';
   }
+
   // Set initial theme indicator
   const ct = Theme.get();
   document.getElementById(`${ct}Theme`).style.borderColor = 'var(--brand)';
   document.getElementById(`${ct==='dark'?'light':'dark'}Theme`).style.borderColor = 'var(--border)';
+
+  initSettingsUI();
 </script>
 </body>
 </html>

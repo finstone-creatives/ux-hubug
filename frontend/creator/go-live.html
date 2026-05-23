@@ -133,6 +133,7 @@
 <script src="/assets/js/layout.js"></script>
 <script>
   Auth.requireAuth('/login.html');
+  Auth.requireCreator();
   Layout.init('Go Live');
 
   let stream = null;

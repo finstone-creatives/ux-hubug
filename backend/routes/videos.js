@@ -1,3 +1,4 @@
+const fs = require('fs');
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
@@ -7,8 +8,15 @@ const {
   uploadVideo, getVideos, getVideo, deleteVideo, reportVideo
 } = require('../controllers/videoController');
 
+const uploadPath = process.env.UPLOAD_PATH
+  ? path.resolve(__dirname, process.env.UPLOAD_PATH)
+  : path.resolve(__dirname, '../uploads');
+if (!fs.existsSync(uploadPath)) {
+  fs.mkdirSync(uploadPath, { recursive: true });
+}
+
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, process.env.UPLOAD_PATH || './uploads'),
+  destination: (req, file, cb) => cb(null, uploadPath),
   filename: (req, file, cb) => {
     const unique = Date.now() + '-' + Math.round(Math.random() * 1e9);
     cb(null, unique + path.extname(file.originalname));

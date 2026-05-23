@@ -1,10 +1,15 @@
 require('dotenv').config();
+const fs = require('fs');
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
+const http = require('http');
+const { Server } = require('socket.io');
 const connectDB = require('./config/db');
+const jwt = require('jsonwebtoken');
+const socketManager = require('./socket');
 
 const app = express();
 
@@ -37,15 +42,23 @@ const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 20, message: 'Too
 app.use('/api/', limiter);
 app.use('/api/auth/', authLimiter);
 
+const uploadDir = process.env.UPLOAD_PATH
+  ? path.resolve(__dirname, process.env.UPLOAD_PATH)
+  : path.resolve(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
 // Static files (uploads)
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static(uploadDir));
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/videos', require('./routes/videos'));
 app.use('/api/users', require('./routes/users'));
+app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/payments', require('./routes/payments'));
+app.use('/api/messages', require('./routes/messages'));
 
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'UX-HUB API running ✅' }));
@@ -64,6 +77,44 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 UX-HUB Server running on port ${PORT}`));
+
+// create HTTP server and attach socket.io
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: allowedOrigins,
+    credentials: true,
+  }
+});
+
+// Socket auth middleware
+io.use(async (socket, next) => {
+  try {
+    const token = socket.handshake.auth?.token || (socket.handshake.headers?.authorization || '').split(' ')[1];
+    if (!token) return next();
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    socket.userId = decoded.id;
+    next();
+  } catch (err) {
+    // ignore auth failure for now; socket can still connect but won't be associated with a user
+    next();
+  }
+});
+
+io.on('connection', (socket) => {
+  if (socket.userId) {
+    socket.join(`user:${socket.userId}`);
+  }
+  socket.on('join:conversation', (convId) => {
+    socket.join(`conversation:${convId}`);
+  });
+  socket.on('leave:conversation', (convId) => {
+    socket.leave(`conversation:${convId}`);
+  });
+});
+
+socketManager.setIO(io);
+
+server.listen(PORT, () => console.log(`🚀 UX-HUB Server running on port ${PORT}`));
 
 module.exports = app;

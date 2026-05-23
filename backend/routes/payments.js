@@ -5,6 +5,7 @@ const {
   createStripeIntent, confirmStripePayment,
   requestMtnPayment, verifyMtnPayment,
   requestAirtelPayment, verifyAirtelPayment,
+  sendTip,
 } = require('../controllers/paymentController');
 
 router.post('/stripe/create-intent', protect, createStripeIntent);
@@ -15,5 +16,7 @@ router.get('/mtn/verify/:referenceId', protect, verifyMtnPayment);
 
 router.post('/airtel/request', protect, requestAirtelPayment);
 router.get('/airtel/verify/:transactionId', protect, verifyAirtelPayment);
+
+router.post('/tips', protect, sendTip);
 
 module.exports = router;

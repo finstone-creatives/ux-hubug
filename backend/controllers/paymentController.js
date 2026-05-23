@@ -2,6 +2,7 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const axios = require('axios');
 const { v4: uuidv4 } = require('uuid');
 const Subscription = require('../models/Subscription');
+const Tip = require('../models/Tip');
 const User = require('../models/User');
 
 const PREMIUM_PRICE_USD = parseFloat(process.env.PREMIUM_PRICE_USD) || 9.99;
@@ -62,6 +63,39 @@ exports.confirmStripePayment = async (req, res) => {
     await addPremiumDays(req.user.id, days);
 
     res.json({ success: true, message: 'Premium activated!', subscription: sub });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+exports.sendTip = async (req, res) => {
+  try {
+    const { creatorId, amount, message } = req.body;
+    const parsedAmount = Number(amount);
+
+    if (!creatorId || !parsedAmount || parsedAmount <= 0) {
+      return res.status(400).json({ success: false, message: 'Valid creator and amount are required.' });
+    }
+
+    const creator = await User.findById(creatorId);
+    if (!creator || creator.role !== 'creator') {
+      return res.status(404).json({ success: false, message: 'Creator not found.' });
+    }
+    if (String(req.user.id) === String(creatorId)) {
+      return res.status(400).json({ success: false, message: 'You cannot tip yourself.' });
+    }
+
+    const tip = await Tip.create({
+      creator: creator._id,
+      sender: req.user._id,
+      amount: parsedAmount,
+      currency: 'USD',
+      message: message || '',
+      type: 'tip',
+      status: 'completed',
+    });
+
+    res.json({ success: true, tip, message: 'Tip sent successfully.' });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Become a Creator — UX-HUB</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css" />
+  <link rel="stylesheet" href="/assets/css/main.css" />
+</head>
+<body class="no-sidebar">
+  <div class="auth-layout" style="padding:40px 20px">
+    <div class="auth-card fade-in" style="max-width:520px">
+      <div class="auth-logo-wrap">
+        <a href="/index.html" class="logo-name">UX<span style="color:var(--brand)">HUB</span></a>
+        <p class="text-sm" style="color:var(--text3);margin-top:6px">Join as a creator and start earning from your content.</p>
+      </div>
+      <div id="alertBox" style="display:none;margin-bottom:16px"></div>
+      <form id="creatorForm" onsubmit="handleCreatorSignup(event)">
+        <div class="flex-col gap-14">
+          <div class="form-group">
+            <label class="form-label">Creator Display Name</label>
+            <div class="input-group"><i class="ti ti-user"></i><input class="input" id="creatorDisplayName" type="text" placeholder="How fans will see you" /></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Profile Bio</label>
+            <textarea class="textarea" id="creatorBio" placeholder="Tell fans what makes you special" rows="4"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Creator Category</label>
+            <input class="input" id="creatorCategory" type="text" placeholder="e.g. Lingerie, Live Shows, Fitness" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Why should your account be approved?</label>
+            <textarea class="textarea" id="creatorPitch" placeholder="Describe your content and experience" rows="4"></textarea>
+          </div>
+          <button type="submit" class="btn btn-brand btn-md btn-full" id="creatorBtn">
+            <i class="ti ti-arrow-right-circle"></i> Become Creator
+          </button>
+        </div>
+      </form>
+      <div class="divider-text">or</div>
+      <p class="text-sm text-center" style="color:var(--text3)">Already a creator? <a href="/creator/dashboard.html" style="color:var(--brand);font-weight:600">Go to your dashboard</a></p>
+    </div>
+  </div>
+  <script src="/assets/js/app.js"></script>
+  <script>
+    Theme.init();
+    Auth.requireAuth('/login.html');
+
+    async function handleCreatorSignup(e) {
+      e.preventDefault();
+      const btn = document.getElementById('creatorBtn');
+      const displayName = document.getElementById('creatorDisplayName').value.trim();
+      const bio = document.getElementById('creatorBio').value.trim();
+      const category = document.getElementById('creatorCategory').value.trim();
+      const pitch = document.getElementById('creatorPitch').value.trim();
+
+      btn.disabled = true;
+      btn.innerHTML = '<i class="ti ti-loader-2" style="animation:spin 0.6s linear infinite"></i> Upgrading...';
+
+      try {
+        const profilePatch = { displayName, bio };
+        if (displayName) {
+          profilePatch.displayName = displayName;
+        }
+        if (bio) {
+          profilePatch.bio = bio;
+        }
+        await api.put('/users/me', profilePatch);
+        const res = await api.post('/users/me/creator', {
+          creatorCategory: category,
+          creatorPitch: pitch,
+          displayName,
+          bio,
+        });
+        if (res.success) {
+          const updatedUser = { ...Auth.getUser(), role: 'creator', accountType: 'creator', displayName: displayName || Auth.getUser().displayName || Auth.getUser().username };
+          Auth.setSession(localStorage.getItem('uxhub_token'), updatedUser);
+          window.location.href = '/creator/dashboard.html';
+        } else {
+          throw new Error(res.message || 'Unable to upgrade your account');
+        }
+      } catch (err) {
+        const message = err?.message || 'Upgrade failed. Please try again.';
+        document.getElementById('alertBox').style.display = 'block';
+        document.getElementById('alertBox').innerHTML = `<div class="alert alert-danger">${message}</div>`;
+        console.error(err);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="ti ti-arrow-right-circle"></i> Become Creator';
+      }
+    }
+  </script>
+</body>
+</html>

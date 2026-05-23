@@ -9,7 +9,7 @@ const generateToken = (id) => {
 // @route   POST /api/auth/register
 exports.register = async (req, res) => {
   try {
-    const { username, email, password, dateOfBirth, ageConfirmed } = req.body;
+    const { username, displayName, email, password, dateOfBirth, ageConfirmed, accountType, role } = req.body;
 
     if (!ageConfirmed) {
       return res.status(400).json({ success: false, message: 'You must confirm you are 18 or older.' });
@@ -27,12 +27,15 @@ exports.register = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Email or username already in use.' });
     }
 
+    const isCreator = (accountType && accountType === 'creator') || (role && role === 'creator');
     const user = await User.create({
       username,
+      displayName: displayName || username,
       email,
       password,
       dateOfBirth: dob,
       ageVerified: true,
+      role: isCreator ? 'creator' : 'user',
     });
 
     const token = generateToken(user._id);
@@ -43,9 +46,13 @@ exports.register = async (req, res) => {
       user: {
         id: user._id,
         username: user.username,
+        displayName: user.displayName,
         email: user.email,
         role: user.role,
+        accountType: user.role,
         isPremium: user.isPremium,
+        privacySettings: user.privacySettings,
+        notificationPreferences: user.notificationPreferences,
       },
     });
   } catch (err) {
@@ -83,10 +90,14 @@ exports.login = async (req, res) => {
       user: {
         id: user._id,
         username: user.username,
+        displayName: user.displayName,
         email: user.email,
         role: user.role,
+        accountType: user.role,
         isPremium: user.isPremium,
         premiumExpiry: user.premiumExpiry,
+        privacySettings: user.privacySettings,
+        notificationPreferences: user.notificationPreferences,
       },
     });
   } catch (err) {

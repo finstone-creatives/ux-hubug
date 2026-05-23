@@ -53,7 +53,13 @@
       const data = await api.post('/auth/login', { email: document.getElementById('email').value, password: document.getElementById('password').value });
       if (data.success) {
         Auth.setSession(data.token, data.user);
-        window.location.href = data.user.role === 'admin' || data.user.role === 'moderator' ? '/admin/dashboard.html' : '/index.html';
+        if (data.user.role === 'creator') {
+          window.location.href = '/creator/dashboard.html';
+        } else if (data.user.role === 'admin' || data.user.role === 'moderator') {
+          window.location.href = '/admin/dashboard.html';
+        } else {
+          window.location.href = '/index.html';
+        }
       } else {
         showAlert('alertBox', data.message, 'error');
         btn.innerHTML = '<i class="ti ti-login"></i> Sign In'; btn.disabled = false;

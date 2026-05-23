@@ -17,14 +17,20 @@ const Auth = {
     localStorage.removeItem('uxhub_user');
   },
   isLoggedIn: () => !!localStorage.getItem('uxhub_token'),
-  isCreator: () => { const u = Auth.getUser(); return u && (u.role === 'creator' || u.isCreator); },
+  isCreator: () => { const u = Auth.getUser(); return u && (u.role === 'creator' || u.accountType === 'creator' || u.isCreator); },
   isAdmin: () => { const u = Auth.getUser(); return u && (u.role === 'admin' || u.role === 'moderator'); },
   isPremium: () => { const u = Auth.getUser(); return u && u.isPremium; },
   requireAuth: (redirect = '/login.html') => {
     if (!Auth.isLoggedIn()) window.location.href = redirect;
   },
   requireCreator: () => {
-    if (!Auth.isCreator()) window.location.href = '/pages/become-creator.html';
+    if (!Auth.isLoggedIn()) {
+      window.location.href = '/login.html';
+      return;
+    }
+    if (!Auth.isCreator()) {
+      window.location.href = '/pages/become-creator.html';
+    }
   },
   logout: () => {
     Auth.clear();
@@ -63,6 +69,28 @@ const api = {
   put:    (path, body)   => api.req(path, 'PUT', body),
   delete: (path)         => api.req(path, 'DELETE'),
   patch:  (path, body)   => api.req(path, 'PATCH', body),
+  // Upload FormData (files). `form` should be a FormData instance.
+  async upload(path, form) {
+    const headers = {};
+    if (Auth.getToken()) headers['Authorization'] = `Bearer ${Auth.getToken()}`;
+    const res = await fetch(`${API}${path}`, { method: 'POST', headers, body: form });
+    const contentType = res.headers.get('content-type') || '';
+    let data = null;
+    if (contentType.includes('application/json')) data = await res.json();
+    else {
+      const text = await res.text();
+      data = { success: false, message: text || res.statusText || 'Unexpected server response' };
+    }
+    if (res.status === 401) { Auth.clear(); window.location.href = '/login.html'; }
+    if (!res.ok) {
+      const message = data?.message || `Request failed with status ${res.status}`;
+      const error = new Error(message);
+      error.status = res.status;
+      error.response = data;
+      throw error;
+    }
+    return data;
+  },
 };
 
 // ── THEME ─────────────────────────────────────────────────────────────────────

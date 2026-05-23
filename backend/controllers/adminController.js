@@ -113,7 +113,7 @@ exports.unbanUser = async (req, res) => {
 exports.updateUserRole = async (req, res) => {
   try {
     const { role } = req.body;
-    const validRoles = ['user', 'moderator', 'admin'];
+    const validRoles = ['user', 'creator', 'moderator', 'admin'];
     if (!validRoles.includes(role)) {
       return res.status(400).json({ success: false, message: 'Invalid role.' });
     }

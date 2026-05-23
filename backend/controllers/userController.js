@@ -1,5 +1,8 @@
 const User = require('../models/User');
 const Video = require('../models/Video');
+const Conversation = require('../models/Conversation');
+const Subscription = require('../models/Subscription');
+const Tip = require('../models/Tip');
 
 exports.getCreators = async (req, res) => {
   try {
@@ -8,8 +11,8 @@ exports.getCreators = async (req, res) => {
     const limit = parseInt(req.query.limit, 10) || 24;
 
     const query = { status: 'active' };
-    if (role === 'creator') {
-      query.uploadCount = { $gt: 0 };
+    if (role) {
+      query.role = role;
     }
 
     if (search) {
@@ -52,6 +55,328 @@ exports.getUser = async (req, res) => {
         uploads: user.uploadCount,
       },
     });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// @desc Get creator dashboard data for current user
+// @route GET /api/users/me/dashboard
+exports.getCreatorDashboard = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+
+    const [latestVideos, videoStats, conversations, activeSubscribers, recentSubscribers, monthlySubRevenue, monthlyTipRevenue, tipSummary] = await Promise.all([
+      Video.find({ uploader: userId }).sort({ createdAt: -1 }).limit(8).lean(),
+      Video.aggregate([
+        { $match: { uploader: userId } },
+        {
+          $group: {
+            _id: null,
+            totalViews: { $sum: '$views' },
+            totalVideos: { $sum: 1 },
+          },
+        },
+      ]),
+      Conversation.find({ participants: userId }).lean(),
+      Subscription.countDocuments({ user: userId, status: 'active' }),
+      Subscription.find({ user: userId, status: 'active' }).sort({ createdAt: -1 }).limit(5).populate('user', 'username').lean(),
+      Subscription.aggregate([
+        { $match: { user: userId, status: 'active', createdAt: { $gte: sixMonthsAgo } } },
+        {
+          $group: {
+            _id: { year: { $year: '$createdAt' }, month: { $month: '$createdAt' } },
+            revenue: { $sum: '$amount' },
+          },
+        },
+        { $sort: { '_id.year': 1, '_id.month': 1 } },
+      ]),
+      Tip.aggregate([
+        { $match: { creator: userId, status: 'completed', createdAt: { $gte: sixMonthsAgo } } },
+        {
+          $group: {
+            _id: { year: { $year: '$createdAt' }, month: { $month: '$createdAt' } },
+            revenue: { $sum: '$amount' },
+          },
+        },
+        { $sort: { '_id.year': 1, '_id.month': 1 } },
+      ]),
+      Tip.aggregate([
+        { $match: { creator: userId, status: 'completed' } },
+        { $group: { _id: null, totalTips: { $sum: '$amount' } } },
+      ]),
+    ]);
+
+    const totalViews = videoStats[0]?.totalViews || 0;
+    const totalVideos = videoStats[0]?.totalVideos || 0;
+    const tipTotal = tipSummary[0]?.totalTips || 0;
+
+    const revenueChart = [];
+    for (let index = 5; index >= 0; index -= 1) {
+      const monthDate = new Date(now.getFullYear(), now.getMonth() - index, 1);
+      const label = monthDate.toLocaleString('en-US', { month: 'short' });
+      const subEntry = monthlySubRevenue.find(item => item._id.year === monthDate.getFullYear() && item._id.month === monthDate.getMonth() + 1);
+      const tipEntry = monthlyTipRevenue.find(item => item._id.year === monthDate.getFullYear() && item._id.month === monthDate.getMonth() + 1);
+      revenueChart.push({ label, amount: (subEntry?.revenue || 0) + (tipEntry?.revenue || 0) });
+    }
+
+    const earningsThisMonthAgg = await Subscription.aggregate([
+      { $match: { user: userId, status: 'active', createdAt: { $gte: monthStart } } },
+      { $group: { _id: null, total: { $sum: '$amount' } } },
+    ]);
+    const tipThisMonthAgg = await Tip.aggregate([
+      { $match: { creator: userId, status: 'completed', createdAt: { $gte: monthStart } } },
+      { $group: { _id: null, total: { $sum: '$amount' } } },
+    ]);
+    const earningsThisMonth = (earningsThisMonthAgg[0]?.total || 0) + (tipThisMonthAgg[0]?.total || 0);
+    const payoutAvailable = +(earningsThisMonth * 0.8).toFixed(2);
+
+    const unreadMessages = conversations.reduce((sum, conv) => {
+      const unread = conv.unread;
+      const count = unread ? (typeof unread.get === 'function' ? unread.get(String(userId)) : unread[String(userId)]) : 0;
+      return sum + (count || 0);
+    }, 0);
+
+    res.json({
+      success: true,
+      stats: {
+        earningsThisMonth,
+        activeSubscribers,
+        totalViews,
+        totalLikes: 0,
+        tipsReceived: tipTotal,
+        unreadMessages,
+        payoutAvailable,
+      },
+      revenueChart,
+      recentPosts: latestVideos.map(video => ({
+        id: video._id,
+        title: video.title,
+        type: video.isPremium ? 'Premium' : 'Video',
+        views: video.views || 0,
+        likes: 0,
+        status: video.status,
+        createdAt: video.createdAt,
+      })),
+      newSubscribers: recentSubscribers.map(sub => ({
+        username: sub.user?.username || 'Subscriber',
+        plan: sub.plan,
+        amount: sub.amount,
+        createdAt: sub.createdAt,
+      })),
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// @desc Get creator earnings data for current user
+// @route GET /api/users/me/earnings
+exports.getCreatorEarnings = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    const subscriptions = await Subscription.find({ user: userId }).sort({ createdAt: -1 }).lean();
+    const tips = await Tip.find({ creator: userId, status: 'completed' }).sort({ createdAt: -1 }).lean();
+    const activeSubscriptions = subscriptions.filter(sub => sub.status === 'active');
+
+    const subscriptionAllTime = subscriptions.reduce((sum, sub) => sum + (sub.amount || 0), 0);
+    const tipAllTime = tips.reduce((sum, tip) => sum + (tip.amount || 0), 0);
+    const allTimeEarnings = subscriptionAllTime + tipAllTime;
+
+    const thisMonthSubTotal = subscriptions
+      .filter(sub => new Date(sub.createdAt) >= monthStart)
+      .reduce((sum, sub) => sum + (sub.amount || 0), 0);
+    const thisMonthTipTotal = tips
+      .filter(tip => new Date(tip.createdAt) >= monthStart)
+      .reduce((sum, tip) => sum + (tip.amount || 0), 0);
+    const thisMonthTotal = thisMonthSubTotal + thisMonthTipTotal;
+    const availableBalance = +(thisMonthTotal * 0.8).toFixed(2);
+
+    const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+    const monthlySubAgg = await Subscription.aggregate([
+      { $match: { user: userId, status: 'active', createdAt: { $gte: sixMonthsAgo } } },
+      {
+        $group: {
+          _id: { year: { $year: '$createdAt' }, month: { $month: '$createdAt' } },
+          total: { $sum: '$amount' },
+        },
+      },
+      { $sort: { '_id.year': 1, '_id.month': 1 } },
+    ]);
+    const monthlyTipAgg = await Tip.aggregate([
+      { $match: { creator: userId, status: 'completed', createdAt: { $gte: sixMonthsAgo } } },
+      {
+        $group: {
+          _id: { year: { $year: '$createdAt' }, month: { $month: '$createdAt' } },
+          total: { $sum: '$amount' },
+        },
+      },
+      { $sort: { '_id.year': 1, '_id.month': 1 } },
+    ]);
+
+    const chartData = [];
+    for (let i = 5; i >= 0; i -= 1) {
+      const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const label = monthDate.toLocaleString('en-US', { month: 'short' });
+      const subEntry = monthlySubAgg.find(item => item._id.year === monthDate.getFullYear() && item._id.month === monthDate.getMonth() + 1);
+      const tipEntry = monthlyTipAgg.find(item => item._id.year === monthDate.getFullYear() && item._id.month === monthDate.getMonth() + 1);
+      chartData.push({ label, amount: (subEntry?.total || 0) + (tipEntry?.total || 0) });
+    }
+
+    const transactions = [
+      ...subscriptions.map(sub => ({
+        desc: `Subscription — ${sub.paymentMethod || 'payment'}`,
+        type: 'sub',
+        amount: sub.amount || 0,
+        fee: +(sub.amount * 0.2 || 0).toFixed(2),
+        net: +((sub.amount || 0) * 0.8).toFixed(2),
+        date: sub.createdAt,
+        status: sub.status,
+      })),
+      ...tips.map(tip => ({
+        desc: 'Tip',
+        type: 'tip',
+        amount: tip.amount || 0,
+        fee: +(tip.amount * 0.2 || 0).toFixed(2),
+        net: +((tip.amount || 0) * 0.8).toFixed(2),
+        date: tip.createdAt,
+        status: tip.status,
+      })),
+    ].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    res.json({
+      success: true,
+      earnings: {
+        availableBalance,
+        thisMonthTotal,
+        subscriptionRevenue: thisMonthSubTotal,
+        tipsAndPpv: thisMonthTipTotal,
+        allTimeEarnings,
+        activeSubscriptions: activeSubscriptions.length,
+      },
+      monthlyBreakdown: chartData,
+      transactions,
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// @desc Update current user's profile
+// @route PUT /api/users/me
+exports.updateMe = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found.' });
+
+    const {
+      username,
+      displayName,
+      email,
+      bio,
+      location,
+      creatorCategory,
+      creatorPitch,
+      privacySettings,
+      notificationPreferences,
+    } = req.body;
+
+    if (username && username !== user.username) {
+      const exists = await User.findOne({ username });
+      if (exists) return res.status(400).json({ success: false, message: 'Username already in use.' });
+      user.username = username;
+    }
+    if (email && email !== user.email) {
+      const exists = await User.findOne({ email });
+      if (exists) return res.status(400).json({ success: false, message: 'Email already in use.' });
+      user.email = email;
+    }
+    if (displayName) user.displayName = displayName;
+    if (typeof bio !== 'undefined') user.bio = bio;
+    if (typeof location !== 'undefined') user.location = location;
+    if (typeof creatorCategory !== 'undefined') user.creatorCategory = creatorCategory;
+    if (typeof creatorPitch !== 'undefined') user.creatorPitch = creatorPitch;
+    if (typeof privacySettings !== 'undefined') {
+      user.privacySettings = {
+        ...user.privacySettings?.toObject?.(),
+        ...privacySettings,
+      };
+    }
+    if (typeof notificationPreferences !== 'undefined') {
+      user.notificationPreferences = {
+        ...user.notificationPreferences?.toObject?.(),
+        ...notificationPreferences,
+      };
+    }
+
+    await user.save();
+
+    const safe = user.toObject();
+    delete safe.password;
+    res.json({ success: true, user: safe });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// @desc Upload avatar image for current user
+// @route POST /api/users/me/avatar
+exports.uploadAvatar = async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ success: false, message: 'No file uploaded.' });
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found.' });
+    user.avatar = `/uploads/${req.file.filename}`;
+    await user.save();
+    res.json({ success: true, avatar: user.avatar });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// @desc Upload cover image for current user
+// @route POST /api/users/me/cover
+exports.uploadCover = async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ success: false, message: 'No file uploaded.' });
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found.' });
+    user.coverImage = `/uploads/${req.file.filename}`;
+    await user.save();
+    res.json({ success: true, cover: user.coverImage });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// @desc Upgrade current user to creator
+// @route POST /api/users/me/creator
+exports.upgradeToCreator = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found.' });
+    if (user.role === 'creator') {
+      return res.json({ success: true, message: 'Already a creator.', user });
+    }
+
+    const { creatorCategory, creatorPitch, displayName, bio } = req.body;
+    user.role = 'creator';
+    if (displayName) user.displayName = displayName;
+    if (typeof bio !== 'undefined') user.bio = bio;
+    if (typeof creatorCategory !== 'undefined') user.creatorCategory = creatorCategory;
+    if (typeof creatorPitch !== 'undefined') user.creatorPitch = creatorPitch;
+    if (!user.displayName) user.displayName = user.username;
+
+    await user.save();
+    const safe = user.toObject();
+    delete safe.password;
+    res.json({ success: true, message: 'Your account is now a creator.', user: safe });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }

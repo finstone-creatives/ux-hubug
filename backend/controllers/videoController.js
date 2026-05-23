@@ -1,11 +1,12 @@
 const Video = require('../models/Video');
 const User = require('../models/User');
+const { createNotification } = require('./notificationController');
 const path = require('path');
 const fs = require('fs');
 
 // @desc    Upload video
 // @route   POST /api/videos/upload
-exports.uploadVideo = async (req, res) => {
+exports.uploadVideo = async (req, res) =>
   try {
     if (!req.file) {
       return res.status(400).json({ success: false, message: 'No video file uploaded.' });
@@ -27,6 +28,21 @@ exports.uploadVideo = async (req, res) => {
     });
 
     await User.findByIdAndUpdate(req.user.id, { $inc: { uploadCount: 1 } });
+
+    try {
+      if (req.user.notificationPreferences?.notifPost !== false) {
+        await createNotification({
+          recipient: req.user._id,
+          sender: req.user._id,
+          type: 'video',
+          title: 'Video upload submitted',
+          message: `Your video "${title}" was uploaded and is awaiting moderation.`,
+          link: `/pages/profile.html?id=${req.user._id}`,
+        });
+      }
+    } catch (e) {
+      console.error('Video upload notification failed', e);
+    }
 
     res.status(201).json({ success: true, message: 'Video uploaded. Awaiting moderation.', video });
   } catch (err) {

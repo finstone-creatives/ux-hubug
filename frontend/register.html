@@ -83,7 +83,7 @@
       });
       if (data.success) {
         Auth.setSession(data.token, data.user);
-        window.location.href = data.user.accountType === 'creator' ? '/pages/become-creator.html' : '/index.html';
+        window.location.href = data.user.role === 'creator' ? '/creator/dashboard.html' : '/index.html';
       } else {
         showAlert('alertBox', data.message, 'error');
         btn.innerHTML = '<i class="ti ti-user-plus"></i> Create Account'; btn.disabled = false;
