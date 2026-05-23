@@ -22,7 +22,7 @@ connectDB();
 
 // Security middleware
 app.use(helmet({ crossOriginResourcePolicy: false }));
-const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:3000').split(',').map(origin => origin.trim()).filter(Boolean);
+const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:3000,https://ux-hub.onrender.com').split(',').map(origin => origin.trim()).filter(Boolean);
 if (!allowedOrigins.includes('http://localhost:5500')) allowedOrigins.push('http://localhost:5500');
 if (!allowedOrigins.includes('http://127.0.0.1:5500')) allowedOrigins.push('http://127.0.0.1:5500');
 const corsOptions = {
