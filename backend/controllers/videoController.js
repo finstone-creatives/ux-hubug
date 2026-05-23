@@ -6,7 +6,7 @@ const fs = require('fs');
 
 // @desc    Upload video
 // @route   POST /api/videos/upload
-exports.uploadVideo = async (req, res) =>
+exports.uploadVideo = async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ success: false, message: 'No video file uploaded.' });
