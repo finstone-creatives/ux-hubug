@@ -2,53 +2,211 @@
 <html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Feed — UX-HUB</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Feed — Nxt-door</title>
+  <meta name="description" content="Your personalized Nxt-door creator feed. Discover new posts and content from creators you follow." />
+  <meta name="robots" content="noindex" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#e50914" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Nxt-door" />
+  <link rel="apple-touch-icon" href="/assets/icons/icon-192.svg" />
+  <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css">
   <link rel="stylesheet" href="/assets/css/main.css" />
   <style>
-    .page-panel { display:flex; flex-direction:column; gap:18px; }
-    .panel-card { background:var(--surface); border:1px solid var(--border); border-radius:1rem; padding:24px; }
-    .panel-card h2 { margin:0 0 10px; }
-    .panel-list { display:grid; gap:14px; }
-    .panel-item { background:var(--surface2); border:1px solid var(--border); border-radius:0.95rem; padding:18px; }
-    .placeholder { color:var(--text3); }
+    .feed-wrap { max-width:680px; margin:0 auto; display:flex; flex-direction:column; gap:20px; }
+    .feed-tabs { display:flex; gap:4px; background:var(--surface); border-radius:var(--radius-full); padding:4px; margin-bottom:4px; }
+    .feed-tab { flex:1; padding:9px 0; border:none; border-radius:var(--radius-full); background:none; color:var(--text3); font-size:0.875rem; font-weight:600; cursor:pointer; transition:all var(--t); font-family:var(--font-body); }
+    .feed-tab.active { background:var(--card); color:var(--text); box-shadow:0 1px 4px rgba(0,0,0,0.4); }
+    .post-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; animation:fadeIn 0.3s ease; }
+    .post-head { display:flex; align-items:center; gap:12px; padding:14px 16px; }
+    .post-creator-info { flex:1; min-width:0; }
+    .post-creator-name { font-weight:700; font-size:0.9rem; display:flex; align-items:center; gap:6px; }
+    .post-time { font-size:0.75rem; color:var(--text3); margin-top:1px; }
+    .post-body { padding:0 16px 14px; }
+    .post-text { font-size:0.92rem; line-height:1.65; color:var(--text2); margin:0; }
+    .post-media-grid { display:grid; gap:2px; margin-bottom:2px; }
+    .post-media-grid.one { grid-template-columns:1fr; }
+    .post-media-grid.two { grid-template-columns:1fr 1fr; }
+    .post-media-grid.three { grid-template-columns:1fr 1fr; }
+    .post-media-grid.three .media-item:first-child { grid-row:span 2; }
+    .post-media-grid.four,.post-media-grid.many { grid-template-columns:1fr 1fr; }
+    .media-item { position:relative; background:var(--surface2); overflow:hidden; cursor:pointer; }
+    .media-item img { width:100%; height:100%; object-fit:cover; display:block; }
+    .media-item video { width:100%; max-height:420px; display:block; }
+    .media-item.locked { min-height:200px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; color:var(--text3); }
+    .media-item.locked .ti { font-size:32px; color:var(--red); }
+    .post-actions { display:flex; align-items:center; gap:4px; padding:10px 12px; border-top:1px solid var(--border); }
+    .post-action { display:flex; align-items:center; gap:5px; padding:7px 10px; border:none; background:none; color:var(--text3); font-size:0.82rem; font-weight:600; cursor:pointer; border-radius:var(--radius); transition:all var(--t); font-family:var(--font-body); }
+    .post-action:hover { background:var(--surface2); color:var(--text); }
+    .post-action.liked { color:var(--red); }
+    .post-action .ti { font-size:18px; }
+    .post-action-spacer { flex:1; }
+    .feed-empty { text-align:center; padding:60px 20px; color:var(--text3); }
+    .feed-empty .ti { font-size:52px; display:block; margin-bottom:16px; color:var(--text4); }
+    .feed-skeleton { display:flex; flex-direction:column; gap:20px; }
   </style>
 </head>
 <body>
-  <div class="sidebar-overlay" onclick="Sidebar.close()"></div>
-  <aside class="app-sidebar" id="appSidebar"></aside>
-  <header class="app-header" id="appHeader"></header>
-  <div class="page-wrap">
-    <main class="main-content">
-      <div class="inner-lg">
-        <div class="page-header" style="margin-bottom:24px; display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap;">
-          <div>
-            <h1>Feed</h1>
-            <p>Your personalized creator feed. Discover new posts, updates, and content based on your subscriptions.</p>
-          </div>
+<div class="sidebar-overlay" onclick="Sidebar.close()"></div>
+<aside class="app-sidebar" id="appSidebar"></aside>
+<header class="app-header" id="appHeader"></header>
+<div class="page-wrap">
+  <main class="main-content">
+    <div class="inner-lg">
+      <div class="feed-wrap">
+        <div class="feed-tabs">
+          <button class="feed-tab active" onclick="switchFeed('all',this)">For You</button>
+          <button class="feed-tab" onclick="switchFeed('following',this)">Following</button>
+          <button class="feed-tab" onclick="switchFeed('premium',this)">Premium</button>
         </div>
-        <div class="page-panel">
-          <div class="panel-card">
-            <h2>Latest posts</h2>
-            <div class="panel-list">
-              <div class="panel-item">
-                <strong>Nothing to show yet.</strong>
-                <p class="placeholder">Follow creators or subscribe to get fresh content in your feed.</p>
-              </div>
-            </div>
-          </div>
-        </div>
+        <div id="feedContainer"></div>
       </div>
-    </main>
-  </div>
-  <script src="/assets/js/app.js"></script>
-  <script src="/assets/js/layout.js"></script>
-  <script>
-    Auth.requireAuth('/login.html');
-    Layout.init('Feed');
-  </script>
+    </div>
+  </main>
+</div>
+<script src="/assets/js/app.js"></script>
+<script src="/assets/js/layout.js"></script>
+<script src="/assets/js/pwa.js"></script>
+<script>
+  Auth.requireAuth('/login.html');
+  Layout.init('Feed');
+
+  let currentFeed = 'all';
+  let page = 1;
+  let loading = false;
+
+  function showSkeleton() {
+    document.getElementById('feedContainer').innerHTML = `
+      <div class="feed-skeleton">
+        ${Array(3).fill(`<div class="post-card"><div style="padding:14px 16px;display:flex;gap:12px"><div class="skeleton" style="width:40px;height:40px;border-radius:50%;flex-shrink:0"></div><div style="flex:1"><div class="skeleton" style="height:14px;width:140px;margin-bottom:8px"></div><div class="skeleton" style="height:11px;width:80px"></div></div></div><div class="skeleton" style="height:220px;margin:0 0 14px"></div><div style="padding:0 16px 14px"><div class="skeleton" style="height:12px;width:90%;margin-bottom:6px"></div><div class="skeleton" style="height:12px;width:70%"></div></div></div>`).join('')}
+      </div>`;
+  }
+
+  function renderPost(p) {
+    const creator = p.creator || {};
+    const name = creator.username || creator.displayName || 'Creator';
+    const initials = name.slice(0,2).toUpperCase();
+    const isPremium = p.isPremium;
+    const liked = false;
+
+    let mediaHtml = '';
+    if (p.media && p.media.length > 0) {
+      if (isPremium && !Auth.getUser()?.isPremium) {
+        mediaHtml = `<div class="post-media-grid one"><div class="media-item locked"><i class="ti ti-lock"></i><span style="font-size:0.85rem;font-weight:600">Premium Content</span><span style="font-size:0.75rem">Subscribe to unlock</span><button class="btn btn-brand btn-sm" onclick="window.location='/pages/profile.html?id=${creator._id}'">Subscribe</button></div></div>`;
+      } else {
+        const count = p.media.length;
+        const cls = count===1?'one':count===2?'two':count===3?'three':count===4?'four':'many';
+        const shown = p.media.slice(0, Math.min(count, 4));
+        mediaHtml = `<div class="post-media-grid ${cls}">${shown.map((m,i) => {
+          if (m.type === 'video') return `<div class="media-item"><video src="${m.url}" controls preload="metadata" poster="${m.thumbnail||''}"></video></div>`;
+          return `<div class="media-item">${i===3&&count>4?`<img src="${m.url}" loading="lazy" /><div style="position:absolute;inset:0;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:700">+${count-3}</div>`:`<img src="${m.url}" loading="lazy" />`}</div>`;
+        }).join('')}</div>`;
+      }
+    }
+
+    const likeCount = p.likesCount || 0;
+    const views = p.viewsCount || 0;
+    const ago = fmt.timeAgo ? fmt.timeAgo(p.createdAt) : new Date(p.createdAt).toLocaleDateString();
+
+    return `
+    <article class="post-card" data-id="${p._id}">
+      <div class="post-head">
+        <div class="avatar avatar-md" style="background:var(--grad-brand);flex-shrink:0">
+          ${creator.avatar ? `<img src="${creator.avatar}" />` : `<span>${initials}</span>`}
+        </div>
+        <div class="post-creator-info">
+          <div class="post-creator-name">
+            <a href="/pages/profile.html?id=${creator._id||''}" style="color:var(--text);text-decoration:none">${fmt.esc(name)}</a>
+            ${isPremium ? '<span class="badge badge-verified" style="font-size:0.65rem"><i class="ti ti-crown"></i></span>' : ''}
+          </div>
+          <div class="post-time">${ago}</div>
+        </div>
+        <button class="btn btn-icon btn-sm" style="margin-left:auto" title="More"><i class="ti ti-dots"></i></button>
+      </div>
+      ${p.caption ? `<div class="post-body"><p class="post-text">${fmt.esc(p.caption)}</p></div>` : ''}
+      ${mediaHtml}
+      <div class="post-actions">
+        <button class="post-action" onclick="toggleLike(this,'${p._id}')">
+          <i class="ti ti-heart"></i> <span class="like-count">${likeCount}</span>
+        </button>
+        <button class="post-action"><i class="ti ti-message-circle"></i> Comment</button>
+        <button class="post-action" onclick="sharePost('${p._id}')"><i class="ti ti-share"></i></button>
+        <span class="post-action-spacer"></span>
+        <span style="font-size:0.75rem;color:var(--text4)"><i class="ti ti-eye" style="font-size:14px"></i> ${fmt.num(views)}</span>
+      </div>
+    </article>`;
+  }
+
+  async function loadFeed(reset = false) {
+    if (loading) return;
+    loading = true;
+    if (reset) { page = 1; showSkeleton(); }
+    try {
+      const params = new URLSearchParams({ page, limit: 10 });
+      if (currentFeed === 'premium') params.set('premium', 'true');
+      const r = await api.get(`/posts?${params}`);
+      const posts = r.posts || [];
+      const container = document.getElementById('feedContainer');
+      if (reset) container.innerHTML = '';
+      if (posts.length === 0 && page === 1) {
+        container.innerHTML = `
+          <div class="feed-empty">
+            <i class="ti ti-sparkles"></i>
+            <h3>Your feed is empty</h3>
+            <p style="margin:8px 0 20px">Follow creators to see their posts here, or explore to discover new ones.</p>
+            <a href="/index.html" class="btn btn-brand btn-md"><i class="ti ti-compass"></i> Discover Creators</a>
+          </div>`;
+      } else {
+        posts.forEach(p => {
+          container.insertAdjacentHTML('beforeend', renderPost(p));
+        });
+        if (posts.length === 10) {
+          const btn = document.createElement('div');
+          btn.style.cssText = 'text-align:center;padding:20px';
+          btn.innerHTML = `<button class="btn btn-outline btn-md" id="loadMoreFeed" onclick="loadMore()"><i class="ti ti-refresh"></i> Load More</button>`;
+          container.appendChild(btn);
+        }
+      }
+    } catch (err) {
+      document.getElementById('feedContainer').innerHTML = `<div class="feed-empty"><i class="ti ti-alert-circle"></i><p>${err.message||'Unable to load feed. Please try again.'}</p></div>`;
+    }
+    loading = false;
+  }
+
+  function loadMore() {
+    const btn = document.getElementById('loadMoreFeed');
+    if (btn) btn.closest('div').remove();
+    page++;
+    loadFeed(false);
+  }
+
+  function switchFeed(type, el) {
+    currentFeed = type;
+    document.querySelectorAll('.feed-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    loadFeed(true);
+  }
+
+  async function toggleLike(btn, postId) {
+    const countEl = btn.querySelector('.like-count');
+    const liked = btn.classList.toggle('liked');
+    const count = parseInt(countEl.textContent) || 0;
+    countEl.textContent = liked ? count + 1 : Math.max(0, count - 1);
+    try { await api.post(`/posts/${postId}/like`); } catch {}
+  }
+
+  function sharePost(id) {
+    navigator.clipboard?.writeText(`${window.location.origin}/pages/post.html?id=${id}`);
+    Toast.show('Link copied!', 'success');
+  }
+
+  document.addEventListener('DOMContentLoaded', () => loadFeed(true));
+</script>
 </body>
 </html>
