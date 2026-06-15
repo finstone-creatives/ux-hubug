@@ -21,42 +21,580 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css">
   <link rel="stylesheet" href="/assets/css/main.css">
   <style>
-    .profile-cover{width:100%;height:260px;background:linear-gradient(135deg,#2D1B69,#1A2D1A);background-size:cover;background-position:center;position:relative}
-    .profile-cover-actions{position:absolute;top:16px;right:16px;display:flex;gap:8px}
-    .profile-header{max-width:900px;margin:0 auto;padding:0 24px}
-    .profile-avatar-row{display:flex;justify-content:space-between;align-items:flex-end;margin-top:-54px;margin-bottom:16px;flex-wrap:wrap;gap:16px}
-    .profile-avatar{width:108px;height:108px;border-radius:50%;border:4px solid var(--bg);background:var(--grad-brand);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:2.2rem;font-weight:700;color:#fff;overflow:hidden;flex-shrink:0}
-    .profile-avatar img{width:100%;height:100%;object-fit:cover}
-    .profile-actions{display:flex;gap:10px;flex-wrap:wrap;padding-bottom:4px}
-    .profile-name{font-size:1.6rem;font-weight:800;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-    .profile-handle{color:var(--text3);font-size:0.9rem;margin-top:2px}
-    .profile-bio{color:var(--text2);font-size:0.92rem;line-height:1.7;margin:12px 0;max-width:600px}
-    .profile-meta{display:flex;gap:20px;flex-wrap:wrap;margin:12px 0}
-    .profile-meta-item{display:flex;align-items:center;gap:6px;font-size:0.82rem;color:var(--text3)}
-    .profile-stats{display:flex;gap:24px;margin:16px 0;flex-wrap:wrap}
-    .profile-stat{text-align:center}
-    .profile-stat strong{display:block;font-family:var(--font-display);font-size:1.4rem;font-weight:700}
-    .profile-stat span{font-size:0.75rem;color:var(--text3)}
-    .profile-tabs-wrap{border-bottom:1px solid var(--border);margin-top:20px}
-    .profile-body{max-width:900px;margin:0 auto;padding:24px}
-    .sub-tier-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;transition:all var(--t)}
-    .sub-tier-card:hover{border-color:var(--red);transform:translateY(-2px)}
-    .sub-tier-card.recommended{border-color:var(--red);background:radial-gradient(ellipse at top,rgba(229,9,20,0.08),transparent)}
-    .tier-price{font-family:var(--font-display);font-size:2.2rem;font-weight:700;color:var(--red)}
-    .tier-period{font-size:0.82rem;color:var(--text3)}
-    .tier-features{display:flex;flex-direction:column;gap:8px;margin:16px 0}
-    .tier-feature{display:flex;align-items:center;gap:8px;font-size:0.85rem;color:var(--text2)}
-    .tier-feature .ti{color:var(--green);font-size:15px;flex-shrink:0}
-    .tip-btn{width:100%;padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;font-size:0.88rem;font-weight:600;color:var(--text);transition:all var(--t);font-family:var(--font-body)}
-    .tip-btn:hover{border-color:var(--gold);color:var(--gold)}
-    .tip-btn.active{background:rgba(255,215,0,0.1);border-color:var(--gold);color:var(--gold)}
-    .media-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;border-radius:var(--radius-lg);overflow:hidden}
-    .media-item{aspect-ratio:1;background:var(--surface2);overflow:hidden;cursor:pointer;position:relative}
-    .media-item img,.media-item video{width:100%;height:100%;object-fit:cover;transition:transform var(--t)}
-    .media-item:hover img,.media-item:hover video{transform:scale(1.05)}
-    .media-locked{position:absolute;inset:0;background:rgba(9,9,13,0.8);backdrop-filter:blur(12px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
-    .media-locked .ti{font-size:28px;color:var(--red)}
-    .media-locked span{font-size:0.75rem;color:var(--text3)}
+    /* ===== PROFILE PAGE ANIMATIONS & STYLES ===== */
+    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+    @keyframes pulse-ring { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
+    @keyframes shimmer { 0% { background-position: -1000px 0; } 100% { background-position: 1000px 0; } }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes scaleIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+    
+    .animate-float { animation: float 3s ease-in-out infinite; }
+    .animate-slide-up { animation: slideUp 0.5s ease-out; }
+    .animate-scale-in { animation: scaleIn 0.4s ease-out; }
+    .animate-fade-in { animation: fadeIn 0.3s ease-out; }
+    .stagger-1 { animation-delay: 0.1s; }
+    .stagger-2 { animation-delay: 0.2s; }
+    .stagger-3 { animation-delay: 0.3s; }
+    .stagger-4 { animation-delay: 0.4s; }
+    
+    /* Cover with gradient animation */
+    .profile-cover {
+      width: 100%;
+      height: 220px;
+      background: linear-gradient(135deg, #2D1B69 0%, #1A2D1A 50%, #2D1B69 100%);
+      background-size: 200% 200%;
+      animation: gradientShift 8s ease infinite;
+      position: relative;
+      overflow: hidden;
+    }
+    @keyframes gradientShift { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+    
+    .profile-cover::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      opacity: 0.5;
+    }
+    
+    .profile-cover-actions {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      display: flex;
+      gap: 8px;
+      z-index: 10;
+    }
+    
+    /* Avatar with animated ring */
+    .profile-avatar-wrap {
+      position: relative;
+      margin-top: -50px;
+      display: inline-block;
+    }
+    
+    .profile-avatar {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      border: 4px solid var(--bg);
+      background: var(--grad-brand);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-size: 2rem;
+      font-weight: 700;
+      color: #fff;
+      overflow: hidden;
+      position: relative;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: pointer;
+    }
+    
+    .profile-avatar:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 30px rgba(229, 9, 20, 0.4);
+    }
+    
+    .profile-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .profile-avatar-ring {
+      position: absolute;
+      inset: -6px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      background: linear-gradient(135deg, var(--red), var(--gold)) border-box;
+      -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+      mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      animation: rotate 4s linear infinite;
+    }
+    
+    @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    
+    .online-indicator {
+      position: absolute;
+      bottom: 6px;
+      right: 6px;
+      width: 18px;
+      height: 18px;
+      background: var(--green);
+      border: 3px solid var(--bg);
+      border-radius: 50%;
+    }
+    
+    .online-indicator::after {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      border: 2px solid var(--green);
+      animation: pulse-ring 2s ease-out infinite;
+    }
+    
+    /* Header layout */
+    .profile-header {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+    
+    .profile-top-section {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    
+    .profile-info-section {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .profile-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding-bottom: 4px;
+    }
+    
+    .profile-name {
+      font-size: 1.5rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+    
+    .profile-handle {
+      color: var(--text3);
+      font-size: 0.9rem;
+      margin-top: 4px;
+    }
+    
+    .profile-bio {
+      color: var(--text2);
+      font-size: 0.92rem;
+      line-height: 1.7;
+      margin: 12px 0;
+      max-width: 600px;
+    }
+    
+    .profile-meta {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin: 12px 0;
+      font-size: 0.82rem;
+      color: var(--text3);
+    }
+    
+    .profile-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    /* Stats with animated numbers */
+    .profile-stats {
+      display: flex;
+      gap: 32px;
+      margin: 20px 0;
+      flex-wrap: wrap;
+    }
+    
+    .profile-stat {
+      text-align: center;
+      cursor: pointer;
+      padding: 8px 16px;
+      border-radius: var(--radius);
+      transition: background 0.2s;
+    }
+    
+    .profile-stat:hover {
+      background: var(--surface2);
+    }
+    
+    .profile-stat strong {
+      display: block;
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      font-weight: 700;
+      background: var(--grad-brand);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .profile-stat span {
+      font-size: 0.75rem;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    /* Story Highlights */
+    .story-highlights {
+      display: flex;
+      gap: 16px;
+      padding: 16px 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    
+    .story-highlights::-webkit-scrollbar { display: none; }
+    
+    .story-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    
+    .story-item:hover { transform: scale(1.05); }
+    
+    .story-ring {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      padding: 3px;
+      background: linear-gradient(135deg, var(--red), var(--gold), var(--blue));
+      position: relative;
+    }
+    
+    .story-ring img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--bg);
+    }
+    
+    .story-ring.unseen {
+      animation: rotate 8s linear infinite;
+    }
+    
+    .story-name {
+      font-size: 0.7rem;
+      color: var(--text2);
+      max-width: 64px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    
+    /* Tabs */
+    .profile-tabs-wrap {
+      border-bottom: 1px solid var(--border);
+      margin-top: 20px;
+      position: sticky;
+      top: 60px;
+      background: var(--bg);
+      z-index: 100;
+    }
+    
+    .profile-body {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    /* Subscription Tiers */
+    .sub-tier-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .sub-tier-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--red), var(--gold));
+      transform: scaleX(0);
+      transition: transform 0.3s ease;
+    }
+    
+    .sub-tier-card:hover::before,
+    .sub-tier-card.recommended::before {
+      transform: scaleX(1);
+    }
+    
+    .sub-tier-card:hover {
+      border-color: var(--red);
+      transform: translateY(-4px);
+      box-shadow: 0 10px 40px rgba(229, 9, 20, 0.15);
+    }
+    
+    .sub-tier-card.recommended {
+      border-color: var(--red);
+      background: radial-gradient(ellipse at top, rgba(229,9,20,0.08), transparent);
+      transform: scale(1.02);
+    }
+    
+    .tier-price {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      font-weight: 700;
+      background: var(--grad-brand);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .tier-period { font-size: 0.82rem; color: var(--text3); }
+    
+    .tier-features {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin: 16px 0;
+    }
+    
+    .tier-feature {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      color: var(--text2);
+    }
+    
+    .tier-feature .ti {
+      color: var(--green);
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+    
+    /* Tip Buttons */
+    .tip-btn {
+      width: 100%;
+      padding: 12px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text);
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .tip-btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, var(--gold), transparent);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    
+    .tip-btn:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+      transform: translateY(-2px);
+    }
+    
+    .tip-btn:hover::after { opacity: 0.1; }
+    
+    .tip-btn.active {
+      background: linear-gradient(135deg, rgba(255,215,0,0.15), transparent);
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+    
+    /* Media Grid */
+    .media-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 3px;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+    
+    .media-item {
+      aspect-ratio: 1;
+      background: var(--surface2);
+      overflow: hidden;
+      cursor: pointer;
+      position: relative;
+      transition: transform 0.3s ease;
+    }
+    
+    .media-item:hover { transform: scale(1.02); z-index: 2; }
+    
+    .media-item img, .media-item video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+    
+    .media-item:hover img, .media-item:hover video { transform: scale(1.1); }
+    
+    .media-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.7), transparent 50%);
+      opacity: 0;
+      transition: opacity 0.3s;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding: 12px;
+    }
+    
+    .media-item:hover .media-overlay { opacity: 1; }
+    
+    .media-stats {
+      display: flex;
+      gap: 12px;
+      color: white;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    
+    .media-locked {
+      position: absolute;
+      inset: 0;
+      background: rgba(9,9,13,0.85);
+      backdrop-filter: blur(12px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: backdrop-filter 0.3s;
+    }
+    
+    .media-locked .ti {
+      font-size: 32px;
+      color: var(--red);
+      animation: float 2s ease-in-out infinite;
+    }
+    
+    .media-locked span {
+      font-size: 0.75rem;
+      color: var(--text3);
+    }
+    
+    /* Mobile FAB */
+    .profile-fab {
+      display: none;
+      position: fixed;
+      bottom: calc(90px + env(safe-area-inset-bottom));
+      right: 20px;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: var(--grad-brand);
+      border: none;
+      color: white;
+      cursor: pointer;
+      z-index: 899;
+      box-shadow: 0 4px 20px rgba(229, 9, 20, 0.4);
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+    
+    .profile-fab:hover { transform: scale(1.1); }
+    .profile-fab i { font-size: 1.5rem; }
+    
+    /* Mobile Bottom Nav */
+    .mobile-bottom-nav {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+      z-index: 900;
+      justify-content: space-around;
+    }
+    
+    .mobile-nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 12px;
+      color: var(--text3);
+      text-decoration: none;
+      font-size: 0.7rem;
+      transition: all 0.2s;
+      min-width: 56px;
+    }
+    
+    .mobile-nav-item i { font-size: 1.3rem; }
+    .mobile-nav-item.active { color: var(--red); }
+    
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+      .profile-cover { height: 160px; }
+      .profile-avatar { width: 80px; height: 80px; font-size: 1.6rem; }
+      .profile-avatar-wrap { margin-top: -40px; }
+      .profile-top-section { flex-direction: column; align-items: flex-start; }
+      .profile-info-section { width: 100%; }
+      .profile-name { font-size: 1.3rem; margin-top: 8px; }
+      .profile-stats { gap: 16px; justify-content: space-around; }
+      .profile-stat strong { font-size: 1.2rem; }
+      .profile-actions { width: 100%; justify-content: flex-start; margin-top: 12px; }
+      .profile-actions .btn { flex: 1; justify-content: center; }
+      .profile-tabs-wrap { top: 0; }
+      .profile-body { padding: 16px; }
+      .mobile-bottom-nav { display: flex; }
+      .profile-fab { display: flex; }
+      .app-footer { padding-bottom: calc(80px + env(safe-area-inset-bottom)); }
+      .page-wrap { padding-bottom: 70px; }
+      .grid-3 { grid-template-columns: 1fr !important; }
+      .sub-tier-card.recommended { transform: none; }
+    }
+    
+    /* Skeleton Loading */
+    .skeleton {
+      background: linear-gradient(90deg, var(--surface2) 25%, var(--surface) 50%, var(--surface2) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+    }
+    
+    /* Post Cards */
+    .post-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      transition: all 0.3s ease;
+      animation: slideUp 0.4s ease-out;
+    }
+    
+    .post-card:hover {
+      border-color: var(--red-dim);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+    }
   </style>
 </head>
 <body>
@@ -65,34 +603,89 @@
 <header class="app-header" id="appHeader"></header>
 <div class="page-wrap">
   <main class="main-content">
+    <!-- Animated Cover -->
     <div class="profile-cover" id="profileCover">
       <div class="profile-cover-actions">
         <button class="btn btn-surface btn-sm" onclick="shareProfile()"><i class="ti ti-share"></i> Share</button>
-        <button class="btn btn-surface btn-sm" onclick="openModal('reportModal')"><i class="ti ti-flag"></i> Report</button>
+        <button class="btn btn-surface btn-sm" onclick="openModal('reportModal')"><i class="ti ti-flag"></i></button>
       </div>
     </div>
+    
     <div class="profile-header">
-      <div class="profile-avatar-row">
-        <div class="profile-avatar" id="profileAvatar">A</div>
+      <!-- Top Section: Avatar + Actions -->
+      <div class="profile-top-section animate-slide-up">
+        <div class="profile-info-section">
+          <!-- Avatar with animated ring -->
+          <div class="profile-avatar-wrap animate-scale-in">
+            <div class="profile-avatar" id="profileAvatar">A</div>
+            <div class="online-indicator" id="onlineIndicator" style="display:none;"></div>
+          </div>
+          
+          <!-- Name & Verification -->
+          <div class="profile-name" id="profileName">
+            <span class="skeleton" style="width:150px;height:24px;display:inline-block;border-radius:4px;"></span>
+          </div>
+          <div class="profile-handle" id="profileHandle">
+            <span class="skeleton" style="width:100px;height:16px;display:inline-block;border-radius:4px;"></span>
+          </div>
+        </div>
+        
+        <!-- Action Buttons -->
         <div class="profile-actions">
-          <button class="btn btn-outline btn-sm" id="followBtn" onclick="toggleFollow()"><i class="ti ti-heart"></i> Follow</button>
-          <button class="btn btn-surface btn-sm" onclick="openModal('tipModal')"><i class="ti ti-coin"></i> Tip</button>
-          <a href="/pages/messages.html" id="msgBtn" class="btn btn-surface btn-sm"><i class="ti ti-message"></i> Message</a>
-          <button class="btn btn-brand btn-sm" onclick="openModal('subscribeModal')"><i class="ti ti-crown"></i> Subscribe</button>
+          <button class="btn btn-outline btn-sm" id="followBtn" onclick="toggleFollow()"><i class="ti ti-heart"></i> <span class="btn-text">Follow</span></button>
+          <button class="btn btn-surface btn-sm mobile-hide" onclick="openModal('tipModal')"><i class="ti ti-coin"></i> Tip</button>
+          <a href="/pages/messages.html" id="msgBtn" class="btn btn-surface btn-sm mobile-hide"><i class="ti ti-message"></i> Message</a>
+          <button class="btn btn-brand btn-sm" onclick="openModal('subscribeModal')"><i class="ti ti-crown"></i> <span class="btn-text">Subscribe</span></button>
         </div>
       </div>
-      <div class="profile-name" id="profileName">Loading...</div>
-      <div class="profile-handle" id="profileHandle"></div>
-      <div class="profile-meta" id="profileMeta"></div>
-      <div class="profile-bio" id="profileBio"></div>
-      <div class="profile-stats" id="profileStats"></div>
+      
+      <!-- Bio & Meta -->
+      <div class="profile-meta animate-slide-up stagger-1" id="profileMeta"></div>
+      <div class="profile-bio animate-slide-up stagger-2" id="profileBio">
+        <span class="skeleton" style="width:100%;height:60px;display:block;border-radius:4px;"></span>
+      </div>
+      
+      <!-- Stats -->
+      <div class="profile-stats animate-slide-up stagger-3" id="profileStats">
+        <div class="profile-stat"><div class="skeleton" style="width:50px;height:30px;border-radius:4px;"></div><span class="skeleton" style="width:40px;height:12px;margin-top:4px;border-radius:2px;"></span></div>
+        <div class="profile-stat"><div class="skeleton" style="width:50px;height:30px;border-radius:4px;"></div><span class="skeleton" style="width:40px;height:12px;margin-top:4px;border-radius:2px;"></span></div>
+        <div class="profile-stat"><div class="skeleton" style="width:50px;height:30px;border-radius:4px;"></div><span class="skeleton" style="width:40px;height:12px;margin-top:4px;border-radius:2px;"></span></div>
+      </div>
+      
+      <!-- Story Highlights -->
+      <div class="story-highlights animate-slide-up stagger-4" id="storyHighlights">
+        <div class="story-item" onclick="openStory('featured')">
+          <div class="story-ring unseen">
+            <img src="" alt="Featured" id="storyImg1" style="background:var(--grad-brand);display:flex;align-items:center;justify-content:center;">
+          </div>
+          <span class="story-name">Featured</span>
+        </div>
+        <div class="story-item" onclick="openStory('live')">
+          <div class="story-ring">
+            <div style="width:100%;height:100%;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;">
+              <i class="ti ti-live-photo" style="color:white;font-size:1.2rem;"></i>
+            </div>
+          </div>
+          <span class="story-name">Live</span>
+        </div>
+        <div class="story-item" onclick="openStory('premium')">
+          <div class="story-ring">
+            <div style="width:100%;height:100%;border-radius:50%;background:linear-gradient(135deg,var(--gold),#B8860B);display:flex;align-items:center;justify-content:center;">
+              <i class="ti ti-crown" style="color:white;font-size:1.2rem;"></i>
+            </div>
+          </div>
+          <span class="story-name">Premium</span>
+        </div>
+      </div>
+      
+      <!-- Tabs -->
       <div class="profile-tabs-wrap">
-        <div class="tabs" style="border:none">
-          <button class="tab active" onclick="switchTab('posts',this)"><i class="ti ti-layout-grid"></i> Posts</button>
-          <button class="tab" onclick="switchTab('videos',this)"><i class="ti ti-video"></i> Videos</button>
-          <button class="tab" onclick="switchTab('photos',this)"><i class="ti ti-photo"></i> Photos</button>
-          <button class="tab" onclick="switchTab('subscribe',this)"><i class="ti ti-crown"></i> Subscribe</button>
-          <button class="tab" onclick="switchTab('reviews',this)"><i class="ti ti-star"></i> Reviews</button>
+        <div class="tabs" style="border:none;overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;">
+          <button class="tab active" onclick="switchTab('posts',this)"><i class="ti ti-layout-grid"></i> <span class="tab-text">Posts</span></button>
+          <button class="tab" onclick="switchTab('videos',this)"><i class="ti ti-video"></i> <span class="tab-text">Videos</span></button>
+          <button class="tab" onclick="switchTab('photos',this)"><i class="ti ti-photo"></i> <span class="tab-text">Photos</span></button>
+          <button class="tab" onclick="switchTab('subscribe',this)"><i class="ti ti-crown"></i> <span class="tab-text">Subscribe</span></button>
+          <button class="tab" onclick="switchTab('reviews',this)"><i class="ti ti-star"></i> <span class="tab-text">Reviews</span></button>
         </div>
       </div>
     </div>
@@ -364,6 +957,77 @@
   }
 
   document.addEventListener('DOMContentLoaded', loadProfile);
+</script>
+
+<!-- Mobile Bottom Navigation -->
+<nav class="mobile-bottom-nav" id="mobileBottomNav">
+  <a href="/index.html" class="mobile-nav-item" data-page="index"><i class="ti ti-home"></i><span>Home</span></a>
+  <a href="/pages/explore.html" class="mobile-nav-item" data-page="explore"><i class="ti ti-compass"></i><span>Explore</span></a>
+  <a href="/pages/live.html" class="mobile-nav-item" data-page="live"><i class="ti ti-live-photo"></i><span>Live</span></a>
+  <a href="/pages/messages.html" class="mobile-nav-item" data-page="messages"><i class="ti ti-message"></i><span>Messages</span></a>
+  <a href="/pages/profile.html" class="mobile-nav-item active" data-page="profile"><i class="ti ti-user"></i><span>Profile</span></a>
+</nav>
+
+<!-- Floating Action Button (Mobile) -->
+<button class="profile-fab" id="profileFab" onclick="openModal('tipModal')">
+  <i class="ti ti-coin"></i>
+</button>
+
+<script>
+  // Mobile nav highlighting
+  const currentPath = window.location.pathname;
+  document.querySelectorAll('.mobile-nav-item').forEach(item => {
+    const itemPath = item.getAttribute('href');
+    if (currentPath === itemPath || currentPath.includes(itemPath.replace('.html', ''))) {
+      item.classList.add('active');
+    } else {
+      item.classList.remove('active');
+    }
+  });
+  
+  // Story viewer
+  function openStory(type) {
+    const stories = {
+      featured: { title: 'Featured', content: 'Best content from this creator' },
+      live: { title: 'Live Streams', content: 'Past live broadcasts' },
+      premium: { title: 'Premium', content: 'Exclusive subscriber content' }
+    };
+    const story = stories[type];
+    if (story) Toast.show(`Opening ${story.title}...`, 'info');
+  }
+  
+  // Intersection Observer for scroll animations
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('animate-slide-up');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    
+    document.querySelectorAll('.post-card').forEach(card => {
+      card.style.opacity = '0';
+      card.style.transform = 'translateY(20px)';
+      observer.observe(card);
+    });
+  }
+  
+  // Pull to refresh hint on mobile
+  let touchStartY = 0;
+  document.addEventListener('touchstart', (e) => {
+    if (window.scrollY === 0) touchStartY = e.touches[0].clientY;
+  }, { passive: true });
+  
+  document.addEventListener('touchmove', (e) => {
+    if (window.scrollY === 0 && !document.querySelector('.pull-refresh')) {
+      const diff = e.touches[0].clientY - touchStartY;
+      if (diff > 100 && diff < 150) {
+        // Could show pull indicator here
+      }
+    }
+  }, { passive: true });
 </script>
 </body>
 </html>
