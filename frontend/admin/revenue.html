@@ -1,18 +1,31 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
-  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Revenue — UX-HUB Admin</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Revenue — Nxt-door Admin</title>
+  <meta name="robots" content="noindex" />
+  <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css">
   <link rel="stylesheet" href="/assets/css/main.css" />
   <style>
+    :root {
+      --gold:#FFC107; --gold-bg:rgba(255,193,7,0.1);
+      --blue:#4361ee; --blue-bg:rgba(67,97,238,0.1);
+      --green:#10D96F; --green-bg:rgba(16,217,111,0.1);
+      --orange:#f59e0b; --orange-bg:rgba(245,158,11,0.1);
+      --purple:#a855f7; --purple-bg:rgba(168,85,247,0.1);
+      --red-bg:rgba(229,9,20,0.1);
+      --bg2:#05000d; --border2:rgba(255,255,255,0.12);
+    }
     .admin-wrap{display:flex;min-height:100vh}
     .admin-sidebar{width:240px;background:var(--bg2);border-right:1px solid var(--border);position:fixed;top:0;left:0;bottom:0;display:flex;flex-direction:column;z-index:100;overflow-y:auto}
     .admin-main{margin-left:240px;flex:1}
     .admin-header{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--border);padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between;z-index:80}
     .admin-content{padding:28px 24px;max-width:1400px}
+    @media(max-width:900px){.admin-sidebar{transform:translateX(-240px)}.admin-sidebar.open{transform:translateX(0)}.admin-main{margin-left:0}}
   </style>
 </head>
 <body>
@@ -20,7 +33,7 @@
   <aside class="admin-sidebar" id="adminSidebar"></aside>
   <div class="admin-main">
     <div class="admin-header">
-      <h2 style="font-size:1.1rem;font-weight:700">Revenue & Payments</h2>
+      <h2 style="font-size:1.1rem;font-weight:700">Revenue &amp; Payments</h2>
       <div style="display:flex;gap:10px">
         <select class="select input-sm" id="periodSelect" onchange="loadRevenue()" style="width:140px">
           <option value="month">This Month</option>
@@ -61,7 +74,7 @@
       <!-- TRANSACTIONS TABLE -->
       <div class="card">
         <div class="card-header">
-          <h3><i class="ti ti-list" style="color:var(--brand)"></i> Recent Transactions</h3>
+          <h3><i class="ti ti-list" style="color:var(--red)"></i> Recent Transactions</h3>
           <div class="input-group" style="width:260px"><i class="ti ti-search"></i><input class="input input-sm" type="text" placeholder="Search transactions..." /></div>
         </div>
         <div class="table-wrap" style="border:none">
@@ -90,18 +103,16 @@
   document.querySelectorAll('.theme-toggle').forEach(b => b.addEventListener('click', Theme.toggle));
   AdminLayout.init();
 
-  // Big chart
   const months = ['Jan','Feb','Mar','Apr','May','Jun'];
   const rev    = [28000,34000,30000,42000,38000,48200];
   const maxR   = Math.max(...rev);
   document.getElementById('bigRevChart').innerHTML = months.map((m,i) => `
     <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px">
       <div style="font-size:0.68rem;color:var(--text3);font-weight:600">$${(rev[i]/1000).toFixed(0)}K</div>
-      <div style="width:100%;background:var(--gradient-btn);border-radius:5px 5px 0 0;height:${Math.round((rev[i]/maxR)*140)}px;min-height:6px"></div>
+      <div style="width:100%;background:var(--grad-brand);border-radius:5px 5px 0 0;height:${Math.round((rev[i]/maxR)*140)}px;min-height:6px"></div>
       <div style="font-size:0.7rem;color:var(--text3)">${m}</div>
     </div>`).join('');
 
-  // Method chart
   const methods = [
     { name:'MTN MoMo',  pct:38, val:'$18.3K', color:'var(--gold)'   },
     { name:'Airtel',    pct:22, val:'$10.6K', color:'var(--red)'    },
@@ -116,8 +127,7 @@
       <div class="progress-bar"><div class="progress-fill" style="width:${m.pct}%;background:${m.color}"></div></div>
     </div>`).join('');
 
-  // Transactions
-  const users = ['Sarah K.','Mike T.','James O.','Rose M.','Bella U.'];
+  const users    = ['Sarah K.','Mike T.','James O.','Rose M.','Bella U.'];
   const creators = ['Amara K.','Zara L.','Naomi V.','Jade P.','Keisha A.'];
   const txTypes  = ['Subscription','Tip','Pay-Per-View','Subscription','Tip'];
   const txMethods = ['MTN MoMo','Stripe','Airtel','Card','MTN MoMo'];
@@ -126,8 +136,8 @@
   document.getElementById('txTable').innerHTML = Array.from({length:20}, (_,i) => `
     <tr>
       <td style="font-size:0.75rem;color:var(--text3)">TXN-${String(1000+i).padStart(4,'0')}</td>
-      <td><div class="td-user"><div class="avatar avatar-xs" style="background:var(--gradient)">${users[i%5][0]}</div>${users[i%5]}</div></td>
-      <td><div class="td-user"><div class="avatar avatar-xs" style="background:var(--brand-light);color:var(--brand)">${creators[i%5][0]}</div>${creators[i%5]}</div></td>
+      <td><div class="td-user"><div class="avatar avatar-xs" style="background:var(--grad-brand)">${users[i%5][0]}</div>${users[i%5]}</div></td>
+      <td><div class="td-user"><div class="avatar avatar-xs" style="background:rgba(229,9,20,0.08);color:var(--red)">${creators[i%5][0]}</div>${creators[i%5]}</div></td>
       <td><span class="tag tag-surface" style="font-size:0.7rem">${txTypes[i%5]}</span></td>
       <td style="font-size:0.8rem;color:var(--text2)">${txMethods[i%5]}</td>
       <td style="font-weight:700;color:var(--green)">${txAmounts[i%5]}</td>

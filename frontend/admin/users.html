@@ -1,13 +1,39 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
-  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Users — UX-HUB Admin</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Users — Nxt-door Admin</title>
+  <meta name="robots" content="noindex" />
+  <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css">
   <link rel="stylesheet" href="/assets/css/main.css" />
-  <link rel="stylesheet" href="/admin/admin.css" />
+  <style>
+    :root {
+      --gold:#FFC107; --gold-bg:rgba(255,193,7,0.1);
+      --blue:#4361ee; --blue-bg:rgba(67,97,238,0.1);
+      --green:#10D96F; --green-bg:rgba(16,217,111,0.1);
+      --orange:#f59e0b; --orange-bg:rgba(245,158,11,0.1);
+      --purple:#a855f7; --purple-bg:rgba(168,85,247,0.1);
+      --red-bg:rgba(229,9,20,0.1);
+      --bg2:#05000d; --border2:rgba(255,255,255,0.12);
+    }
+    .admin-wrap{display:flex;min-height:100vh}
+    .admin-sidebar{width:240px;background:var(--bg2);border-right:1px solid var(--border);position:fixed;top:0;left:0;bottom:0;display:flex;flex-direction:column;z-index:100;overflow-y:auto}
+    .admin-main{margin-left:240px;flex:1}
+    .admin-header{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--border);padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between;z-index:80}
+    .admin-content{padding:28px 24px}
+    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;display:none;align-items:center;justify-content:center}
+    .modal-backdrop.open{display:flex}
+    .modal-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px;width:100%;max-width:440px;position:relative;animation:scaleIn 0.2s ease}
+    .modal-close{position:absolute;top:14px;right:14px;background:none;border:none;cursor:pointer;color:var(--text3);font-size:18px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:var(--radius)}
+    .modal-close:hover{background:var(--surface2);color:var(--text)}
+    .modal-title{font-size:1.1rem;font-weight:700;margin-bottom:4px}
+    .modal-sub{font-size:0.85rem;color:var(--text3);margin-bottom:20px}
+    @media(max-width:900px){.admin-sidebar{transform:translateX(-240px)}.admin-sidebar.open{transform:translateX(0)}.admin-main{margin-left:0}}
+  </style>
 </head>
 <body>
 <div class="admin-wrap">
@@ -60,7 +86,7 @@
           <table class="data-table">
             <thead>
               <tr>
-                <th><input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)" style="accent-color:var(--brand)" /></th>
+                <th><input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)" style="accent-color:var(--red)" /></th>
                 <th>User</th><th>Role</th><th>Status</th><th>Premium</th><th>Joined</th><th>Last Active</th><th>Actions</th>
               </tr>
             </thead>
@@ -78,10 +104,10 @@
 
 <!-- BAN MODAL -->
 <div class="modal-backdrop" id="banModal">
-  <div class="modal-box" style="max-width:420px">
+  <div class="modal-box">
     <button class="modal-close" onclick="closeModal('banModal')"><i class="ti ti-x"></i></button>
     <div class="modal-title">Ban User</div>
-    <p class="modal-sub" id="banModalSub">You are about to ban this user.</p>
+    <div class="modal-sub" id="banModalSub">You are about to ban this user.</div>
     <div class="form-group" style="margin-bottom:16px">
       <label class="form-label">Reason</label>
       <select class="select" id="banReason">
@@ -113,7 +139,6 @@
   let allUsers = [], selectedUser = null, currentPage = 1;
   const PER_PAGE = 20;
 
-  // Demo data
   const names = ['Sarah K.','Mike T.','Amara J.','Zara L.','James O.','Rose M.','Naomi V.','Bella U.','Keisha A.','Tom W.','Jade P.','Tina R.','Alex M.','Grace N.','Liam D.','Emma S.','Noah K.','Olivia F.','Ethan B.','Ava C.'];
   allUsers = Array.from({length:50}, (_,i) => ({
     id: i+1,
@@ -131,10 +156,10 @@
     const slice = users.slice(start, start+PER_PAGE);
     document.getElementById('usersTableBody').innerHTML = slice.map(u => `
       <tr>
-        <td><input type="checkbox" class="row-check" data-id="${u.id}" style="accent-color:var(--brand)" /></td>
+        <td><input type="checkbox" class="row-check" data-id="${u.id}" style="accent-color:var(--red)" /></td>
         <td>
           <div class="td-user">
-            <div class="avatar avatar-xs" style="background:var(--gradient)">${fmt.initials(u.name)}</div>
+            <div class="avatar avatar-xs" style="background:var(--grad-brand)">${fmt.initials(u.name)}</div>
             <div><div class="td-user-name">${u.name}</div><div class="td-user-sub">${u.email}</div></div>
           </div>
         </td>
@@ -213,6 +238,8 @@
   function viewUser(id)    { Toast.show('User detail view — connect to API.', 'info'); }
   function exportUsers()   { Toast.show('CSV export — connect to API.', 'info'); }
   function toggleSelectAll(cb) { document.querySelectorAll('.row-check').forEach(c => c.checked = cb.checked); }
+  function openModal(id)   { document.getElementById(id).classList.add('open'); }
+  function closeModal(id)  { document.getElementById(id).classList.remove('open'); }
 
   const fmt = { initials: n => n ? n.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase() : '?' };
 
