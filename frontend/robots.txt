@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /pages/settings.html
+Disallow: /pages/wallet.html
+Disallow: /creator/dashboard.html
+Disallow: /creator/earnings.html
+Disallow: /creator/new-post.html
+Disallow: /pages/checkout.html
+
+# Crawl-delay for responsible crawling
+Crawl-delay: 1
+
+Sitemap: https://nxt-door.com/sitemap.xml
