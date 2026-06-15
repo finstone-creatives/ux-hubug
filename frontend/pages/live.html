@@ -2,30 +2,39 @@
 <html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Live — UX-HUB</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Live Now — Nxt-door</title>
+  <meta name="description" content="Watch live creator streams on Nxt-door. Explore active streams and discover creators who are live right now across East Africa." />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:site_name" content="Nxt-door" />
+  <meta property="og:title" content="Live Now — Nxt-door" />
+  <meta property="og:description" content="Watch live creator streams on Africa's premier adult creator platform." />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#e50914" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Nxt-door" />
+  <link rel="apple-touch-icon" href="/assets/icons/icon-192.svg" />
+  <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css" rel="stylesheet">
   <link rel="stylesheet" href="/assets/css/main.css" />
   <style>
-    .live-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:20px; }
-    .live-card { background:var(--surface); border:1px solid var(--border); border-radius:1rem; overflow:hidden; cursor:pointer; transition:transform var(--t),box-shadow var(--t); }
-    .live-card:hover { transform:translateY(-4px); box-shadow:var(--shadow); }
-    .live-cover { position:relative; min-height:190px; background:linear-gradient(180deg,rgba(15,23,42,0.3),rgba(15,23,42,0.8)); display:flex; align-items:flex-end; padding:16px; color:#fff; }
-    .live-cover::after { content:''; position:absolute; inset:0; background:linear-gradient(180deg,transparent,rgba(0,0,0,0.45)); }
-    .live-cover-content { position:relative; z-index:1; width:100%; }
-    .live-badge { display:inline-flex; align-items:center; gap:6px; background:var(--red); color:#fff; padding:6px 10px; border-radius:999px; font-size:0.75rem; }
-    .live-info { padding:16px; display:flex; flex-direction:column; gap:8px; }
-    .live-title { font-size:1rem; font-weight:700; color:var(--text); }
-    .live-meta { display:flex; flex-wrap:wrap; gap:12px; color:var(--text3); font-size:0.82rem; }
-    .empty-state { display:none; min-height:240px; align-items:center; justify-content:center; gap:12px; color:var(--text3); text-align:center; }
-    .empty-state .ti { font-size:42px; color:var(--text2); }
-    .page-header { margin-bottom:24px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
-    .page-header h1 { margin:0; font-size:2rem; }
-    .page-header p { margin:0; color:var(--text3); max-width:620px; }
-    @media(max-width:1024px){ .live-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
-    @media(max-width:720px){ .live-grid { grid-template-columns: 1fr; } }
+    .live-page-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px}
+    .live-page-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;cursor:pointer;transition:transform var(--t),box-shadow var(--t)}
+    .live-page-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg)}
+    .live-page-cover{position:relative;height:190px;background:linear-gradient(180deg,#1a0a30,#0a0a1a);display:flex;align-items:flex-end;padding:14px}
+    .live-page-cover::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent,rgba(0,0,0,0.5))}
+    .live-page-cover-content{position:relative;z-index:1;width:100%}
+    .live-badge-pill{display:inline-flex;align-items:center;gap:6px;background:var(--red);color:#fff;padding:5px 10px;border-radius:999px;font-size:0.72rem;font-weight:700}
+    .live-page-info{padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+    .live-page-title{font-size:0.95rem;font-weight:700;color:var(--text)}
+    .live-page-meta{display:flex;flex-wrap:wrap;gap:10px;color:var(--text3);font-size:0.8rem}
+    .empty-state{display:flex;flex-direction:column;min-height:240px;align-items:center;justify-content:center;gap:12px;color:var(--text3);text-align:center;grid-column:1/-1}
+    .empty-state .ti{font-size:48px;color:var(--text4)}
+    .page-section-header{margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
   </style>
 </head>
 <body>
@@ -35,64 +44,72 @@
   <div class="page-wrap">
     <main class="main-content">
       <div class="inner-lg">
-        <div class="page-header">
+        <div class="page-section-header">
           <div>
-            <h1>Live Now</h1>
-            <p>Explore active streams and discover creators who are live in real time. Stay tuned to the hottest sessions.</p>
+            <div class="label">Right Now</div>
+            <h1 style="margin:4px 0 0">Live Streams</h1>
+            <p style="margin:6px 0 0;color:var(--text3)">Explore active streams and discover creators who are live in real time.</p>
           </div>
-          <button class="btn btn-brand btn-md" onclick="window.location.href='/pages/search.html'">Search Live</button>
+          <div style="display:flex;gap:10px">
+            <a href="/creator/go-live.html" class="btn btn-brand btn-md"><i class="ti ti-live-view"></i> Go Live</a>
+          </div>
         </div>
-        <div id="liveGrid" class="live-grid"></div>
-        <div id="liveState" class="empty-state">
-          <i class="ti ti-alert-circle"></i>
-          <p>No active live streams are available right now. Try refreshing or visit Trending for recently popular content.</p>
-        </div>
+        <div id="liveGrid" class="live-page-grid"></div>
       </div>
     </main>
   </div>
   <script src="/assets/js/app.js"></script>
   <script src="/assets/js/layout.js"></script>
+  <script src="/assets/js/pwa.js"></script>
   <script>
     Layout.init('Live Now');
 
-    function renderLiveCard(video) {
-      const title = video.title || 'Live session';
-      const creator = video.uploader?.username || 'Creator';
-      const viewers = video.views ? `${Math.max(1, Math.floor(video.views / 10))} viewers` : 'Live';
+    function getCoverColor(seed) {
+      const c=['#2D1B69','#1A2D2D','#2D1A1A','#1A1A2D','#2A1A2D'];
+      return c[[...seed].reduce((s,ch)=>s+ch.charCodeAt(0),0)%c.length];
+    }
+
+    function renderLiveCard(v) {
+      const title = v.title||'Live session';
+      const creator = v.uploader?.username||'Creator';
+      const viewers = v.views ? `${Math.max(1,Math.floor(v.views/10))} watching` : 'Live now';
+      const color = getCoverColor(creator);
       return `
-        <div class="live-card" onclick="window.location='/pages/live-watch.html?id=${video._id}'">
-          <div class="live-cover">
-            <div class="live-cover-content">
-              <div class="live-badge"><i class="ti ti-player-play-filled"></i> LIVE</div>
-              <div style="margin-top:12px;font-size:1rem;font-weight:700">${title.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+        <div class="live-page-card" onclick="window.location='/pages/live-watch.html?id=${v._id}'">
+          <div class="live-page-cover" style="background:${color}">
+            <div class="live-page-cover-content">
+              <div class="live-badge-pill"><span class="live-dot" style="width:6px;height:6px"></span> LIVE</div>
+              <div style="margin-top:10px;font-size:0.95rem;font-weight:700;color:#fff">${fmt.esc(title)}</div>
             </div>
           </div>
-          <div class="live-info">
-            <div class="live-title">${creator}</div>
-            <div class="live-meta"><span><i class="ti ti-eye"></i> ${viewers}</span><span>${video.category || 'Creative'}</span></div>
+          <div class="live-page-info">
+            <div class="live-page-title">${fmt.esc(creator)}</div>
+            <div class="live-page-meta">
+              <span><i class="ti ti-eye"></i> ${viewers}</span>
+              <span>${v.category||'Creative'}</span>
+            </div>
           </div>
         </div>`;
     }
 
     async function loadLive() {
-      const state = document.getElementById('liveState');
       const grid = document.getElementById('liveGrid');
-      state.style.display = 'none';
-      grid.innerHTML = '';
+      grid.innerHTML = Array(6).fill(`<div class="live-page-card skeleton" style="height:260px"></div>`).join('');
       try {
-        const response = await api.get('/videos?limit=24');
-        const videos = (response.videos || []).filter(video => {
-          const text = `${video.title || ''} ${video.category || ''} ${video.tags?.join(' ') || ''}`.toLowerCase();
-          return text.includes('live') || text.includes('stream') || text.includes('show');
+        const r = await api.get('/videos?limit=24');
+        const videos = r.videos||[];
+        const live = videos.filter(v=>{
+          const t=`${v.title||''} ${v.category||''} ${(v.tags||[]).join(' ')}`.toLowerCase();
+          return t.includes('live')||t.includes('stream')||t.includes('show');
         });
-        const results = videos.length ? videos : (response.videos || []).slice(0, 12);
+        const results = live.length ? live : videos.slice(0,12);
         if (!results.length) {
-          state.style.display = 'flex';
+          grid.innerHTML = `<div class="empty-state"><i class="ti ti-live-view"></i><p style="font-size:0.95rem;font-weight:600">No active live streams</p><p style="font-size:0.82rem">Be the first to go live or check back soon.</p><a href="/creator/go-live.html" class="btn btn-brand btn-sm"><i class="ti ti-live-view"></i> Start streaming</a></div>`;
           return;
         }
         grid.innerHTML = results.map(renderLiveCard).join('');
-      } catch (err) {
-        state.style.display = 'flex';
+      } catch {
+        grid.innerHTML = `<div class="empty-state"><i class="ti ti-alert-circle"></i><p>Unable to load streams. Please refresh.</p></div>`;
       }
     }
 

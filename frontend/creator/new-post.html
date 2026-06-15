@@ -1,12 +1,35 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
-  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>New Post — UX-HUB</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>New Post — Nxt-door</title>
+  <meta name="robots" content="noindex" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#e50914" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Nxt-door" />
+  <link rel="apple-touch-icon" href="/assets/icons/icon-192.svg" />
+  <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css">
   <link rel="stylesheet" href="/assets/css/main.css" />
+  <style>
+    .type-choice{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:16px;border:1.5px solid var(--border);border-radius:var(--radius-lg);cursor:pointer;transition:all var(--t);color:var(--text3);font-size:0.85rem;font-weight:600}
+    .type-choice.active{border-color:var(--red);background:rgba(229,9,20,0.08);color:var(--red)}
+    .access-choice{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--radius);cursor:pointer;transition:all var(--t)}
+    .access-choice.selected{border-color:var(--red);background:rgba(229,9,20,0.06)}
+    .access-choice i{font-size:20px;flex-shrink:0}
+    .preview-thumb{aspect-ratio:1;border-radius:var(--radius);overflow:hidden;background:var(--surface2);position:relative}
+    .preview-thumb img,.preview-thumb video{width:100%;height:100%;object-fit:cover}
+    .remove-thumb{position:absolute;top:4px;right:4px;width:24px;height:24px;border-radius:50%;background:rgba(0,0,0,0.75);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px}
+    .upload-progress{margin-top:12px;display:none}
+    .upload-progress-bar{height:4px;background:var(--border2);border-radius:2px;overflow:hidden}
+    .upload-progress-fill{height:100%;background:var(--grad-brand);border-radius:2px;transition:width 0.3s ease;width:0%}
+  </style>
 </head>
 <body>
 <div class="sidebar-overlay" onclick="Sidebar.close()"></div>
@@ -18,55 +41,55 @@
       <div style="margin-bottom:24px">
         <a href="/creator/dashboard.html" class="btn btn-ghost btn-sm" style="margin-bottom:12px"><i class="ti ti-arrow-left"></i> Back to Dashboard</a>
         <h1 style="font-size:1.8rem">Create New Post</h1>
-        <p>Share photos, videos, or text with your subscribers</p>
+        <p style="color:var(--text3)">Share photos, videos, or text with your subscribers</p>
       </div>
 
       <div id="alertBox" style="display:none;margin-bottom:16px"></div>
 
       <form id="postForm" style="display:flex;flex-direction:column;gap:20px">
-
-        <!-- Post type -->
         <div class="card"><div class="card-body">
           <div class="label mb-12">Post Type</div>
           <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
-            <label class="type-choice active" data-type="photo">
-              <input type="radio" name="postType" value="photo" checked hidden />
-              <i class="ti ti-photo" style="font-size:24px"></i>
-              <span>Photo</span>
+            <label class="type-choice active" data-type="image">
+              <input type="radio" name="postType" value="image" checked hidden />
+              <i class="ti ti-photo" style="font-size:24px"></i><span>Photo</span>
             </label>
             <label class="type-choice" data-type="video">
               <input type="radio" name="postType" value="video" hidden />
-              <i class="ti ti-video" style="font-size:24px"></i>
-              <span>Video</span>
+              <i class="ti ti-video" style="font-size:24px"></i><span>Video</span>
             </label>
             <label class="type-choice" data-type="text">
               <input type="radio" name="postType" value="text" hidden />
-              <i class="ti ti-text-size" style="font-size:24px"></i>
-              <span>Text Only</span>
+              <i class="ti ti-text-size" style="font-size:24px"></i><span>Text Only</span>
             </label>
           </div>
         </div></div>
 
-        <!-- Media upload -->
         <div class="card" id="mediaCard"><div class="card-body">
-          <div class="label mb-12">Media Files</div>
+          <div class="label mb-12">Media Files <span style="color:var(--text3);font-weight:400">(up to 10)</span></div>
           <div class="upload-zone" id="uploadZone" onclick="document.getElementById('mediaInput').click()" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="handleDrop(event)">
             <i class="ti ti-cloud-upload" style="font-size:40px;color:var(--text3);display:block;margin-bottom:10px"></i>
             <div style="font-weight:600;margin-bottom:6px">Drop files here or click to browse</div>
-            <div style="font-size:0.8rem;color:var(--text3)">Photos: JPG, PNG, WEBP up to 20MB · Videos: MP4, MOV up to 500MB</div>
-            <input type="file" id="mediaInput" multiple accept="image/*,video/*" hidden onchange="handleFiles(this.files)" />
+            <div style="font-size:0.8rem;color:var(--text3)">Photos: JPG, PNG, WEBP up to 20MB &middot; Videos: MP4, MOV up to 500MB</div>
+            <input type="file" id="mediaInput" multiple accept="image/*,video/*,audio/*" hidden onchange="handleFiles(this.files)" />
           </div>
           <div id="previewGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px"></div>
+          <div class="upload-progress" id="uploadProgress">
+            <div style="display:flex;justify-content:space-between;font-size:0.75rem;margin-bottom:6px">
+              <span>Uploading...</span><span id="uploadPct">0%</span>
+            </div>
+            <div class="upload-progress-bar"><div class="upload-progress-fill" id="uploadFill"></div></div>
+          </div>
         </div></div>
 
-        <!-- Caption -->
         <div class="card"><div class="card-body">
           <div class="label mb-12">Caption</div>
-          <textarea class="textarea" id="caption" placeholder="Write something for your fans..." rows="4"></textarea>
-          <div style="text-align:right;font-size:0.75rem;color:var(--text3);margin-top:6px"><span id="charCount">0</span>/1000</div>
+          <textarea class="textarea" id="caption" placeholder="Write something for your fans..." rows="4" maxlength="2000"></textarea>
+          <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:var(--text3);margin-top:6px">
+            <span>Markdown supported</span><span><span id="charCount">0</span>/2000</span>
+          </div>
         </div></div>
 
-        <!-- Access level -->
         <div class="card"><div class="card-body">
           <div class="label mb-12">Who Can See This?</div>
           <div style="display:flex;flex-direction:column;gap:10px">
@@ -78,11 +101,11 @@
             <label class="access-choice" data-access="public">
               <input type="radio" name="access" value="public" hidden />
               <i class="ti ti-world" style="color:var(--green)"></i>
-              <div><strong>Everyone (Free)</strong><div style="font-size:0.78rem;color:var(--text3)">Visible to all logged-in users — good for promotion</div></div>
+              <div><strong>Everyone (Free)</strong><div style="font-size:0.78rem;color:var(--text3)">Good for promotion — visible to all logged-in users</div></div>
             </label>
             <label class="access-choice" data-access="vip">
               <input type="radio" name="access" value="vip" hidden />
-              <i class="ti ti-diamond" style="color:var(--brand)"></i>
+              <i class="ti ti-diamond" style="color:var(--red)"></i>
               <div><strong>VIP Only</strong><div style="font-size:0.78rem;color:var(--text3)">Set a custom price above your subscription tier</div></div>
             </label>
           </div>
@@ -92,7 +115,6 @@
           </div>
         </div></div>
 
-        <!-- Schedule -->
         <div class="card"><div class="card-body">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
             <div class="label">Schedule Post (Optional)</div>
@@ -103,40 +125,21 @@
           </div>
         </div></div>
 
-        <!-- Submit -->
         <div style="display:flex;gap:12px">
           <button type="submit" class="btn btn-brand btn-lg" style="flex:1" id="publishBtn">
             <i class="ti ti-send"></i> Publish Post
           </button>
           <button type="button" class="btn btn-surface btn-lg" onclick="saveDraft()">
-            <i class="ti ti-device-floppy"></i> Save Draft
+            <i class="ti ti-device-floppy"></i> Draft
           </button>
         </div>
       </form>
     </div>
   </main>
 </div>
-
-<style>
-.type-choice {
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
-  padding:16px;border:1.5px solid var(--border);border-radius:var(--radius-lg);
-  cursor:pointer;transition:all var(--t);color:var(--text2);font-size:0.85rem;font-weight:600;
-}
-.type-choice.active,.type-choice:has(input:checked){border-color:var(--brand);background:var(--brand-light);color:var(--brand);}
-.access-choice {
-  display:flex;align-items:center;gap:12px;padding:12px 14px;
-  border:1.5px solid var(--border);border-radius:var(--radius);cursor:pointer;transition:all var(--t);
-}
-.access-choice.selected,.access-choice:has(input:checked){border-color:var(--brand);background:var(--brand-light);}
-.access-choice i{font-size:20px;flex-shrink:0;}
-.preview-thumb{aspect-ratio:1;border-radius:var(--radius);overflow:hidden;background:var(--surface2);position:relative;}
-.preview-thumb img,.preview-thumb video{width:100%;height:100%;object-fit:cover;}
-.remove-thumb{position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,0.7);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;}
-</style>
-
 <script src="/assets/js/app.js"></script>
 <script src="/assets/js/layout.js"></script>
+<script src="/assets/js/pwa.js"></script>
 <script>
   Auth.requireAuth('/login.html');
   Auth.requireCreator();
@@ -144,33 +147,30 @@
 
   let selectedFiles = [];
 
-  // Type choice
   document.querySelectorAll('.type-choice').forEach(el => {
     el.addEventListener('click', () => {
-      document.querySelectorAll('.type-choice').forEach(e => e.classList.remove('active'));
+      document.querySelectorAll('.type-choice').forEach(e=>e.classList.remove('active'));
       el.classList.add('active');
-      document.getElementById('mediaCard').style.display = el.dataset.type === 'text' ? 'none' : 'block';
+      document.getElementById('mediaCard').style.display = el.dataset.type==='text' ? 'none' : 'block';
     });
   });
 
-  // Access choice
   document.querySelectorAll('.access-choice').forEach(el => {
     el.addEventListener('click', () => {
-      document.querySelectorAll('.access-choice').forEach(e => e.classList.remove('selected'));
+      document.querySelectorAll('.access-choice').forEach(e=>e.classList.remove('selected'));
       el.classList.add('selected');
-      document.getElementById('vipPriceWrap').style.display = el.dataset.access === 'vip' ? 'block' : 'none';
+      document.getElementById('vipPriceWrap').style.display = el.dataset.access==='vip' ? 'block' : 'none';
     });
   });
 
-  // Char count
   document.getElementById('caption').addEventListener('input', function() {
     document.getElementById('charCount').textContent = this.value.length;
   });
 
   function handleFiles(files) {
-    Array.from(files).forEach(file => {
-      if (selectedFiles.length >= 10) return Toast.show('Max 10 files allowed.', 'warning');
-      selectedFiles.push(file);
+    Array.from(files).forEach(f => {
+      if (selectedFiles.length >= 10) { Toast.show('Max 10 files allowed.','warning'); return; }
+      selectedFiles.push(f);
     });
     renderPreviews();
   }
@@ -182,18 +182,18 @@
   }
 
   function renderPreviews() {
-    const grid = document.getElementById('previewGrid');
-    grid.innerHTML = selectedFiles.map((f, i) => {
+    document.getElementById('previewGrid').innerHTML = selectedFiles.map((f,i) => {
       const url = URL.createObjectURL(f);
       const isVideo = f.type.startsWith('video');
       return `<div class="preview-thumb">
-        ${isVideo ? `<video src="${url}" muted></video>` : `<img src="${url}" />`}
+        ${isVideo?`<video src="${url}" muted></video>`:`<img src="${url}" />`}
         <button class="remove-thumb" onclick="removeFile(${i})"><i class="ti ti-x"></i></button>
+        <div style="position:absolute;bottom:4px;left:4px;right:4px;font-size:0.65rem;color:rgba(255,255,255,0.8);text-overflow:ellipsis;overflow:hidden;white-space:nowrap">${f.name}</div>
       </div>`;
     }).join('');
   }
 
-  function removeFile(idx) { selectedFiles.splice(idx, 1); renderPreviews(); }
+  function removeFile(idx) { selectedFiles.splice(idx,1); renderPreviews(); }
   function toggleSchedule() {
     document.getElementById('scheduleWrap').style.display = document.getElementById('scheduleToggle').checked ? 'block' : 'none';
   }
@@ -201,19 +201,49 @@
   document.getElementById('postForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const caption = document.getElementById('caption').value.trim();
-    if (!caption && selectedFiles.length === 0) return showAlert('alertBox', 'Add a caption or upload media.', 'error');
+    const postType = document.querySelector('input[name="postType"]:checked')?.value || 'text';
+    const access = document.querySelector('.access-choice.selected')?.dataset.access || 'subscribers';
+    const isPremium = access !== 'public';
+    const price = access === 'vip' ? parseFloat(document.getElementById('vipPrice').value)||0 : 0;
+    const scheduledAt = document.getElementById('scheduleToggle').checked ? document.getElementById('scheduledAt').value : null;
+
+    if (!caption && selectedFiles.length===0) return showAlert('alertBox','Add a caption or upload media.','error');
 
     const btn = document.getElementById('publishBtn');
     btn.innerHTML = '<i class="ti ti-loader-2" style="animation:spin 0.65s linear infinite"></i> Publishing...';
     btn.disabled = true;
 
-    // Demo: simulate upload
-    await new Promise(r => setTimeout(r, 1800));
-    Toast.show('Post published successfully!', 'success');
-    setTimeout(() => window.location.href = '/creator/dashboard.html', 1200);
+    try {
+      const formData = new FormData();
+      formData.append('caption', caption);
+      formData.append('type', postType);
+      formData.append('isPremium', isPremium);
+      if (price) formData.append('price', price);
+      if (scheduledAt) formData.append('scheduledAt', scheduledAt);
+      selectedFiles.forEach(f => formData.append('media', f));
+
+      const progressEl = document.getElementById('uploadProgress');
+      const fill = document.getElementById('uploadFill');
+      const pct = document.getElementById('uploadPct');
+      if (selectedFiles.length) progressEl.style.display='block';
+
+      await api.upload('/posts', formData, (p) => {
+        fill.style.width = p+'%';
+        pct.textContent = p+'%';
+      });
+
+      Toast.show('Post published successfully!','success');
+      setTimeout(() => window.location.href='/creator/dashboard.html', 1000);
+    } catch(err) {
+      showAlert('alertBox', err?.message||'Failed to publish post.','error');
+      btn.innerHTML = '<i class="ti ti-send"></i> Publish Post';
+      btn.disabled = false;
+    }
   });
 
-  function saveDraft() { Toast.show('Draft saved!', 'info'); }
+  function saveDraft() {
+    Toast.show('Draft saved locally. Publishing will send it to the server.','info');
+  }
 </script>
 </body>
 </html>

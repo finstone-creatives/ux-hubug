@@ -2,19 +2,50 @@
 <html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Become a Creator — UX-HUB</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Become a Creator — Nxt-door</title>
+  <meta name="description" content="Join Nxt-door as a creator and start earning from your content. Set your own prices, go live, and connect with fans across East Africa." />
+  <meta name="robots" content="index, follow" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#e50914" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Nxt-door" />
+  <link rel="apple-touch-icon" href="/assets/icons/icon-192.svg" />
+  <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css" />
   <link rel="stylesheet" href="/assets/css/main.css" />
 </head>
 <body class="no-sidebar">
-  <div class="auth-layout" style="padding:40px 20px">
+  <div class="auth-layout" style="padding:40px 20px;min-height:100vh">
     <div class="auth-card fade-in" style="max-width:520px">
       <div class="auth-logo-wrap">
-        <a href="/index.html" class="logo-name">UX<span style="color:var(--brand)">HUB</span></a>
-        <p class="text-sm" style="color:var(--text3);margin-top:6px">Join as a creator and start earning from your content.</p>
+        <a href="/index.html" style="text-decoration:none;display:flex;align-items:center;gap:10px;justify-content:center">
+          <div class="logo-mark" style="width:40px;height:40px;font-size:1rem;display:flex;align-items:center;justify-content:center">NX</div>
+          <span class="logo-name" style="font-size:1.6rem">Nxt<span>-door</span></span>
+        </a>
+        <p class="text-sm" style="color:var(--text3);margin-top:8px">Join as a creator and start earning from your content.</p>
       </div>
+
+      <!-- Perks strip -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px">
+        <div style="text-align:center;padding:12px;background:var(--surface2);border-radius:var(--radius)">
+          <div style="font-family:var(--font-display);font-size:1.4rem;font-weight:800;color:var(--green)">80%</div>
+          <div style="font-size:0.72rem;color:var(--text3)">Revenue share</div>
+        </div>
+        <div style="text-align:center;padding:12px;background:var(--surface2);border-radius:var(--radius)">
+          <div style="font-family:var(--font-display);font-size:1.4rem;font-weight:800;color:var(--red)">Free</div>
+          <div style="font-size:0.72rem;color:var(--text3)">To join</div>
+        </div>
+        <div style="text-align:center;padding:12px;background:var(--surface2);border-radius:var(--radius)">
+          <div style="font-family:var(--font-display);font-size:1.4rem;font-weight:800;color:var(--gold)">24h</div>
+          <div style="font-size:0.72rem;color:var(--text3)">Approval time</div>
+        </div>
+      </div>
+
       <div id="alertBox" style="display:none;margin-bottom:16px"></div>
       <form id="creatorForm" onsubmit="handleCreatorSignup(event)">
         <div class="flex-col gap-14">
@@ -35,15 +66,16 @@
             <textarea class="textarea" id="creatorPitch" placeholder="Describe your content and experience" rows="4"></textarea>
           </div>
           <button type="submit" class="btn btn-brand btn-md btn-full" id="creatorBtn">
-            <i class="ti ti-arrow-right-circle"></i> Become Creator
+            <i class="ti ti-rocket"></i> Become a Creator
           </button>
         </div>
       </form>
       <div class="divider-text">or</div>
-      <p class="text-sm text-center" style="color:var(--text3)">Already a creator? <a href="/creator/dashboard.html" style="color:var(--brand);font-weight:600">Go to your dashboard</a></p>
+      <p class="text-sm text-center" style="color:var(--text3)">Already a creator? <a href="/creator/dashboard.html" style="color:var(--red);font-weight:600">Go to your dashboard</a></p>
     </div>
   </div>
   <script src="/assets/js/app.js"></script>
+  <script src="/assets/js/pwa.js"></script>
   <script>
     Theme.init();
     Auth.requireAuth('/login.html');
@@ -57,38 +89,24 @@
       const pitch = document.getElementById('creatorPitch').value.trim();
 
       btn.disabled = true;
-      btn.innerHTML = '<i class="ti ti-loader-2" style="animation:spin 0.6s linear infinite"></i> Upgrading...';
+      btn.innerHTML = '<i class="ti ti-loader-2" style="animation:spin 0.6s linear infinite"></i> Submitting...';
 
       try {
-        const profilePatch = { displayName, bio };
-        if (displayName) {
-          profilePatch.displayName = displayName;
-        }
-        if (bio) {
-          profilePatch.bio = bio;
-        }
-        await api.put('/users/me', profilePatch);
-        const res = await api.post('/users/me/creator', {
-          creatorCategory: category,
-          creatorPitch: pitch,
-          displayName,
-          bio,
-        });
+        if (displayName || bio) await api.put('/users/me', {displayName, bio});
+        const res = await api.post('/users/me/creator', {creatorCategory:category, creatorPitch:pitch, displayName, bio});
         if (res.success) {
-          const updatedUser = { ...Auth.getUser(), role: 'creator', accountType: 'creator', displayName: displayName || Auth.getUser().displayName || Auth.getUser().username };
-          Auth.setSession(localStorage.getItem('uxhub_token'), updatedUser);
-          window.location.href = '/creator/dashboard.html';
+          const updated = {...Auth.getUser(), role:'creator', accountType:'creator', displayName: displayName||Auth.getUser()?.displayName};
+          Auth.setSession(Auth.getToken(), updated);
+          Toast.show('Welcome to Nxt-door creators! Redirecting...', 'success');
+          setTimeout(() => window.location.href='/creator/dashboard.html', 1200);
         } else {
-          throw new Error(res.message || 'Unable to upgrade your account');
+          throw new Error(res.message||'Unable to upgrade your account');
         }
-      } catch (err) {
-        const message = err?.message || 'Upgrade failed. Please try again.';
-        document.getElementById('alertBox').style.display = 'block';
-        document.getElementById('alertBox').innerHTML = `<div class="alert alert-danger">${message}</div>`;
-        console.error(err);
+      } catch(err) {
+        showAlert('alertBox', err?.message||'Upgrade failed. Please try again.', 'error');
       } finally {
         btn.disabled = false;
-        btn.innerHTML = '<i class="ti ti-arrow-right-circle"></i> Become Creator';
+        btn.innerHTML = '<i class="ti ti-rocket"></i> Become a Creator';
       }
     }
   </script>
