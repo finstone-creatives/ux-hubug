@@ -1,9 +1,19 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
-  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Settings — UX-HUB</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Settings — Nxt-door</title>
+  <meta name="robots" content="noindex" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#e50914" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Nxt-door" />
+  <link rel="apple-touch-icon" href="/assets/icons/icon-192.svg" />
+  <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css">
   <link rel="stylesheet" href="/assets/css/main.css" />
@@ -29,14 +39,14 @@
       <!-- PROFILE TAB -->
       <div id="tab-profile" class="tab-content active">
         <div class="card" style="margin-bottom:16px">
-          <div class="card-header"><h3>Profile Photo & Cover</h3></div>
+          <div class="card-header"><h3>Profile Photo &amp; Cover</h3></div>
           <div class="card-body">
             <div style="position:relative;margin-bottom:40px">
-              <div style="height:120px;background:linear-gradient(135deg,#2D1B69,#A020F0);border-radius:var(--radius-lg);cursor:pointer;display:flex;align-items:center;justify-content:center" onclick="changeCover()">
+              <div style="height:120px;background:var(--grad-brand);border-radius:var(--radius-lg);cursor:pointer;display:flex;align-items:center;justify-content:center" onclick="changeCover()">
                 <span style="font-size:0.8rem;color:rgba(255,255,255,0.7)"><i class="ti ti-camera"></i> Change Cover</span>
               </div>
               <div style="position:absolute;bottom:-32px;left:20px;display:flex;align-items:flex-end;gap:12px">
-                <div class="avatar avatar-lg" style="border:4px solid var(--surface);cursor:pointer;background:var(--gradient)" onclick="changeAvatar()" id="avatarPreview">
+                <div class="avatar avatar-lg" style="border:4px solid var(--surface);cursor:pointer;background:var(--grad-brand)" onclick="changeAvatar()" id="avatarPreview">
                   <i class="ti ti-camera" style="font-size:24px"></i>
                 </div>
                 <button class="btn btn-surface btn-sm" onclick="changeAvatar()"><i class="ti ti-upload"></i> Upload Photo</button>
@@ -143,8 +153,8 @@
             <div>
               <div class="label mb-12">Theme</div>
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-                <div class="theme-option" id="darkTheme" onclick="setTheme('dark')" style="border:2px solid var(--brand);border-radius:var(--radius-lg);padding:20px;cursor:pointer;background:var(--surface2);text-align:center">
-                  <i class="ti ti-moon" style="font-size:28px;display:block;margin-bottom:8px;color:var(--brand)"></i>
+                <div class="theme-option" id="darkTheme" onclick="setTheme('dark')" style="border:2px solid var(--red);border-radius:var(--radius-lg);padding:20px;cursor:pointer;background:var(--surface2);text-align:center">
+                  <i class="ti ti-moon" style="font-size:28px;display:block;margin-bottom:8px;color:var(--red)"></i>
                   <strong>Dark Mode</strong>
                 </div>
                 <div class="theme-option" id="lightTheme" onclick="setTheme('light')" style="border:1.5px solid var(--border);border-radius:var(--radius-lg);padding:20px;cursor:pointer;background:var(--surface);text-align:center">
@@ -162,14 +172,15 @@
 </div>
 <script src="/assets/js/app.js"></script>
 <script src="/assets/js/layout.js"></script>
+<script src="/assets/js/pwa.js"></script>
 <script>
   Auth.requireAuth('/login.html');
   Layout.init('Settings');
 
-  const settingsKey = 'uxhub_settings';
+  const settingsKey = 'nxtdoor_settings';
   const privacySettings = [
     { label:'Profile Visibility', sub:'Who can see your profile', id:'privProfile' },
-    { label:'Show Online Status', sub:'Let others see when you\'re active', id:'privOnline' },
+    { label:'Show Online Status', sub:"Let others see when you're active", id:'privOnline' },
     { label:'Allow Messages from Non-subscribers', sub:'Fans can message you before subscribing', id:'privMsg' },
     { label:'Show subscriber count', sub:'Display number of subscribers on your profile', id:'privSubCount' },
   ];
@@ -189,25 +200,16 @@
     document.getElementById('settEmail').value       = user.email || '';
     document.getElementById('settBio').value         = user.bio || '';
     document.getElementById('settLocation').value    = user.location || '';
+    if (user.avatar) {
+      document.getElementById('avatarPreview').innerHTML = `<img src="${user.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%"/>`;
+    }
   }
 
   function getStoredSettings() {
     const raw = localStorage.getItem(settingsKey);
-    const user = Auth.getUser();
-    if (!raw) {
-      return {
-        privacy: user?.privacySettings || {},
-        notifications: user?.notificationPreferences || {},
-      };
-    }
-    try {
-      return JSON.parse(raw);
-    } catch {
-      return {
-        privacy: user?.privacySettings || {},
-        notifications: user?.notificationPreferences || {},
-      };
-    }
+    const u = Auth.getUser();
+    if (!raw) return { privacy: u?.privacySettings||{}, notifications: u?.notificationPreferences||{} };
+    try { return JSON.parse(raw); } catch { return { privacy: u?.privacySettings||{}, notifications: u?.notificationPreferences||{} }; }
   }
 
   function storeSettings(settings) {
@@ -215,65 +217,58 @@
   }
 
   async function persistSettings(payload) {
-    try {
-      const res = await api.put('/users/me', payload);
-      if (res.success) {
-        const token = Auth.getToken();
-        const mergedUser = { ...Auth.getUser(), ...res.user };
-        Auth.setSession(token, mergedUser);
-        return mergedUser;
-      }
-      throw new Error(res.message || 'Unable to save settings.');
-    } catch (err) {
-      throw err;
+    const res = await api.put('/users/me', payload);
+    if (res.success) {
+      const merged = { ...Auth.getUser(), ...res.user };
+      Auth.setSession(Auth.getToken(), merged);
+      return merged;
     }
+    throw new Error(res.message || 'Unable to save settings.');
   }
 
   function renderPrivacySettings() {
     const settings = getStoredSettings();
-    const html = privacySettings.map((setting, index) => {
-      const checked = settings.privacy[setting.id] ?? true;
+    const html = privacySettings.map((s, i) => {
+      const checked = settings.privacy[s.id] ?? true;
       return `
         <div style="display:flex;align-items:center;justify-content:space-between">
-          <div><div style="font-weight:600;font-size:0.9rem">${setting.label}</div><div style="font-size:0.78rem;color:var(--text3)">${setting.sub}</div></div>
-          <label style="position:relative;width:44px;height:24px;cursor:pointer">
-            <input type="checkbox" id="${setting.id}" ${checked ? 'checked' : ''} style="opacity:0;width:0;height:0" onchange="saveSetting('${setting.id}', this.checked)" />
-            <span style="position:absolute;inset:0;background:var(--surface3);border-radius:12px;transition:var(--t)"></span>
-            <span style="position:absolute;width:18px;height:18px;border-radius:50%;background:#fff;top:3px;left:${checked ? '23px' : '3px'};transition:var(--t)"></span>
+          <div><div style="font-weight:600;font-size:0.9rem">${s.label}</div><div style="font-size:0.78rem;color:var(--text3)">${s.sub}</div></div>
+          <label style="position:relative;width:44px;height:24px;cursor:pointer;flex-shrink:0">
+            <input type="checkbox" id="${s.id}" ${checked?'checked':''} style="opacity:0;width:0;height:0" onchange="saveSetting('${s.id}',this.checked)" />
+            <span style="position:absolute;inset:0;background:${checked?'var(--red)':'var(--surface3)'};border-radius:12px;transition:var(--t)"></span>
+            <span style="position:absolute;width:18px;height:18px;border-radius:50%;background:#fff;top:3px;left:${checked?'23px':'3px'};transition:var(--t)"></span>
           </label>
         </div>
-        ${index < privacySettings.length-1 ? '<div class="divider" style="margin:2px 0"></div>' : ''}`;
+        ${i<privacySettings.length-1?'<div class="divider" style="margin:2px 0"></div>':''}`;
     }).join('');
     document.getElementById('privacySettingsContainer').innerHTML = html;
   }
 
   function renderNotificationSettings() {
     const settings = getStoredSettings();
-    const html = notificationSettings.map((setting, index) => {
-      const checked = settings.notifications[setting.id] ?? setting.on;
+    const html = notificationSettings.map((s, i) => {
+      const checked = settings.notifications[s.id] ?? s.on;
       return `
         <div style="display:flex;align-items:center;gap:12px">
-          <div style="width:36px;height:36px;border-radius:var(--radius);background:var(--brand-light);display:flex;align-items:center;justify-content:center;color:var(--brand)"><i class="ti ${setting.icon}"></i></div>
-          <span style="flex:1;font-size:0.9rem;font-weight:500">${setting.label}</span>
-          <input type="checkbox" id="${setting.id}" ${checked ? 'checked' : ''} onchange="saveNotificationSetting('${setting.id}', this.checked)" style="accent-color:var(--brand);width:17px;height:17px;cursor:pointer" />
+          <div style="width:36px;height:36px;border-radius:var(--radius);background:rgba(229,9,20,0.08);display:flex;align-items:center;justify-content:center;color:var(--red);flex-shrink:0"><i class="ti ${s.icon}"></i></div>
+          <span style="flex:1;font-size:0.9rem;font-weight:500">${s.label}</span>
+          <input type="checkbox" id="${s.id}" ${checked?'checked':''} onchange="saveNotificationSetting('${s.id}',this.checked)" style="accent-color:var(--red);width:17px;height:17px;cursor:pointer" />
         </div>
-        ${index < notificationSettings.length-1 ? '<div class="divider" style="margin:2px 0"></div>' : ''}`;
+        ${i<notificationSettings.length-1?'<div class="divider" style="margin:2px 0"></div>':''}`;
     }).join('');
-    document.getElementById('notificationSettingsContainer').innerHTML = html + '<button class="btn btn-brand btn-md mt-8" onclick="saveAllNotificationPreferences()"><i class="ti ti-device-floppy"></i> Save Preferences</button>';
+    document.getElementById('notificationSettingsContainer').innerHTML = html + '<button class="btn btn-brand btn-md" style="margin-top:8px" onclick="saveAllNotificationPreferences()"><i class="ti ti-device-floppy"></i> Save Preferences</button>';
   }
 
   function initSettingsUI() {
     const stored = getStoredSettings();
-    if (!localStorage.getItem(settingsKey) && Auth.getUser()) {
-      storeSettings(stored);
-    }
+    if (!localStorage.getItem(settingsKey) && Auth.getUser()) storeSettings(stored);
     renderPrivacySettings();
     renderNotificationSettings();
   }
 
   function showTab(name, btn) {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById(`tab-${name}`).classList.add('active');
   }
@@ -289,15 +284,13 @@
     try {
       const res = await api.put('/users/me', payload);
       if (res.success) {
-        const token = Auth.getToken();
-        Auth.setSession(token, res.user);
+        Auth.setSession(Auth.getToken(), res.user);
         Toast.show('Profile saved successfully!', 'success');
         return;
       }
-      showAlert('profileAlert', res.message || 'Unable to save profile.', 'error');
-    } catch (err) {
-      console.error('Save profile error', err);
-      showAlert('profileAlert', err.message || 'Server error', 'error');
+      showAlert('profileAlert', res.message||'Unable to save profile.', 'error');
+    } catch(err) {
+      showAlert('profileAlert', err.message||'Server error', 'error');
     }
   }
 
@@ -319,62 +312,58 @@
 
   async function saveSetting(id, val) {
     const settings = getStoredSettings();
-    settings.privacy = settings.privacy || {};
+    settings.privacy = settings.privacy||{};
     settings.privacy[id] = val;
     storeSettings(settings);
     renderPrivacySettings();
-
     try {
       await persistSettings({ privacySettings: { [id]: val } });
       Toast.show('Privacy setting saved.', 'success');
-    } catch (err) {
+    } catch(err) {
       settings.privacy[id] = !val;
       storeSettings(settings);
       renderPrivacySettings();
-      Toast.show(err.message || 'Unable to save privacy setting.', 'error');
+      Toast.show(err.message||'Unable to save setting.', 'error');
     }
   }
 
   async function saveNotificationSetting(id, val) {
     const settings = getStoredSettings();
-    settings.notifications = settings.notifications || {};
+    settings.notifications = settings.notifications||{};
     settings.notifications[id] = val;
     storeSettings(settings);
     renderNotificationSettings();
-
     try {
       await persistSettings({ notificationPreferences: { [id]: val } });
-      Toast.show('Notification preference saved.', 'success');
-    } catch (err) {
+      Toast.show('Preference saved.', 'success');
+    } catch(err) {
       settings.notifications[id] = !val;
       storeSettings(settings);
       renderNotificationSettings();
-      Toast.show(err.message || 'Unable to save notification preference.', 'error');
+      Toast.show(err.message||'Unable to save preference.', 'error');
     }
   }
 
   async function saveAllNotificationPreferences() {
     const settings = getStoredSettings();
-    settings.notifications = settings.notifications || {};
-    notificationSettings.forEach(setting => {
-      const checkbox = document.getElementById(setting.id);
-      if (checkbox) settings.notifications[setting.id] = checkbox.checked;
+    settings.notifications = settings.notifications||{};
+    notificationSettings.forEach(s => {
+      const cb = document.getElementById(s.id);
+      if (cb) settings.notifications[s.id] = cb.checked;
     });
     storeSettings(settings);
     renderNotificationSettings();
-
     try {
       await persistSettings({ notificationPreferences: settings.notifications });
       Toast.show('Notification preferences saved.', 'success');
-    } catch (err) {
-      showAlert('notificationAlert', err.message || 'Unable to save notification preferences.', 'error');
+    } catch(err) {
+      Toast.show(err.message||'Unable to save preferences.', 'error');
     }
   }
 
   function changeAvatar() {
     const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
+    input.type='file'; input.accept='image/*';
     input.onchange = async (e) => {
       const file = e.target.files[0];
       if (!file) return;
@@ -384,23 +373,19 @@
         const res = await api.upload('/users/me/avatar', form);
         if (res.success) {
           document.getElementById('avatarPreview').innerHTML = `<img src="${res.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%"/>`;
-          const u = Auth.getUser() || {};
+          const u = Auth.getUser()||{};
           u.avatar = res.avatar;
           Auth.setSession(Auth.getToken(), u);
           Toast.show('Avatar uploaded', 'success');
         }
-      } catch (err) {
-        console.error('Avatar upload error', err);
-        Toast.show(err.message || 'Upload failed', 'error');
-      }
+      } catch(err) { Toast.show(err.message||'Upload failed', 'error'); }
     };
     input.click();
   }
 
   function changeCover() {
     const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
+    input.type='file'; input.accept='image/*';
     input.onchange = async (e) => {
       const file = e.target.files[0];
       if (!file) return;
@@ -408,26 +393,21 @@
       form.append('cover', file);
       try {
         const res = await api.upload('/users/me/cover', form);
-        if (res.success) {
-          Toast.show('Cover uploaded', 'success');
-        }
-      } catch (err) {
-        console.error('Cover upload error', err);
-        Toast.show(err.message || 'Upload failed', 'error');
-      }
+        if (res.success) Toast.show('Cover uploaded', 'success');
+      } catch(err) { Toast.show(err.message||'Upload failed', 'error'); }
     };
     input.click();
   }
 
   function setTheme(t) {
     Theme.set(t);
-    document.getElementById('darkTheme').style.borderColor  = t==='dark'  ? 'var(--brand)' : 'var(--border)';
-    document.getElementById('lightTheme').style.borderColor = t==='light' ? 'var(--brand)' : 'var(--border)';
+    document.getElementById('darkTheme').style.borderColor  = t==='dark'  ? 'var(--red)' : 'var(--border)';
+    document.getElementById('lightTheme').style.borderColor = t==='light' ? 'var(--red)' : 'var(--border)';
+    document.getElementById('darkTheme').querySelector('i').style.color  = t==='dark'  ? 'var(--red)' : '';
   }
 
-  // Set initial theme indicator
   const ct = Theme.get();
-  document.getElementById(`${ct}Theme`).style.borderColor = 'var(--brand)';
+  document.getElementById(`${ct}Theme`).style.borderColor = 'var(--red)';
   document.getElementById(`${ct==='dark'?'light':'dark'}Theme`).style.borderColor = 'var(--border)';
 
   initSettingsUI();

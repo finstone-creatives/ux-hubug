@@ -36,7 +36,7 @@
     .search-result-name{font-size:0.95rem;font-weight:700;margin:0 0 4px}
     .search-result-meta{font-size:0.78rem;color:var(--text3)}
     .search-empty{min-height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:12px;color:var(--text3)}
-    .search-empty .ti{font-size:48px;color:var(--text4)}
+    .search-empty .ti{font-size:48px;color:var(--text3)}
   </style>
 </head>
 <body>
@@ -157,7 +157,7 @@
     function startSearch() {
       const q = searchInput.value.trim();
       if (!q) return;
-      window.history.replaceState({},''`/pages/search.html?q=${encodeURIComponent(q)}`);
+      window.history.replaceState({}, '', `/pages/search.html?q=${encodeURIComponent(q)}`);
       runSearch(q);
     }
 

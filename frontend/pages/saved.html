@@ -2,18 +2,44 @@
 <html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Saved — UX-HUB</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Saved — Nxt-door</title>
+  <meta name="description" content="Your saved creators and content on Nxt-door." />
+  <meta name="robots" content="noindex" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#e50914" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Nxt-door" />
+  <link rel="apple-touch-icon" href="/assets/icons/icon-192.svg" />
+  <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css" rel="stylesheet">
   <link rel="stylesheet" href="/assets/css/main.css" />
   <style>
-    .page-panel { display:flex; flex-direction:column; gap:18px; }
-    .panel-card { background:var(--surface); border:1px solid var(--border); border-radius:1rem; padding:24px; }
-    .panel-list { display:grid; gap:14px; }
-    .panel-item { background:var(--surface2); border:1px solid var(--border); border-radius:0.95rem; padding:18px; }
-    .placeholder { color:var(--text3); }
+    .saved-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
+    .creator-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;cursor:pointer;transition:transform var(--t),box-shadow var(--t);animation:fadeIn 0.4s ease both}
+    .creator-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg)}
+    .creator-cover{height:100px;position:relative}
+    .creator-cover img,.creator-cover-grad{width:100%;height:100%;object-fit:cover}
+    .creator-cover-grad{display:flex;align-items:center;justify-content:center}
+    .creator-avatar-wrap{position:absolute;bottom:-22px;left:14px}
+    .creator-info{padding:30px 14px 14px}
+    .creator-name{font-weight:700;font-size:0.9rem;margin:0 0 2px}
+    .creator-sub{font-size:0.75rem;color:var(--text3)}
+    .unsave-btn{position:absolute;top:8px;right:8px;width:30px;height:30px;border-radius:50%;background:rgba(0,0,0,0.6);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;transition:background var(--t)}
+    .unsave-btn:hover{background:rgba(229,9,20,0.8)}
+    .post-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+    .post-thumb{aspect-ratio:1;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;position:relative;cursor:pointer;transition:transform var(--t);animation:fadeIn 0.4s ease both}
+    .post-thumb:hover{transform:scale(1.03)}
+    .post-thumb img,.post-thumb-placeholder{width:100%;height:100%;object-fit:cover}
+    .post-thumb-placeholder{display:flex;align-items:center;justify-content:center;font-size:28px;color:var(--text3)}
+    .post-thumb-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.7) 0%,transparent 60%);display:flex;align-items:flex-end;padding:8px;opacity:0;transition:opacity var(--t)}
+    .post-thumb:hover .post-thumb-overlay{opacity:1}
+    .empty-state{padding:60px 20px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:16px;color:var(--text3)}
+    .empty-icon{width:80px;height:80px;border-radius:50%;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto}
   </style>
 </head>
 <body>
@@ -23,31 +49,143 @@
   <div class="page-wrap">
     <main class="main-content">
       <div class="inner-lg">
-        <div class="page-header" style="margin-bottom:24px; display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+        <div class="page-header" style="margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
           <div>
-            <h1>Saved</h1>
-            <p>Quick access to your favorite creators and saved content.</p>
+            <h1 style="margin:0 0 4px">Saved</h1>
+            <p style="margin:0;color:var(--text3);font-size:0.9rem">Your bookmarked creators and content</p>
           </div>
         </div>
-        <div class="page-panel">
-          <div class="panel-card">
-            <h2>Saved items</h2>
-            <div class="panel-list">
-              <div class="panel-item">
-                <strong>You haven’t saved anything yet.</strong>
-                <p class="placeholder">Tap the save button on a creator or video to keep it here.</p>
-              </div>
+
+        <div class="tabs tabs-pill" style="margin-bottom:24px" id="savedTabs">
+          <button class="tab active" onclick="switchTab('creators',this)"><i class="ti ti-users"></i> Creators</button>
+          <button class="tab" onclick="switchTab('posts',this)"><i class="ti ti-bookmark"></i> Posts</button>
+        </div>
+
+        <!-- Creators tab -->
+        <div id="tab-creators">
+          <div id="creatorsState" class="empty-state" style="display:none">
+            <div class="empty-icon"><i class="ti ti-users"></i></div>
+            <div>
+              <strong style="font-size:1rem;display:block;margin-bottom:8px">No saved creators yet</strong>
+              <p style="font-size:0.85rem;margin:0 0 16px">Save creators from their profile page to keep them here.</p>
+              <a href="/index.html" class="btn btn-brand btn-sm"><i class="ti ti-compass"></i> Discover Creators</a>
             </div>
           </div>
+          <div id="creatorsGrid" class="saved-grid"></div>
         </div>
+
+        <!-- Posts tab -->
+        <div id="tab-posts" style="display:none">
+          <div id="postsState" class="empty-state" style="display:none">
+            <div class="empty-icon"><i class="ti ti-bookmark"></i></div>
+            <div>
+              <strong style="font-size:1rem;display:block;margin-bottom:8px">No saved posts yet</strong>
+              <p style="font-size:0.85rem;margin:0 0 16px">Bookmark posts from the feed to find them here later.</p>
+              <a href="/pages/feed.html" class="btn btn-brand btn-sm"><i class="ti ti-layout-list"></i> Browse Feed</a>
+            </div>
+          </div>
+          <div id="postsGrid" class="post-grid"></div>
+        </div>
+
       </div>
     </main>
   </div>
   <script src="/assets/js/app.js"></script>
   <script src="/assets/js/layout.js"></script>
+  <script src="/assets/js/pwa.js"></script>
   <script>
     Auth.requireAuth('/login.html');
     Layout.init('Saved');
+
+    const COVER_COLORS = ['linear-gradient(135deg,#2D1B69,#A020F0)','linear-gradient(135deg,#1a1a3e,#e50914)','linear-gradient(135deg,#0a2342,#e500cc)','linear-gradient(135deg,#1a2D1A,#22c55e)','linear-gradient(135deg,#2D2A1A,#f59e0b)'];
+
+    function coverColor(seed) {
+      const i = [...(seed||'A')].reduce((s,c)=>s+c.charCodeAt(0),0) % COVER_COLORS.length;
+      return COVER_COLORS[i];
+    }
+
+    async function loadCreators() {
+      const grid = document.getElementById('creatorsGrid');
+      const state = document.getElementById('creatorsState');
+      grid.innerHTML = Array(4).fill('<div class="skeleton" style="height:160px;border-radius:var(--radius-lg)"></div>').join('');
+      try {
+        const r = await api.get('/users/saved');
+        const list = r.users || r.saved || [];
+        if (!list.length) { grid.innerHTML=''; state.style.display='flex'; return; }
+        state.style.display='none';
+        grid.innerHTML = list.map(c => {
+          const name = c.displayName || c.username || 'Creator';
+          const grad = coverColor(c._id);
+          return `<div class="creator-card" onclick="window.location='/pages/profile.html?id=${c._id}'">
+            <div class="creator-cover" style="background:${grad}">
+              ${c.coverImage ? `<img src="${c.coverImage}" />` : `<div class="creator-cover-grad" style="background:${grad}"></div>`}
+              <div class="creator-avatar-wrap">
+                <div class="avatar" style="background:var(--grad-brand);border:3px solid var(--surface)">${c.avatar?`<img src="${c.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%"/>`:`${fmt.initials(name)}`}</div>
+              </div>
+              <button class="unsave-btn" onclick="unsaveCreator(event,'${c._id}',this)" title="Remove"><i class="ti ti-bookmark-off"></i></button>
+            </div>
+            <div class="creator-info">
+              <div class="creator-name">${fmt.esc(name)}</div>
+              <div class="creator-sub">${c.location||'East Africa'} &middot; ${c.uploadCount||0} posts</div>
+            </div>
+          </div>`;
+        }).join('');
+      } catch(e) {
+        grid.innerHTML = `<div style="grid-column:1/-1;color:var(--text3);font-size:0.85rem">Failed to load saved creators.</div>`;
+      }
+    }
+
+    async function loadPosts() {
+      const grid = document.getElementById('postsGrid');
+      const state = document.getElementById('postsState');
+      grid.innerHTML = Array(6).fill('<div class="skeleton" style="aspect-ratio:1;border-radius:var(--radius)"></div>').join('');
+      try {
+        const r = await api.get('/posts/saved');
+        const list = r.posts || r.saved || [];
+        if (!list.length) { grid.innerHTML=''; state.style.display='flex'; return; }
+        state.style.display='none';
+        grid.innerHTML = list.map(p => {
+          const thumb = p.media && p.media[0];
+          const isVideo = thumb && thumb.type === 'video';
+          return `<div class="post-thumb" onclick="window.location='/pages/feed.html?post=${p._id}'">
+            ${thumb ? `<img src="${thumb.url}" loading="lazy" />` : `<div class="post-thumb-placeholder"><i class="ti ti-file-text"></i></div>`}
+            <div class="post-thumb-overlay">
+              <div style="font-size:0.72rem;color:#fff">${isVideo?'<i class="ti ti-video"></i> ':''} ${fmt.esc(p.caption||'').slice(0,30)}</div>
+            </div>
+          </div>`;
+        }).join('');
+      } catch(e) {
+        grid.innerHTML = `<div style="grid-column:1/-1;color:var(--text3);font-size:0.85rem">Failed to load saved posts.</div>`;
+      }
+    }
+
+    async function unsaveCreator(e, id, btn) {
+      e.stopPropagation();
+      btn.disabled = true;
+      try {
+        await api.delete(`/users/${id}/save`);
+        btn.closest('.creator-card').style.opacity = '0';
+        setTimeout(() => { btn.closest('.creator-card').remove(); checkEmpty(); }, 300);
+      } catch(err) {
+        btn.disabled = false;
+        Toast.show(err.message||'Could not remove.', 'error');
+      }
+    }
+
+    function checkEmpty() {
+      const grid = document.getElementById('creatorsGrid');
+      if (!grid.children.length) document.getElementById('creatorsState').style.display='flex';
+    }
+
+    function switchTab(name, btn) {
+      document.querySelectorAll('#savedTabs .tab').forEach(t=>t.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-creators').style.display = name==='creators' ? 'block' : 'none';
+      document.getElementById('tab-posts').style.display = name==='posts' ? 'block' : 'none';
+      if (name==='posts') loadPosts();
+    }
+
+    loadCreators();
   </script>
 </body>
 </html>
