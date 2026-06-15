@@ -2,31 +2,38 @@
 <html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Trending — UX-HUB</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Trending — Nxt-door</title>
+  <meta name="description" content="Discover trending creator content on Nxt-door. Find the hottest creators and videos on Africa's premier platform right now." />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:site_name" content="Nxt-door" />
+  <meta property="og:title" content="Trending — Nxt-door" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#e50914" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Nxt-door" />
+  <link rel="apple-touch-icon" href="/assets/icons/icon-192.svg" />
+  <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css" rel="stylesheet">
   <link rel="stylesheet" href="/assets/css/main.css" />
   <style>
-    .trending-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:20px; }
-    .video-card { cursor:pointer; display:flex; flex-direction:column; background:var(--surface); border:1px solid var(--border); border-radius:1rem; overflow:hidden; transition:transform var(--t),box-shadow var(--t); }
-    .video-card:hover { transform:translateY(-4px); box-shadow:var(--shadow); }
-    .video-thumb { position:relative; min-height:210px; background:linear-gradient(135deg,rgba(16,24,40,0.9),rgba(15,23,42,0.7)); display:flex; align-items:flex-end; padding:16px; color:#fff; }
-    .video-thumb::before { content:''; position:absolute; inset:0; background:linear-gradient(180deg,transparent,rgba(0,0,0,0.45)); }
-    .video-thumb-content { position:relative; z-index:1; width:100%; }
-    .video-badge { display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,0.12); color:#fff; padding:6px 10px; border-radius:999px; font-size:0.75rem; letter-spacing:0.02em; }
-    .video-meta { padding:18px 16px 20px; display:flex; flex-direction:column; gap:10px; }
-    .video-title { font-size:1rem; font-weight:700; line-height:1.35; color:var(--text); }
-    .video-subtitle { font-size:0.82rem; color:var(--text3); }
-    .video-stats { display:flex; flex-wrap:wrap; gap:10px; color:var(--text3); font-size:0.82rem; }
-    .empty-state { display:none; min-height:240px; align-items:center; justify-content:center; gap:12px; color:var(--text3); text-align:center; }
-    .empty-state .ti { font-size:42px; color:var(--text2); }
-    .page-header { margin-bottom:24px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
-    .page-header h1 { margin:0; font-size:2rem; }
-    .page-header p { margin:0; color:var(--text3); max-width:620px; }
-    @media(max-width:1024px){ .trending-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
-    @media(max-width:720px){ .trending-grid { grid-template-columns: 1fr; } }
+    .trending-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px}
+    .video-card{cursor:pointer;display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;transition:transform var(--t),box-shadow var(--t)}
+    .video-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg)}
+    .video-thumb{position:relative;height:200px;background:linear-gradient(135deg,rgba(16,24,40,0.9),rgba(15,23,42,0.7));display:flex;align-items:flex-end;padding:14px}
+    .video-thumb::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent,rgba(0,0,0,0.5))}
+    .video-thumb-content{position:relative;z-index:1;width:100%}
+    .video-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,0.12);backdrop-filter:blur(8px);color:#fff;padding:5px 10px;border-radius:999px;font-size:0.72rem;font-weight:700}
+    .video-meta{padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+    .video-title{font-size:0.92rem;font-weight:700;line-height:1.35;color:var(--text)}
+    .video-subtitle{font-size:0.78rem;color:var(--text3)}
+    .video-stats{display:flex;flex-wrap:wrap;gap:10px;color:var(--text4);font-size:0.76rem}
+    .empty-state{display:flex;flex-direction:column;min-height:240px;align-items:center;justify-content:center;gap:12px;color:var(--text3);text-align:center;grid-column:1/-1}
+    .empty-state .ti{font-size:48px;color:var(--text4)}
   </style>
 </head>
 <body>
@@ -36,68 +43,59 @@
   <div class="page-wrap">
     <main class="main-content">
       <div class="inner-lg">
-        <div class="page-header">
+        <div style="margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
           <div>
-            <h1>Trending</h1>
-            <p>Real-time trending content powered by UX-HUB's public feed. Find the hottest creators and videos right now.</p>
+            <div class="label">What's Hot</div>
+            <h1 style="margin:4px 0 0">Trending</h1>
+            <p style="margin:6px 0 0;color:var(--text3)">Real-time trending content on Nxt-door. Find the hottest creators and videos right now.</p>
           </div>
-          <button class="btn btn-brand btn-md" onclick="window.location.href='/pages/search.html'">Search Content</button>
+          <button class="btn btn-brand btn-md" onclick="window.location.href='/pages/search.html'"><i class="ti ti-search"></i> Search Content</button>
         </div>
         <div id="trendingGrid" class="trending-grid"></div>
-        <div id="trendingState" class="empty-state">
-          <i class="ti ti-alert-circle"></i>
-          <p>Trending content is not available right now. Try again later or use search to discover fresh videos.</p>
-        </div>
       </div>
     </main>
   </div>
   <script src="/assets/js/app.js"></script>
   <script src="/assets/js/layout.js"></script>
+  <script src="/assets/js/pwa.js"></script>
   <script>
     Layout.init('Trending');
 
-    function formatViews(count) {
-      return count >= 1000000 ? (count/1000000).toFixed(1)+'M' : count >= 1000 ? (count/1000).toFixed(1)+'K' : count || 0;
-    }
-
-    function renderVideoCard(video) {
-      const uploader = video.uploader?.username || 'Creator';
-      const views = formatViews(video.views || 0);
-      const duration = video.duration || 'LIVE';
+    function renderVideoCard(v) {
+      const uploader = v.uploader?.username||'Creator';
+      const views = fmt.num ? fmt.num(v.views||0) : (v.views||0);
       return `
-        <div class="video-card" onclick="window.location='/pages/live-watch.html?id=${video._id}'">
+        <div class="video-card" onclick="window.location='/pages/live-watch.html?id=${v._id}'">
           <div class="video-thumb">
             <div class="video-thumb-content">
               <div class="video-badge"><i class="ti ti-trending-up"></i> Trending</div>
+              <div style="margin-top:8px;font-size:0.85rem;font-weight:600;color:#fff">${fmt.esc(uploader)}</div>
             </div>
           </div>
           <div class="video-meta">
-            <div class="video-title">${video.title ? video.title.replace(/</g,'&lt;').replace(/>/g,'&gt;') : 'Untitled Video'}</div>
-            <div class="video-subtitle">${uploader} · ${video.category || 'Creator Video'}</div>
+            <div class="video-title">${fmt.esc(v.title||'Untitled Video')}</div>
+            <div class="video-subtitle">${fmt.esc(v.category||'Creator Video')}</div>
             <div class="video-stats">
               <span><i class="ti ti-eye"></i> ${views} views</span>
-              <span><i class="ti ti-clock"></i> ${duration}</span>
+              ${v.duration?`<span><i class="ti ti-clock"></i> ${v.duration}</span>`:''}
             </div>
           </div>
         </div>`;
     }
 
     async function loadTrending() {
-      const state = document.getElementById('trendingState');
       const grid = document.getElementById('trendingGrid');
-      state.style.display = 'none';
-      grid.innerHTML = '';
+      grid.innerHTML = Array(6).fill(`<div class="video-card skeleton" style="height:280px"></div>`).join('');
       try {
-        const response = await api.get('/videos?limit=24');
-        const videos = response.videos || [];
+        const r = await api.get('/videos?limit=24');
+        const videos = (r.videos||[]).slice().sort((a,b)=>(b.views||0)-(a.views||0));
         if (!videos.length) {
-          state.style.display = 'flex';
+          grid.innerHTML = `<div class="empty-state"><i class="ti ti-trending-up"></i><p style="font-size:0.95rem;font-weight:600">No trending content yet</p><p style="font-size:0.82rem">Check back soon or <a href="/pages/search.html" style="color:var(--red)">search for creators</a>.</p></div>`;
           return;
         }
-        const sorted = videos.slice().sort((a, b) => (b.views || 0) - (a.views || 0));
-        grid.innerHTML = sorted.map(renderVideoCard).join('');
-      } catch (err) {
-        state.style.display = 'flex';
+        grid.innerHTML = videos.map(renderVideoCard).join('');
+      } catch {
+        grid.innerHTML = `<div class="empty-state"><i class="ti ti-alert-circle"></i><p>Unable to load trending content.</p></div>`;
       }
     }
 
