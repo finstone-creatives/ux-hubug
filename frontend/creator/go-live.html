@@ -1,43 +1,33 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Go Live — Nxt-door</title>
-  <meta name="robots" content="noindex" />
-  <link rel="manifest" href="/manifest.json" />
-  <meta name="theme-color" content="#e50914" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="Nxt-door" />
-  <link rel="apple-touch-icon" href="/assets/icons/icon-192.svg" />
-  <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml" />
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Go Live — UX-HUB</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css">
   <link rel="stylesheet" href="/assets/css/main.css" />
   <style>
-    .live-studio{display:grid;grid-template-columns:1fr 320px;gap:20px;min-height:500px}
-    .camera-wrap{background:#000;border-radius:var(--radius-xl);overflow:hidden;position:relative;min-height:360px;display:flex;align-items:center;justify-content:center}
+    .live-studio{display:grid;grid-template-columns:1fr 320px;gap:20px;height:calc(100vh - 120px);min-height:500px}
+    .camera-wrap{background:#000;border-radius:var(--radius-xl);overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center}
     .camera-off{text-align:center;color:var(--text3)}
-    .camera-off .ti{font-size:64px;display:block;margin-bottom:16px}
+    .camera-off .ti{font-size:64px;display:block;margin-bottom:16px;color:var(--surface3)}
     .live-controls{position:absolute;bottom:0;left:0;right:0;padding:20px;background:linear-gradient(transparent,rgba(0,0,0,0.9));display:flex;align-items:center;justify-content:center;gap:14px}
     .ctrl-btn{width:52px;height:52px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:22px;transition:all var(--t)}
     .ctrl-btn-default{background:rgba(255,255,255,0.15);color:#fff;backdrop-filter:blur(8px)}
     .ctrl-btn-default:hover{background:rgba(255,255,255,0.25)}
     .ctrl-btn-red{background:var(--red);color:#fff}
-    .ctrl-btn-red:hover{background:#c0070f}
-    .go-live-btn{padding:14px 36px;border-radius:var(--radius-full);background:var(--red);color:#fff;border:none;font-size:1rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:10px;transition:all var(--t);font-family:var(--font-body)}
-    .go-live-btn:hover{background:#c0070f;transform:scale(1.03)}
+    .ctrl-btn-red:hover{background:#cc0000}
+    .go-live-btn{padding:14px 36px;border-radius:var(--radius-full);background:var(--red);color:#fff;border:none;font-size:1rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:10px;transition:all var(--t)}
+    .go-live-btn:hover{background:#cc0000;transform:scale(1.03)}
     .live-sidebar{display:flex;flex-direction:column;gap:16px}
     .live-chat-box{flex:1;display:flex;flex-direction:column;min-height:0}
-    .live-msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:8px;max-height:280px}
+    .live-msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:8px}
     .live-msg{font-size:0.82rem;line-height:1.5}
-    .live-msg-name{font-weight:700;color:var(--red);margin-right:6px}
+    .live-msg-name{font-weight:700;color:var(--brand);margin-right:6px}
     .live-tip-msg .live-msg-name{color:var(--gold)}
     .live-input-row{padding:10px;border-top:1px solid var(--border);display:flex;gap:8px}
-    @media(max-width:768px){.live-studio{grid-template-columns:1fr}.camera-wrap{min-height:260px}}
+    @media(max-width:768px){.live-studio{grid-template-columns:1fr;height:auto}.camera-wrap{height:300px}}
   </style>
 </head>
 <body>
@@ -47,6 +37,7 @@
 <div class="page-wrap">
   <main class="main-content">
     <div class="inner-lg" style="padding-top:20px">
+
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px">
         <div>
           <a href="/creator/dashboard.html" class="btn btn-ghost btn-sm" style="margin-bottom:6px"><i class="ti ti-arrow-left"></i> Dashboard</a>
@@ -59,6 +50,7 @@
         </div>
       </div>
 
+      <!-- Setup panel (before live) -->
       <div id="setupPanel" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
         <div class="card"><div class="card-body">
           <div class="label mb-12">Stream Title</div>
@@ -89,36 +81,40 @@
         </button>
       </div>
 
+      <!-- LIVE STUDIO -->
       <div class="live-studio" id="liveStudio" style="display:none">
         <div class="camera-wrap" id="cameraWrap">
           <video id="liveVideo" autoplay muted style="width:100%;height:100%;object-fit:cover"></video>
           <div class="live-controls">
-            <button class="ctrl-btn ctrl-btn-default" onclick="toggleMic()" id="micBtn" title="Mute"><i class="ti ti-microphone"></i></button>
-            <button class="ctrl-btn ctrl-btn-default" onclick="toggleCam()" id="camBtn" title="Camera"><i class="ti ti-video"></i></button>
-            <button class="ctrl-btn ctrl-btn-default" onclick="shareScreen()" title="Screen Share"><i class="ti ti-screen-share"></i></button>
+            <button class="ctrl-btn ctrl-btn-default" onclick="toggleMic()" id="micBtn" title="Mute/Unmute"><i class="ti ti-microphone"></i></button>
+            <button class="ctrl-btn ctrl-btn-default" onclick="toggleCam()" id="camBtn" title="Toggle Camera"><i class="ti ti-video"></i></button>
+            <button class="ctrl-btn ctrl-btn-default" title="Screen Share" onclick="shareScreen()"><i class="ti ti-screen-share"></i></button>
             <button class="ctrl-btn ctrl-btn-red" onclick="endLive()" title="End Stream"><i class="ti ti-player-stop-filled"></i></button>
           </div>
         </div>
 
         <div class="live-sidebar">
+          <!-- Live goals -->
           <div class="card">
-            <div class="card-header"><h3><i class="ti ti-target" style="color:var(--red)"></i> Tip Goal</h3></div>
+            <div class="card-header"><h3><i class="ti ti-target" style="color:var(--brand)"></i> Goal</h3></div>
             <div class="card-body">
               <div style="display:flex;justify-content:space-between;font-size:0.82rem;margin-bottom:8px">
-                <span>Tips Goal</span><span style="font-weight:700;color:var(--gold)" id="goalDisplay">$0 / $100</span>
+                <span>Tips Goal</span><span style="font-weight:700;color:var(--gold)">$45 / $100</span>
               </div>
-              <div class="progress-bar"><div class="progress-fill" id="goalFill" style="width:0%"></div></div>
-              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:12px">
-                <span class="tag tag-surface" style="cursor:pointer" onclick="setGoal('Dance',$10)">Dance $10</span>
-                <span class="tag tag-surface" style="cursor:pointer" onclick="setGoal('Outfit',$25)">Outfit $25</span>
-                <span class="tag tag-surface" style="cursor:pointer" onclick="setGoal('Show',$50)">Show $50</span>
+              <div class="progress-bar"><div class="progress-fill" style="width:45%"></div></div>
+              <div style="margin-top:12px;font-size:0.78rem;color:var(--text3)">Tip requests</div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px" id="tipGoals">
+                <span class="tag tag-surface" onclick="setGoal(10)" style="cursor:pointer">Dance $10</span>
+                <span class="tag tag-surface" onclick="setGoal(25)" style="cursor:pointer">Outfit Change $25</span>
+                <span class="tag tag-surface" onclick="setGoal(50)" style="cursor:pointer">Special Show $50</span>
               </div>
             </div>
           </div>
 
+          <!-- Live chat -->
           <div class="card live-chat-box" style="min-height:320px">
             <div class="card-header" style="padding:10px 14px">
-              <h3 style="font-size:0.9rem"><i class="ti ti-message-circle" style="color:var(--red)"></i> Live Chat</h3>
+              <h3 style="font-size:0.9rem"><i class="ti ti-message-circle" style="color:var(--brand)"></i> Live Chat</h3>
               <span class="tag tag-surface" style="font-size:0.7rem"><i class="ti ti-users"></i> <span id="chatViewers">0</span></span>
             </div>
             <div class="live-msgs" id="liveChat"></div>
@@ -129,122 +125,167 @@
           </div>
         </div>
       </div>
+
     </div>
   </main>
 </div>
 <script src="/assets/js/app.js"></script>
 <script src="/assets/js/layout.js"></script>
-<script src="/assets/js/pwa.js"></script>
 <script>
   Auth.requireAuth('/login.html');
   Auth.requireCreator();
   Layout.init('Go Live');
 
-  let stream=null, liveTimer=null, seconds=0, viewers=0, tipsTotal=0, isLive=false;
+  let stream = null;
+  let liveTimer = null;
+  let seconds = 0;
+  let viewers = 0;
+  let isLive = false;
+  let currentLive = null;
 
   document.getElementById('streamAccess').addEventListener('change', function() {
-    document.getElementById('ppvWrap').style.display = this.value==='paid' ? 'block' : 'none';
+    document.getElementById('ppvWrap').style.display = this.value === 'paid' ? 'block' : 'none';
   });
 
   async function requestCamera() {
     try {
-      stream = await navigator.mediaDevices.getUserMedia({video:true,audio:true});
+      stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
       document.getElementById('previewVideo').srcObject = stream;
-      Toast.show('Camera & microphone ready!','success');
-    } catch { Toast.show('Could not access camera. Please allow camera permission.','error'); }
+      Toast.show('Camera ready!', 'success');
+    } catch { Toast.show('Could not access camera. Please allow camera permission.', 'error'); }
   }
 
-  function goLive() {
-    const title = document.getElementById('streamTitle').value.trim();
-    if (!title) return Toast.show('Please enter a stream title.','warning');
-    isLive=true;
-    document.getElementById('setupPanel').style.display='none';
-    document.getElementById('goLiveRow').style.display='none';
-    document.getElementById('liveStudio').style.display='grid';
-    document.getElementById('liveStats').style.display='flex';
-    if (stream) document.getElementById('liveVideo').srcObject=stream;
-    liveTimer = setInterval(() => {
+  function showLiveStudio(liveData) {
+    isLive = true;
+    currentLive = liveData;
+    viewers = liveData.liveViewers || 0;
+    document.getElementById('setupPanel').style.display = 'none';
+    document.getElementById('goLiveRow').style.display = 'none';
+    document.getElementById('liveStudio').style.display = 'grid';
+    document.getElementById('liveStats').style.display = 'flex';
+    document.getElementById('viewerCount').textContent = viewers;
+    document.getElementById('chatViewers').textContent = viewers;
+    document.getElementById('streamTitle').value = liveData.liveTitle || '';
+    document.getElementById('streamAccess').value = liveData.liveAccess || 'public';
+    document.getElementById('ppvWrap').style.display = liveData.liveAccess === 'paid' ? 'block' : 'none';
+    if (stream) document.getElementById('liveVideo').srcObject = stream;
+
+    if (liveTimer) clearInterval(liveTimer);
+    liveTimer = setInterval(async () => {
       seconds++;
-      const m=String(Math.floor(seconds/60)).padStart(2,'0');
-      const s=String(seconds%60).padStart(2,'0');
-      document.getElementById('liveDuration').textContent=`${m}:${s}`;
-      if (Math.random()>.6) {
-        viewers = Math.max(0, viewers+Math.floor(Math.random()*3)-1);
-        document.getElementById('viewerCount').textContent=viewers;
-        document.getElementById('chatViewers').textContent=viewers;
+      const m = String(Math.floor(seconds/60)).padStart(2,'0');
+      const s = String(seconds%60).padStart(2,'0');
+      document.getElementById('liveDuration').textContent = `${m}:${s}`;
+
+      try {
+        const response = await api.get('/live/me');
+        if (response.success && response.live?.isLive) {
+          currentLive = response.live;
+          viewers = response.live.liveViewers || viewers;
+          document.getElementById('viewerCount').textContent = viewers;
+          document.getElementById('chatViewers').textContent = viewers;
+        }
+      } catch (e) {
+        // ignore refresh errors
       }
-      if (Math.random()>.85) simulateChatMsg();
+
+      if (Math.random() > 0.85) addChatMsg(false);
     }, 1000);
-    simulateChatPeriodic();
-    Toast.show('You are now LIVE on Nxt-door!','success');
+    simulateChat();
   }
 
-  const fakeNames=['Sarah_K','Mike_T','Anita','James_O','Rose_254','Bella_UG'];
-  const fakeMsgs=['Yesss!','Looking amazing','Fire!','Hello from Kampala','Sending love','You are so beautiful','Keep going!'];
-
-  function simulateChatMsg() {
-    const name=fakeNames[Math.floor(Math.random()*fakeNames.length)];
-    const msg=fakeMsgs[Math.floor(Math.random()*fakeMsgs.length)];
-    const isTip=Math.random()>.85;
-    const tipAmt=isTip?[5,10,20][Math.floor(Math.random()*3)]:0;
-    addChatMsg(name, isTip?`tipped $${tipAmt} — ${msg}`:msg, isTip);
-    if (isTip) {
-      tipsTotal+=tipAmt;
-      document.getElementById('goalDisplay').textContent=`$${tipsTotal} / $100`;
-      document.getElementById('goalFill').style.width=Math.min(100,tipsTotal)+'%';
+  async function loadExistingLiveState() {
+    try {
+      const response = await api.get('/live/me');
+      if (response.success && response.live?.isLive) {
+        showLiveStudio(response.live);
+      }
+    } catch (err) {
+      console.warn('No live session to restore.');
     }
   }
 
-  function simulateChatPeriodic() {
-    const iv=setInterval(()=>{ if(!isLive){clearInterval(iv);return;} simulateChatMsg(); }, 3200);
+  async function goLive() {
+    const title = document.getElementById('streamTitle').value.trim();
+    const category = document.getElementById('streamAccess').value === 'paid' ? 'Paid Live' : 'Live';
+    const access = document.getElementById('streamAccess').value;
+    if (!title) return Toast.show('Please enter a stream title.', 'warning');
+
+    try {
+      const response = await api.post('/live/start', { title, category, access });
+      if (!response.success) throw new Error(response.message || 'Could not start live stream.');
+      showLiveStudio(response.live);
+      Toast.show('You are now LIVE!', 'success');
+    } catch (err) {
+      Toast.show(err.message || 'Unable to start live stream.', 'error');
+    }
   }
 
-  function addChatMsg(name, msg, isTip=false) {
-    const chat=document.getElementById('liveChat');
-    const div=document.createElement('div');
-    div.className=`live-msg${isTip?' live-tip-msg':''}`;
-    div.innerHTML=`<span class="live-msg-name">${name}</span>${isTip?'<i class="ti ti-coin" style="color:var(--gold)"></i> ':''}${msg}`;
+  const fakeNames = ['Sarah_K','mike_t','Anita','James_O','Rose_254','Bella_UG','TomUG'];
+  const fakeMessages = ['Yesss queen!','Love this!','Looking amazing','Fire!','Hello from Kampala','You are so beautiful','Sending love'];
+  const fakeTips = [5, 10, 20];
+
+  function addChatMsg(isHost = false) {
+    const name = isHost ? (Auth.getUser()?.username || 'You') : fakeNames[Math.floor(Math.random()*fakeNames.length)];
+    const msg  = fakeMessages[Math.floor(Math.random()*fakeMessages.length)];
+    const isTip = !isHost && Math.random() > 0.8;
+    const tipAmt = fakeTips[Math.floor(Math.random()*fakeTips.length)];
+    const chat = document.getElementById('liveChat');
+    const div = document.createElement('div');
+    div.className = `live-msg${isTip?' live-tip-msg':''}`;
+    div.innerHTML = `<span class="live-msg-name">${name}</span>${isTip ? `<i class="ti ti-coin" style="color:var(--gold)"></i> tipped $${tipAmt} — ` : ''}${msg}`;
     chat.appendChild(div);
-    chat.scrollTop=chat.scrollHeight;
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  function simulateChat() {
+    const interval = setInterval(() => { if (!isLive) { clearInterval(interval); return; } addChatMsg(false); }, 3500);
   }
 
   function sendChatMsg() {
-    const input=document.getElementById('chatInput');
+    const input = document.getElementById('chatInput');
     if (!input.value.trim()) return;
-    addChatMsg(Auth.getUser()?.username||'You', input.value);
-    input.value='';
+    addChatMsg(true);
+    input.value = '';
   }
 
   function toggleMic() {
     if (!stream) return;
-    const t=stream.getAudioTracks()[0];
-    if (t) { t.enabled=!t.enabled; document.getElementById('micBtn').innerHTML=`<i class="ti ti-microphone${t.enabled?'':'-off'}"></i>`; }
+    const track = stream.getAudioTracks()[0];
+    if (track) { track.enabled = !track.enabled; document.getElementById('micBtn').innerHTML = `<i class="ti ti-microphone${track.enabled?'':'-off'}"></i>`; }
   }
 
   function toggleCam() {
     if (!stream) return;
-    const t=stream.getVideoTracks()[0];
-    if (t) { t.enabled=!t.enabled; document.getElementById('camBtn').innerHTML=`<i class="ti ti-video${t.enabled?'':'-off'}"></i>`; }
+    const track = stream.getVideoTracks()[0];
+    if (track) { track.enabled = !track.enabled; document.getElementById('camBtn').innerHTML = `<i class="ti ti-video${track.enabled?'':'-off'}"></i>`; }
   }
 
   async function shareScreen() {
     try {
-      const ss=await navigator.mediaDevices.getDisplayMedia({video:true});
-      document.getElementById('liveVideo').srcObject=ss;
-      Toast.show('Screen sharing started.','info');
-    } catch { Toast.show('Screen share cancelled.','warning'); }
+      const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+      document.getElementById('liveVideo').srcObject = screenStream;
+      Toast.show('Screen sharing started.', 'info');
+    } catch { Toast.show('Screen share cancelled.', 'warning'); }
   }
 
-  function endLive() {
+  async function endLive() {
     if (!confirm('End the live stream?')) return;
-    isLive=false;
+    try {
+      await api.post('/live/end');
+    } catch (err) {
+      console.warn('Unable to notify backend to end live stream.', err);
+    }
+    isLive = false;
     clearInterval(liveTimer);
-    if (stream) stream.getTracks().forEach(t=>t.stop());
-    Toast.show(`Stream ended. ${viewers} viewers, $${tipsTotal} in tips.`,'info');
-    setTimeout(()=>window.location.href='/creator/dashboard.html', 1500);
+    if (stream) stream.getTracks().forEach(t => t.stop());
+    Toast.show(`Stream ended. ${viewers} viewers watched.`, 'info');
+    setTimeout(() => window.location.href = '/creator/dashboard.html', 1500);
   }
 
-  function setGoal(label, amount) { Toast.show(`Goal: ${label} for ${amount}!`,'info'); }
+  function setGoal(amt) { Toast.show(`Goal set: Reach $${amt} in tips!`, 'info'); }
+
+  loadExistingLiveState();
 </script>
 </body>
 </html>

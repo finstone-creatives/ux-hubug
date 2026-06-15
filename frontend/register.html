@@ -17,103 +17,247 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css">
-  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="stylesheet" href="/assets/css/login.css">
 </head>
-<body class="no-sidebar">
-<div class="auth-layout" style="padding:40px 20px">
-  <div class="auth-card fade-in" style="max-width:480px">
-    <div class="auth-logo-wrap">
-      <a href="/index.html" style="text-decoration:none;display:flex;align-items:center;gap:10px;justify-content:center">
-        <div class="logo-mark" style="width:40px;height:40px;font-size:1rem;display:flex;align-items:center;justify-content:center">NX</div>
-        <span class="logo-name" style="font-size:1.6rem">Nxt<span>-door</span></span>
-      </a>
-      <p class="text-sm" style="color:var(--text3);margin-top:8px">Create your free account — 18+ only</p>
-    </div>
-    <div id="alertBox" style="display:none;margin-bottom:16px"></div>
-    <form onsubmit="handleRegister(event)">
-      <div class="flex-col gap-14">
-        <div class="grid-2" style="gap:14px">
-          <div class="form-group">
-            <label class="form-label">Username</label>
-            <div class="input-group"><i class="ti ti-at"></i><input class="input" id="username" type="text" placeholder="your_handle" minlength="3" required /></div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Display Name</label>
-            <div class="input-group"><i class="ti ti-user"></i><input class="input" id="displayName" type="text" placeholder="Your Name" required /></div>
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Email address</label>
-          <div class="input-group"><i class="ti ti-mail"></i><input class="input" id="email" type="email" placeholder="you@example.com" required /></div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Password</label>
-          <div class="input-group"><i class="ti ti-lock"></i><input class="input" type="password" id="password" placeholder="Min. 6 characters" minlength="6" required />
-          <button type="button" onclick="togglePw(this)" style="background:none;border:none;padding:0 12px;cursor:pointer;color:var(--text3)"><i class="ti ti-eye"></i></button></div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Date of Birth</label>
-          <div class="input-group"><i class="ti ti-calendar"></i><input class="input" id="dob" type="date" required /></div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">I am joining as</label>
-          <select class="select" id="accountType">
-            <option value="fan">Fan / Viewer</option>
-            <option value="creator">Creator / Performer</option>
-          </select>
-        </div>
-        <label class="checkbox-wrap">
-          <input type="checkbox" id="ageConfirm" required />
-          <span>I confirm I am <strong>18 years or older</strong> and agree to the <a href="/pages/terms.html" style="color:var(--red)">Terms of Service</a> and <a href="/pages/privacy.html" style="color:var(--red)">Privacy Policy</a>.</span>
-        </label>
-        <button type="submit" class="btn btn-brand btn-md btn-full" id="regBtn">
-          <i class="ti ti-user-plus"></i> Create Account
-        </button>
-      </div>
-    </form>
-    <div class="divider-text">or</div>
-    <p class="text-sm text-center" style="color:var(--text3)">Already have an account? <a href="/login.html" style="color:var(--red);font-weight:600">Sign in</a></p>
+<body class="auth-page">
+  <div class="particles" id="particles"></div>
+  <div class="floating-shapes">
+    <div class="shape shape-1"></div>
+    <div class="shape shape-2"></div>
+    <div class="shape shape-3"></div>
+    <div class="shape shape-4"></div>
   </div>
-</div>
-<script src="/assets/js/app.js"></script>
-<script src="/assets/js/pwa.js"></script>
-<script>
-  Theme.init();
-  async function handleRegister(e) {
-    e.preventDefault();
-    const dob = new Date(document.getElementById('dob').value);
-    const age = Math.floor((Date.now() - dob) / (365.25*24*60*60*1000));
-    if (age < 18) return showAlert('alertBox','You must be 18 or older to register.','error');
-    const btn = document.getElementById('regBtn');
-    btn.innerHTML = '<i class="ti ti-loader-2" style="animation:spin 0.6s linear infinite"></i> Creating...';
-    btn.disabled = true;
-    try {
-      const data = await api.post('/auth/register', {
-        username: document.getElementById('username').value,
-        displayName: document.getElementById('displayName').value,
-        email: document.getElementById('email').value,
-        password: document.getElementById('password').value,
-        dateOfBirth: document.getElementById('dob').value,
-        ageConfirmed: true,
-        accountType: document.getElementById('accountType').value,
-      });
-      if (data.success) {
-        Auth.setSession(data.token, data.user);
-        window.location.href = data.user.role === 'creator' ? '/creator/dashboard.html' : '/pages/feed.html';
-      } else {
-        showAlert('alertBox', data.message, 'error');
-        btn.innerHTML = '<i class="ti ti-user-plus"></i> Create Account'; btn.disabled = false;
+  <div class="glow-orb orb-1"></div>
+  <div class="glow-orb orb-2"></div>
+  <div class="glow-orb orb-3"></div>
+  
+  <div class="auth-container">
+    <div class="auth-visual">
+      <div class="visual-content">
+        <div class="logo-glow"><span>NX</span></div>
+        <h2 class="visual-title">Join Nxt-door</h2>
+        <p class="visual-subtitle">Create your free account and start exploring Africa's premier creator platform. 18+ only.</p>
+        <div class="features-list">
+          <div class="feature-item"><div class="feature-icon"><i class="ti ti-crown"></i></div><span>Access Premium Content</span></div>
+          <div class="feature-item"><div class="feature-icon"><i class="ti ti-heart"></i></div><span>Follow Your Favorite Creators</span></div>
+          <div class="feature-item"><div class="feature-icon"><i class="ti ti-bolt"></i></div><span>Go Live & Create Content</span></div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="auth-form-section">
+      <div class="form-header">
+        <h1>Create Account</h1>
+        <p>Fill in your details to get started</p>
+      </div>
+      
+      <div class="step-indicator">
+        <div class="step active" data-step="1">1</div>
+        <div class="step-line" id="line1"></div>
+        <div class="step" data-step="2">2</div>
+        <div class="step-line" id="line2"></div>
+        <div class="step" data-step="3">3</div>
+      </div>
+      
+      <div class="alert-box" id="alertBox"><i class="ti ti-alert-circle"></i><span id="alertMessage"></span></div>
+      
+      <form id="registerForm" onsubmit="return false;">
+        <div class="form-step active" data-step="1">
+          <h3 style="color:#fff;margin-bottom:20px;font-size:1.1rem;">Choose Account Type</h3>
+          <div class="account-type-selector">
+            <div class="type-option" onclick="selectType('fan')" id="type-fan">
+              <i class="ti ti-user"></i>
+              <h4>Fan / Viewer</h4>
+              <p>Explore & enjoy content</p>
+            </div>
+            <div class="type-option" onclick="selectType('creator')" id="type-creator">
+              <i class="ti ti-video"></i>
+              <h4>Creator</h4>
+              <p>Share & monetize content</p>
+            </div>
+          </div>
+          <input type="hidden" id="accountType" value="fan" />
+          <div class="form-navigation">
+            <button type="button" class="submit-btn btn-next" onclick="nextStep()" id="step1Btn" disabled><span>Continue</span><i class="ti ti-arrow-right"></i></button>
+          </div>
+        </div>
+        
+        <div class="form-step" data-step="2">
+          <div class="name-row">
+            <div class="input-wrapper">
+              <label for="username">Username</label>
+              <i class="ti ti-at input-icon"></i>
+              <input type="text" id="username" class="input-field" placeholder="your_handle" minlength="3" required />
+            </div>
+            <div class="input-wrapper">
+              <label for="displayName">Display Name</label>
+              <i class="ti ti-user input-icon"></i>
+              <input type="text" id="displayName" class="input-field" placeholder="Your Name" required />
+            </div>
+          </div>
+          <div class="input-wrapper">
+            <label for="email">Email Address</label>
+            <i class="ti ti-mail input-icon"></i>
+            <input type="email" id="email" class="input-field" placeholder="you@example.com" required autocomplete="email"/>
+          </div>
+          <div class="input-wrapper">
+            <label for="password">Password</label>
+            <i class="ti ti-lock input-icon"></i>
+            <input type="password" id="password" class="input-field" placeholder="Min. 6 characters" minlength="6" required />
+            <button type="button" class="toggle-password" onclick="togglePassword(this)"><i class="ti ti-eye"></i></button>
+          </div>
+          <div class="form-navigation">
+            <button type="button" class="btn-back" onclick="prevStep()"><i class="ti ti-arrow-left"></i> Back</button>
+            <button type="button" class="submit-btn btn-next" onclick="nextStep()" id="step2Btn"><span>Continue</span><i class="ti ti-arrow-right"></i></button>
+          </div>
+        </div>
+        
+        <div class="form-step" data-step="3">
+          <div class="input-wrapper">
+            <label for="dob">Date of Birth</label>
+            <i class="ti ti-calendar input-icon"></i>
+            <input type="date" id="dob" class="input-field" required />
+          </div>
+          <label class="checkbox-wrapper">
+            <input type="checkbox" id="ageConfirm" required />
+            <span>I confirm I am <strong style="color:#e50914;">18 years or older</strong> and agree to the <a href="/pages/terms.html" target="_blank">Terms of Service</a> and <a href="/pages/privacy.html" target="_blank">Privacy Policy</a>.</span>
+          </label>
+          <div class="form-navigation">
+            <button type="button" class="btn-back" onclick="prevStep()"><i class="ti ti-arrow-left"></i> Back</button>
+            <button type="submit" class="submit-btn btn-next" onclick="handleRegister(event)" id="regBtn"><i class="ti ti-user-plus"></i><span>Create Account</span></button>
+          </div>
+        </div>
+      </form>
+      
+      <div class="divider">or sign up with</div>
+      <div class="social-login">
+        <button class="social-btn" onclick="socialLogin('google')"><i class="ti ti-brand-google"></i>Google</button>
+        <button class="social-btn" onclick="socialLogin('apple')"><i class="ti ti-brand-apple"></i>Apple</button>
+      </div>
+      <p class="auth-link">Already have an account? <a href="/login.html">Sign in</a></p>
+    </div>
+  </div>
+
+  <script src="/assets/js/app.js"></script>
+  <script>
+    let currentStep = 1;
+    const totalSteps = 3;
+    
+    function createParticles() {
+      const container = document.getElementById('particles');
+      const colors = ['#e50914', '#e500cc', '#ff6b6b', '#c084fc', '#60a5fa'];
+      for (let i = 0; i < 25; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.width = particle.style.height = Math.random() * 6 + 2 + 'px';
+        particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+        particle.style.animation = `particle ${Math.random() * 10 + 10}s linear infinite`;
+        particle.style.animationDelay = Math.random() * 5 + 's';
+        container.appendChild(particle);
       }
-    } catch (err) {
-      showAlert('alertBox', err?.message || 'Server error.', 'error');
-      btn.innerHTML = '<i class="ti ti-user-plus"></i> Create Account'; btn.disabled = false;
     }
-  }
-  function togglePw(btn) {
-    const input = btn.closest('.input-group').querySelector('input');
-    input.type = input.type === 'password' ? 'text' : 'password';
-    btn.querySelector('i').className = `ti ti-eye${input.type === 'text' ? '-off' : ''}`;
-  }
-</script>
+    createParticles();
+    
+    function selectType(type) {
+      document.querySelectorAll('.type-option').forEach(el => el.classList.remove('selected'));
+      document.getElementById('type-' + type).classList.add('selected');
+      document.getElementById('accountType').value = type;
+      document.getElementById('step1Btn').disabled = false;
+    }
+    
+    function updateStepIndicator() {
+      document.querySelectorAll('.step').forEach((step, index) => {
+        step.classList.remove('active', 'completed');
+        if (index + 1 < currentStep) step.classList.add('completed');
+        else if (index + 1 === currentStep) step.classList.add('active');
+      });
+      document.querySelectorAll('.step-line').forEach((line, index) => {
+        line.classList.toggle('completed', index < currentStep - 1);
+      });
+    }
+    
+    function nextStep() {
+      if (currentStep < totalSteps) {
+        document.querySelector(`.form-step[data-step="${currentStep}"]`).classList.remove('active');
+        currentStep++;
+        document.querySelector(`.form-step[data-step="${currentStep}"]`).classList.add('active');
+        updateStepIndicator();
+      }
+    }
+    
+    function prevStep() {
+      if (currentStep > 1) {
+        document.querySelector(`.form-step[data-step="${currentStep}"]`).classList.remove('active');
+        currentStep--;
+        document.querySelector(`.form-step[data-step="${currentStep}"]`).classList.add('active');
+        updateStepIndicator();
+      }
+    }
+    
+    function togglePassword(btn) {
+      const input = btn.previousElementSibling.previousElementSibling;
+      input.type = input.type === 'password' ? 'text' : 'password';
+      btn.querySelector('i').className = `ti ti-eye${input.type === 'text' ? '-off' : ''}`;
+    }
+    
+    async function handleRegister(e) {
+      e.preventDefault();
+      const dob = new Date(document.getElementById('dob').value);
+      const age = Math.floor((Date.now() - dob) / (365.25*24*60*60*1000));
+      if (age < 18) {
+        showAlert('You must be 18 or older to register.', 'error');
+        return;
+      }
+      if (!document.getElementById('ageConfirm').checked) {
+        showAlert('Please confirm you are 18+ and agree to the terms.', 'error');
+        return;
+      }
+      const btn = document.getElementById('regBtn');
+      btn.classList.add('spinning');
+      btn.disabled = true;
+      btn.querySelector('span').textContent = 'Creating...';
+      try {
+        const data = await api.post('/auth/register', {
+          username: document.getElementById('username').value,
+          displayName: document.getElementById('displayName').value,
+          email: document.getElementById('email').value,
+          password: document.getElementById('password').value,
+          dateOfBirth: document.getElementById('dob').value,
+          ageConfirmed: true,
+          accountType: document.getElementById('accountType').value,
+        });
+        if (data.success) {
+          Auth.setSession(data.token, data.user);
+          window.location.href = data.user.role === 'creator' ? '/creator/dashboard.html' : '/pages/feed.html';
+        } else {
+          showAlert(data.message, 'error');
+          btn.classList.remove('spinning');
+          btn.disabled = false;
+          btn.querySelector('span').textContent = 'Create Account';
+        }
+      } catch (err) {
+        showAlert(err?.message || 'Server error. Please try again.', 'error');
+        btn.classList.remove('spinning');
+        btn.disabled = false;
+        btn.querySelector('span').textContent = 'Create Account';
+      }
+    }
+    
+    function showAlert(message, type) {
+      const alertBox = document.getElementById('alertBox');
+      const alertMessage = document.getElementById('alertMessage');
+      alertBox.className = `alert-box ${type}`;
+      alertMessage.textContent = message;
+      alertBox.style.display = 'flex';
+    }
+    
+    function socialLogin(provider) {
+      alert(`${provider} login coming soon!`);
+    }
+    
+    // Pre-select fan option
+    selectType('fan');
+  </script>
 </body>
 </html>

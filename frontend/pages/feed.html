@@ -49,6 +49,67 @@
     .feed-empty { text-align:center; padding:60px 20px; color:var(--text3); }
     .feed-empty .ti { font-size:52px; display:block; margin-bottom:16px; color:var(--text4); }
     .feed-skeleton { display:flex; flex-direction:column; gap:20px; }
+    
+    /* Create Post Widget */
+    .create-post-widget {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .create-post-widget:hover {
+      border-color: var(--red);
+      box-shadow: 0 4px 20px rgba(229, 9, 20, 0.1);
+    }
+    .create-post-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--grad-brand);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: white;
+      flex-shrink: 0;
+    }
+    .create-post-input {
+      flex: 1;
+      padding: 12px 16px;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius-full);
+      color: var(--text3);
+      font-size: 0.95rem;
+      transition: all 0.3s ease;
+    }
+    .create-post-input:hover {
+      border-color: var(--border3);
+      color: var(--text);
+    }
+    .create-post-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--grad-brand);
+      border: none;
+      color: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      flex-shrink: 0;
+    }
+    .create-post-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 15px rgba(229, 9, 20, 0.4);
+    }
   </style>
 </head>
 <body>
@@ -59,6 +120,12 @@
   <main class="main-content">
     <div class="inner-lg">
       <div class="feed-wrap">
+        <div class="create-post-widget" onclick="openCreatePostModal()">
+          <div class="create-post-avatar" id="userAvatar">?</div>
+          <div class="create-post-input">What's on your mind?</div>
+          <button class="create-post-btn"><i class="ti ti-plus"></i></button>
+        </div>
+        
         <div class="feed-tabs">
           <button class="feed-tab active" onclick="switchFeed('all',this)">For You</button>
           <button class="feed-tab" onclick="switchFeed('following',this)">Following</button>
@@ -69,6 +136,44 @@
     </div>
   </main>
 </div>
+
+<!-- Create Post Modal -->
+<div class="modal" id="createPostModal" style="display:none;position:fixed;inset:0;z-index:9000;align-items:center;justify-content:center;background:rgba(0,0,0,0.8);backdrop-filter:blur(4px);">
+  <div class="modal-content" style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius-xl);width:90%;max-width:560px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;animation:scaleIn 0.3s ease;">
+    <div class="modal-header" style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <h3 style="font-family:var(--font-display);font-size:1.1rem;">Create Post</h3>
+      <button class="btn btn-icon btn-sm" onclick="closeCreatePostModal()" style="color:var(--text3);"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body" style="padding:20px;overflow-y:auto;flex:1;">
+      <div class="create-post-user" style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+        <div class="avatar avatar-md" id="modalUserAvatar" style="background:var(--grad-brand);">?</div>
+        <div>
+          <div style="font-weight:700;" id="modalUserName">User</div>
+          <div style="font-size:0.8rem;color:var(--text3);">Public</div>
+        </div>
+      </div>
+      <textarea id="postCaption" placeholder="What's on your mind?" style="width:100%;min-height:120px;background:transparent;border:none;resize:none;font-family:inherit;font-size:1rem;color:var(--text);outline:none;"></textarea>
+      
+      <div id="mediaPreview" style="display:none;gap:8px;margin-top:16px;flex-wrap:wrap;"></div>
+      
+      <div class="post-options" style="display:flex;gap:12px;margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
+        <button type="button" class="post-option-btn" onclick="document.getElementById('mediaInput').click()" style="display:flex;align-items:center;gap:6px;padding:8px 12px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);color:var(--text3);font-size:0.85rem;cursor:pointer;transition:all 0.3s;">
+          <i class="ti ti-photo" style="color:var(--green);"></i> Photo/Video
+        </button>
+        <label style="display:flex;align-items:center;gap:6px;padding:8px 12px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);color:var(--text3);font-size:0.85rem;cursor:pointer;">
+          <input type="checkbox" id="isPremium" style="accent-color:var(--red);" />
+          <i class="ti ti-crown" style="color:var(--gold);"></i> Premium
+        </label>
+      </div>
+      <input type="file" id="mediaInput" multiple accept="image/*,video/*" style="display:none;" onchange="handleMediaSelect(event)" />
+    </div>
+    <div class="modal-footer" style="padding:16px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:12px;">
+      <button class="btn btn-outline btn-sm" onclick="closeCreatePostModal()">Cancel</button>
+      <button class="btn btn-brand btn-sm" id="publishBtn" onclick="publishPost()"><i class="ti ti-send"></i> Post</button>
+    </div>
+  </div>
+</div>
+
 <script src="/assets/js/app.js"></script>
 <script src="/assets/js/layout.js"></script>
 <script src="/assets/js/pwa.js"></script>
@@ -115,8 +220,8 @@
     const ago       = fmt.timeAgo ? fmt.timeAgo(p.createdAt) : new Date(p.createdAt).toLocaleDateString();
 
     return `
-    <article class="post-card" data-id="${p._id}">
-      <div class="post-head">
+    <article class="post-card" data-id="${p._id}" onclick="viewPost('${p._id}')" style="cursor:pointer;">
+      <div class="post-head" onclick="event.stopPropagation();">
         <div class="avatar avatar-md" style="background:var(--grad-brand);flex-shrink:0">
           ${creator.avatar ? `<img src="${creator.avatar}" />` : `<span>${initials}</span>`}
         </div>
@@ -131,12 +236,12 @@
       </div>
       ${p.caption ? `<div class="post-body"><p class="post-text">${fmt.esc(p.caption)}</p></div>` : ''}
       ${mediaHtml}
-      <div class="post-actions">
+      <div class="post-actions" onclick="event.stopPropagation();">
         <button class="post-action ${liked ? 'liked' : ''}" onclick="toggleLike(this,'${p._id}')">
           <i class="ti ${liked ? 'ti-heart-filled' : 'ti-heart'}"></i>
           <span class="like-count">${likeCount}</span>
         </button>
-        <button class="post-action"><i class="ti ti-message-circle"></i> Comment</button>
+        <button class="post-action" onclick="viewPost('${p._id}')"><i class="ti ti-message-circle"></i> Comment</button>
         <button class="post-action" onclick="sharePost('${p._id}')"><i class="ti ti-share"></i></button>
         <span class="post-action-spacer"></span>
         <button class="post-action ${saved ? 'saved' : ''}" onclick="savePost(this,'${p._id}')" title="${saved ? 'Unsave' : 'Save'}">
@@ -256,7 +361,181 @@
     }
   }
 
-  document.addEventListener('DOMContentLoaded', () => loadFeed(true));
+  // Create Post Modal Functions
+  let selectedMedia = [];
+  
+  function initUserInfo() {
+    const user = Auth.getUser();
+    if (user) {
+      const initials = user.displayName ? user.displayName.slice(0, 2).toUpperCase() : user.username?.slice(0, 2).toUpperCase() || '?';
+      document.getElementById('userAvatar').textContent = initials;
+      document.getElementById('modalUserAvatar').textContent = initials;
+      document.getElementById('modalUserName').textContent = user.displayName || user.username || 'User';
+    }
+  }
+  
+  function openCreatePostModal() {
+    document.getElementById('createPostModal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    initUserInfo();
+  }
+  
+  function closeCreatePostModal() {
+    document.getElementById('createPostModal').style.display = 'none';
+    document.body.style.overflow = '';
+    document.getElementById('postCaption').value = '';
+    document.getElementById('mediaPreview').innerHTML = '';
+    document.getElementById('mediaPreview').style.display = 'none';
+    document.getElementById('isPremium').checked = false;
+    selectedMedia = [];
+  }
+  
+  function handleMediaSelect(event) {
+    const files = event.target.files;
+    if (!files.length) return;
+    
+    selectedMedia = [...selectedMedia, ...Array.from(files)];
+    const preview = document.getElementById('mediaPreview');
+    preview.style.display = 'flex';
+    
+    Array.from(files).forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const div = document.createElement('div');
+        div.style.cssText = 'position:relative;width:80px;height:80px;border-radius:8px;overflow:hidden;';
+        if (file.type.startsWith('video')) {
+          div.innerHTML = `<video src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;"></video>
+            <button onclick="removeMedia(this)" style="position:absolute;top:4px;right:4px;width:20px;height:20px;border-radius:50%;background:rgba(0,0,0,0.7);border:none;color:white;cursor:pointer;font-size:12px;"><i class="ti ti-x"></i></button>`;
+        } else {
+          div.innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;">
+            <button onclick="removeMedia(this)" style="position:absolute;top:4px;right:4px;width:20px;height:20px;border-radius:50%;background:rgba(0,0,0,0.7);border:none;color:white;cursor:pointer;font-size:12px;"><i class="ti ti-x"></i></button>`;
+        }
+        preview.appendChild(div);
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+  
+  function removeMedia(btn) {
+    btn.parentElement.remove();
+    if (!document.getElementById('mediaPreview').children.length) {
+      document.getElementById('mediaPreview').style.display = 'none';
+    }
+  }
+  
+  async function publishPost() {
+    const caption = document.getElementById('postCaption').value.trim();
+    const isPremium = document.getElementById('isPremium').checked;
+    const btn = document.getElementById('publishBtn');
+    
+    if (!caption && !selectedMedia.length) {
+      Toast.show('Please add some text or media to your post', 'warning');
+      return;
+    }
+    
+    btn.disabled = true;
+    btn.innerHTML = '<i class="ti ti-loader-2" style="animation:spin 0.8s linear infinite;"></i> Posting...';
+    
+    try {
+      const formData = new FormData();
+      formData.append('caption', caption);
+      formData.append('isPremium', isPremium);
+      selectedMedia.forEach(file => formData.append('media', file));
+      
+      const response = await fetch(`${API}/posts`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${Auth.getToken()}` },
+        body: formData
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        Toast.show('Post published!', 'success');
+        closeCreatePostModal();
+        loadFeed(true);
+      } else {
+        Toast.show(data.message || 'Failed to publish post', 'error');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="ti ti-send"></i> Post';
+      }
+    } catch (err) {
+      Toast.show(err?.message || 'Server error', 'error');
+      btn.disabled = false;
+      btn.innerHTML = '<i class="ti ti-send"></i> Post';
+    }
+  }
+  
+  // Close modal on backdrop click
+  document.getElementById('createPostModal')?.addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeCreatePostModal();
+  });
+  
+  // View Post Modal Function
+  async function viewPost(postId) {
+    try {
+      const response = await api.get(`/posts/${postId}`);
+      if (!response.success || !response.post) {
+        Toast.show('Post not found', 'error');
+        return;
+      }
+      
+      const post = response.post;
+      const modal = document.createElement('div');
+      modal.className = 'modal';
+      modal.style.cssText = 'display:flex;position:fixed;inset:0;z-index:9000;align-items:center;justify-content:center;background:rgba(0,0,0,0.9);backdrop-filter:blur(8px);';
+      
+      const mediaHtml = post.media?.length ? post.media.map(m => {
+        if (m.type === 'video') return `<video src="${m.url}" controls style="width:100%;max-height:400px;border-radius:12px;margin-bottom:16px;"></video>`;
+        return `<img src="${m.url}" style="width:100%;max-height:400px;object-fit:cover;border-radius:12px;margin-bottom:16px;">`;
+      }).join('') : '';
+      
+      modal.innerHTML = `
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius-xl);width:95%;max-width:600px;max-height:90vh;overflow-y:auto;animation:scaleIn 0.3s ease;">
+          <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div class="avatar avatar-md" style="background:var(--grad-brand);">${post.creator?.displayName?.slice(0,2).toUpperCase() || '?'}</div>
+              <div>
+                <div style="font-weight:700;">${post.creator?.displayName || post.creator?.username || 'Creator'}</div>
+                <div style="font-size:0.8rem;color:var(--text3);">${fmt.timeAgo(post.createdAt)}</div>
+              </div>
+            </div>
+            <button onclick="this.closest('.modal').remove()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:1.2rem;"><i class="ti ti-x"></i></button>
+          </div>
+          <div style="padding:20px;">
+            ${post.caption ? `<p style="line-height:1.7;margin-bottom:16px;font-size:1rem;">${fmt.esc(post.caption)}</p>` : ''}
+            ${mediaHtml}
+          </div>
+          <div style="padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:16px;">
+            <button class="post-action" onclick="toggleLike(this,'${post._id}')" style="${Likes.isLiked(post._id) ? 'color:var(--red);' : ''}">
+              <i class="ti ${Likes.isLiked(post._id) ? 'ti-heart-filled' : 'ti-heart'}"></i> ${post.likesCount || 0}
+            </button>
+            <button class="post-action"><i class="ti ti-message-circle"></i> ${post.commentsCount || 0}</button>
+            <button class="post-action" onclick="sharePost('${post._id}')"><i class="ti ti-share"></i></button>
+            <span style="flex:1;"></span>
+            <span style="font-size:0.8rem;color:var(--text4);"><i class="ti ti-eye"></i> ${fmt.num(post.viewsCount || 0)}</span>
+          </div>
+        </div>
+      `;
+      
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.remove();
+      });
+      
+      document.body.appendChild(modal);
+      document.body.style.overflow = 'hidden';
+      
+      // Track view
+      api.post(`/posts/${postId}/view`).catch(() => {});
+    } catch (err) {
+      Toast.show('Could not load post', 'error');
+    }
+  }
+  
+  document.addEventListener('DOMContentLoaded', () => {
+    loadFeed(true);
+    initUserInfo();
+  });
 </script>
 </body>
 </html>
