@@ -131,6 +131,23 @@
 </div>
 <script src="/assets/js/app.js"></script>
 <script src="/assets/js/layout.js"></script>
+<!-- Socket.io -->
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<style>
+  @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+  @keyframes slideInRight { from { transform: translateX(100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+  @keyframes slideOutRight { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100px); opacity: 0; } }
+  @keyframes pulse-gold { 0%, 100% { box-shadow: 0 0 0 0 rgba(255,215,0,0.4); } 50% { box-shadow: 0 0 20px 10px rgba(255,215,0,0.2); } }
+  .live-tip-msg { background: rgba(255,215,0,0.05) !important; border-left: 3px solid var(--gold); padding-left: 8px; border-radius: 0 var(--radius) var(--radius) 0; }
+  .live-msgs::-webkit-scrollbar { width: 6px; }
+  .live-msgs::-webkit-scrollbar-track { background: transparent; }
+  .live-msgs::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  @media (max-width: 768px) {
+    .live-studio { grid-template-columns: 1fr !important; height: auto !important; }
+    .camera-wrap { height: 250px !important; min-height: 250px !important; }
+    .live-sidebar { min-height: 300px !important; }
+  }
+</style>
 <script>
   Auth.requireAuth('/login.html');
   Auth.requireCreator();
@@ -189,9 +206,15 @@
         // ignore refresh errors
       }
 
-      if (Math.random() > 0.85) addChatMsg(false);
     }, 1000);
-    simulateChat();
+    
+    // Connect to real-time socket
+    if (liveData._id) {
+      connectLiveSocket(liveData._id);
+    }
+    
+    // Add welcome message
+    addChatMsg('System', 'Live stream started! Chat is now open.', false);
   }
 
   async function loadExistingLiveState() {
@@ -221,32 +244,97 @@
     }
   }
 
-  const fakeNames = ['Sarah_K','mike_t','Anita','James_O','Rose_254','Bella_UG','TomUG'];
-  const fakeMessages = ['Yesss queen!','Love this!','Looking amazing','Fire!','Hello from Kampala','You are so beautiful','Sending love'];
-  const fakeTips = [5, 10, 20];
-
-  function addChatMsg(isHost = false) {
-    const name = isHost ? (Auth.getUser()?.username || 'You') : fakeNames[Math.floor(Math.random()*fakeNames.length)];
-    const msg  = fakeMessages[Math.floor(Math.random()*fakeMessages.length)];
-    const isTip = !isHost && Math.random() > 0.8;
-    const tipAmt = fakeTips[Math.floor(Math.random()*fakeTips.length)];
+  // Real chat via Socket.io
+  let socket = null;
+  let tipGoal = { current: 0, target: 100 };
+  
+  function connectLiveSocket(liveId) {
+    socket = io(window.location.origin, { 
+      auth: { token: localStorage.getItem('token') },
+      transports: ['websocket', 'polling']
+    });
+    
+    socket.on('connect', () => {
+      console.log('Creator connected to live socket');
+      socket.emit('live:join', { liveId });
+    });
+    
+    socket.on('live:message', (data) => {
+      addChatMsg(data.username, data.text, false, false);
+    });
+    
+    socket.on('live:tip', (data) => {
+      tipGoal.current += data.amount;
+      updateTipGoal();
+      addChatMsg(data.username, `tipped $${data.amount}${data.message ? ': ' + data.message : ''}`, false, true, data.amount);
+      showTipNotification(data.amount, data.username);
+    });
+    
+    socket.on('live:viewerUpdate', (data) => {
+      viewers = data.count;
+      document.getElementById('viewerCount').textContent = viewers;
+      document.getElementById('chatViewers').textContent = viewers;
+    });
+  }
+  
+  function showTipNotification(amount, username) {
+    const notif = document.createElement('div');
+    notif.style.cssText = 'position:fixed;top:20px;right:20px;background:linear-gradient(135deg,var(--gold),#B8860B);color:white;padding:16px 24px;border-radius:var(--radius-lg);z-index:9999;animation:slideInRight 0.5s ease-out;font-weight:600;box-shadow:0 4px 20px rgba(255,215,0,0.4);display:flex;align-items:center;gap:12px;';
+    notif.innerHTML = `<i class="ti ti-gift" style="font-size:1.5rem;"></i><div><div style="font-size:0.8rem;opacity:0.9;">${username || 'Someone'}</div><div style="font-size:1.1rem;font-weight:700;">Tipped $${amount}!</div></div>`;
+    document.body.appendChild(notif);
+    setTimeout(() => {
+      notif.style.animation = 'slideOutRight 0.5s ease-out';
+      setTimeout(() => notif.remove(), 500);
+    }, 4000);
+  }
+  
+  function addChatMsg(username, text, isHost = false, isTip = false, tipAmount = 0) {
     const chat = document.getElementById('liveChat');
     const div = document.createElement('div');
     div.className = `live-msg${isTip?' live-tip-msg':''}`;
-    div.innerHTML = `<span class="live-msg-name">${name}</span>${isTip ? `<i class="ti ti-coin" style="color:var(--gold)"></i> tipped $${tipAmt} — ` : ''}${msg}`;
+    div.style.animation = 'slideIn 0.3s ease-out';
+    const initials = username.slice(0, 2).toUpperCase();
+    const avatarStyle = isTip ? 'background:linear-gradient(135deg,var(--gold),#B8860B);color:white;' : (isHost ? 'background:var(--grad-brand);color:white;' : 'background:var(--card3);color:var(--text);');
+    
+    div.innerHTML = `
+      <div style="display:flex;align-items:flex-start;gap:8px;">
+        <div style="width:24px;height:24px;border-radius:50%;${avatarStyle}display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:600;flex-shrink:0;">${isTip ? '💰' : initials}</div>
+        <div style="flex:1;min-width:0;">
+          <span class="live-msg-name" style="color:${isTip?'var(--gold)':(isHost?'var(--red)':'var(--brand)')};">${username}</span>
+          ${isTip ? `<span style="color:var(--gold);font-weight:600;"><i class="ti ti-coin" style="font-size:0.8rem;"></i> $${tipAmount}</span>` : ''}
+          <span style="color:var(--text2);font-size:0.82rem;word-break:break-word;">${text}</span>
+        </div>
+        <span style="font-size:0.65rem;color:var(--text4);flex-shrink:0;">${new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</span>
+      </div>
+    `;
     chat.appendChild(div);
     chat.scrollTop = chat.scrollHeight;
-  }
-
-  function simulateChat() {
-    const interval = setInterval(() => { if (!isLive) { clearInterval(interval); return; } addChatMsg(false); }, 3500);
+    
+    // Keep only last 100 messages
+    while (chat.children.length > 100) {
+      chat.removeChild(chat.firstChild);
+    }
   }
 
   function sendChatMsg() {
     const input = document.getElementById('chatInput');
-    if (!input.value.trim()) return;
-    addChatMsg(true);
+    const text = input.value.trim();
+    if (!text) return;
+    const username = Auth.getUser()?.username || 'You';
+    
+    // Emit to socket
+    if (socket && socket.connected && currentLive) {
+      socket.emit('live:message', { liveId: currentLive._id, text, username });
+    }
+    
+    addChatMsg(username, text, true);
     input.value = '';
+  }
+  
+  function updateTipGoal() {
+    const pct = Math.min(100, Math.round((tipGoal.current / tipGoal.target) * 100));
+    document.querySelector('.progress-fill').style.width = pct + '%';
+    document.querySelector('.card-body div span:last-child').textContent = `$${tipGoal.current} / $${tipGoal.target}`;
   }
 
   function toggleMic() {
@@ -283,7 +371,21 @@
     setTimeout(() => window.location.href = '/creator/dashboard.html', 1500);
   }
 
-  function setGoal(amt) { Toast.show(`Goal set: Reach $${amt} in tips!`, 'info'); }
+  function setGoal(amt) { 
+    tipGoal.target = amt;
+    tipGoal.current = 0;
+    updateTipGoal();
+    Toast.show(`New goal: Reach $${amt} in tips!`, 'info'); 
+    // Broadcast goal to viewers
+    if (socket && currentLive) {
+      socket.emit('live:goal', { liveId: currentLive._id, target: amt, current: 0 });
+    }
+  }
+  
+  // Disconnect socket when leaving
+  window.addEventListener('beforeunload', () => {
+    if (socket) socket.disconnect();
+  });
 
   loadExistingLiveState();
 </script>

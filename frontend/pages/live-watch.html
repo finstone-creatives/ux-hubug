@@ -130,11 +130,9 @@
               <h3><i class="ti ti-message-circle"></i> Live Chat</h3>
               <span style="font-size:0.85rem;color:var(--text3);" id="chatUserCount">0 online</span>
             </div>
-            <div class="chat-messages" id="chatMessages">
-              <div class="chat-message" style="justify-content:center;opacity:0.6;">
-                <span style="font-size:0.8rem;">Welcome to the live chat!</span>
-              </div>
-            </div>
+            <div class="chat-messages" id="chatMessages" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px;scroll-behavior:smooth;">
+            <!-- Messages will be added here dynamically -->
+          </div>
             <div class="chat-input-area">
               <input type="text" class="chat-input" id="chatInput" placeholder="Say something..." maxlength="200" />
               <button class="chat-send" onclick="sendChat()"><i class="ti ti-send"></i></button>
@@ -164,18 +162,39 @@
       return new URLSearchParams(window.location.search).get(name) || '';
     }
     
-    function addChatMessage(username, text, isSelf = false) {
+    function addChatMessage(username, text, isSelf = false, isTip = false) {
+      const container = document.getElementById('chatMessages');
+      const msg = document.createElement('div');
+      msg.className = 'chat-message' + (isTip ? ' tip-message' : '');
+      msg.style.animation = 'slideIn 0.3s ease-out';
+      const initials = username.slice(0, 2).toUpperCase();
+      const avatarBg = isTip ? 'linear-gradient(135deg,var(--gold),#B8860B)' : (isSelf ? 'var(--grad-brand)' : 'var(--card3)');
+      const usernameColor = isTip ? 'var(--gold)' : (isSelf ? 'var(--red)' : 'var(--text)');
+      msg.innerHTML = `
+        <div class="chat-avatar" style="background:${avatarBg};color:white;font-size:0.7rem;font-weight:600;display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;flex-shrink:0;">${isTip ? '💰' : initials}</div>
+        <div class="chat-content" style="flex:1;min-width:0;">
+          <span class="chat-username" style="font-weight:600;font-size:0.85rem;color:${usernameColor};">${username}${isSelf && !isTip ? ' <span style="color:var(--red);font-size:0.75rem;">(You)</span>' : ''}<span class="chat-time" style="font-size:0.7rem;color:var(--text4);margin-left:6px;">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span></span>
+          <div class="chat-text" style="font-size:0.85rem;color:var(--text2);line-height:1.4;margin-top:2px;word-break:break-word;">${fmt.esc(text)}</div>
+        </div>
+      `;
+      container.appendChild(msg);
+      container.scrollTop = container.scrollHeight;
+      
+      // Keep only last 100 messages
+      while (container.children.length > 100) {
+        container.removeChild(container.firstChild);
+      }
+    }
+    
+    // Add system message
+    function addSystemMessage(text) {
       const container = document.getElementById('chatMessages');
       const msg = document.createElement('div');
       msg.className = 'chat-message';
-      const initials = username.slice(0, 2).toUpperCase();
-      msg.innerHTML = `
-        <div class="chat-avatar" style="background:${isSelf ? 'var(--grad-brand)' : 'var(--card3)'};color:${isSelf ? 'white' : 'var(--text)'}">${initials}</div>
-        <div class="chat-content">
-          <span class="chat-username">${username}${isSelf ? ' <span style="color:var(--red);">(You)</span>' : ''}<span class="chat-time">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span></span>
-          <div class="chat-text">${fmt.esc(text)}</div>
-        </div>
-      `;
+      msg.style.justifyContent = 'center';
+      msg.style.opacity = '0.6';
+      msg.style.padding = '8px 0';
+      msg.innerHTML = `<span style="font-size:0.75rem;color:var(--text3);">${text}</span>`;
       container.appendChild(msg);
       container.scrollTop = container.scrollHeight;
     }
@@ -186,13 +205,17 @@
       if (!text) return;
       const user = Auth.getUser();
       const username = user?.displayName || user?.username || 'Guest';
-      addChatMessage(username, text, true);
-      input.value = '';
       
-      // Emit to socket
-      if (socket) {
-        socket.emit('chat:message', { liveId: currentLiveId, text });
+      // Emit to socket first
+      if (socket && socket.connected) {
+        socket.emit('live:message', { liveId: currentLiveId, text, username });
+      } else {
+        // Fallback: just show locally
+        addChatMessage(username, text, true);
       }
+      
+      input.value = '';
+      input.focus();
     }
     
     document.getElementById('chatInput')?.addEventListener('keypress', (e) => {
@@ -238,9 +261,11 @@
           }
         });
         
-        // Simulate some chat messages
-        setTimeout(() => addChatMessage('User123', 'Hello everyone! 🔥'), 2000);
-        setTimeout(() => addChatMessage('FanGirl', 'Love this stream! ❤️'), 4500);
+        // Welcome message
+        addSystemMessage('👋 Welcome to the live chat! Be respectful.');
+        
+        // Connect to Socket.io for real-time chat
+        connectSocket(currentLiveId);
         
       } catch (err) {
         document.getElementById('mainPlayer').style.display = 'none';
@@ -268,6 +293,164 @@
     }
     
     loadWatchPage();
+  </script>
+  
+  <!-- Mobile Bottom Navigation -->
+  <nav class="mobile-bottom-nav" id="mobileBottomNav" style="display:none;position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);padding:8px 0 calc(8px + env(safe-area-inset-bottom));z-index:900;justify-content:space-around;">
+    <a href="/index.html" class="mobile-nav-item" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 12px;color:var(--text3);text-decoration:none;font-size:0.7rem;"><i class="ti ti-home" style="font-size:1.3rem;"></i><span>Home</span></a>
+    <a href="/pages/live.html" class="mobile-nav-item active" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 12px;color:var(--red);text-decoration:none;font-size:0.7rem;"><i class="ti ti-live-photo" style="font-size:1.3rem;"></i><span>Live</span></a>
+    <a href="/pages/messages.html" class="mobile-nav-item" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 12px;color:var(--text3);text-decoration:none;font-size:0.7rem;"><i class="ti ti-message" style="font-size:1.3rem;"></i><span>Chat</span></a>
+    <a href="/pages/profile.html" class="mobile-nav-item" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 12px;color:var(--text3);text-decoration:none;font-size:0.7rem;"><i class="ti ti-user" style="font-size:1.3rem;"></i><span>Profile</span></a>
+  </nav>
+  
+  <!-- Mobile Tip FAB -->
+  <button class="tip-fab" id="tipFab" onclick="openTipModal()" style="display:none;position:fixed;bottom:calc(80px + env(safe-area-inset-bottom));right:20px;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#B8860B);border:none;color:white;cursor:pointer;z-index:899;box-shadow:0 4px 20px rgba(255,215,0,0.4);align-items:center;justify-content:center;">
+    <i class="ti ti-gift" style="font-size:1.4rem;"></i>
+  </button>
+  
+  <!-- Tip Modal -->
+  <div class="modal-backdrop" id="tipModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:1000;align-items:center;justify-content:center;">
+    <div class="modal-box" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);padding:24px;max-width:400px;width:90%;max-height:90vh;overflow-y:auto;">
+      <button class="modal-close" onclick="closeTipModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:var(--text3);cursor:pointer;font-size:1.2rem;"><i class="ti ti-x"></i></button>
+      <div style="text-align:center;margin-bottom:20px;">
+        <div style="width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#B8860B);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;"><i class="ti ti-gift" style="font-size:1.8rem;color:white;"></i></div>
+        <h3 style="margin:0;font-size:1.3rem;">Send a Tip</h3>
+        <p style="color:var(--text3);font-size:0.9rem;margin:8px 0 0;">Show your appreciation</p>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;">
+        <button class="tip-amount-btn" onclick="selectTip(5)" style="padding:12px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface2);color:var(--text);font-weight:600;cursor:pointer;transition:all 0.2s;">$5</button>
+        <button class="tip-amount-btn" onclick="selectTip(10)" style="padding:12px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface2);color:var(--text);font-weight:600;cursor:pointer;transition:all 0.2s;">$10</button>
+        <button class="tip-amount-btn" onclick="selectTip(20)" style="padding:12px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface2);color:var(--text);font-weight:600;cursor:pointer;transition:all 0.2s;">$20</button>
+        <button class="tip-amount-btn" onclick="selectTip(50)" style="padding:12px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface2);color:var(--text);font-weight:600;cursor:pointer;transition:all 0.2s;">$50</button>
+        <button class="tip-amount-btn" onclick="selectTip(100)" style="padding:12px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface2);color:var(--text);font-weight:600;cursor:pointer;transition:all 0.2s;">$100</button>
+        <button class="tip-amount-btn" onclick="selectTip('custom')" style="padding:12px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface2);color:var(--text);font-weight:600;cursor:pointer;transition:all 0.2s;">Custom</button>
+      </div>
+      <div id="customTipWrap" style="display:none;margin-bottom:16px;">
+        <input type="number" id="customTipAmount" placeholder="Enter amount" style="width:100%;padding:12px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);color:var(--text);font-size:1rem;" />
+      </div>
+      <input type="text" id="tipMessage" placeholder="Add a message (optional)" maxlength="100" style="width:100%;padding:12px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);color:var(--text);font-size:0.9rem;margin-bottom:16px;" />
+      <button class="btn btn-brand btn-md btn-full" onclick="sendTip()" style="background:linear-gradient(135deg,var(--gold),#B8860B);border:none;"><i class="ti ti-gift"></i> Send Tip</button>
+    </div>
+  </div>
+  
+  <style>
+    @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+    @media (max-width: 768px) {
+      .mobile-bottom-nav { display: flex !important; }
+      .tip-fab { display: flex !important; }
+      .watch-layout { grid-template-columns: 1fr !important; }
+      .chat-section { max-height: 400px !important; position: fixed; bottom: 70px; left: 0; right: 0; z-index: 100; border-radius: var(--radius-xl) var(--radius-xl) 0 0; }
+      .main-player { margin-bottom: 420px; }
+      .page-wrap { padding-bottom: 140px; }
+      .stream-actions { flex-wrap: wrap; }
+      .stream-actions .action-btn { flex: 1; min-width: 100px; }
+    }
+    .tip-amount-btn:hover, .tip-amount-btn.active { border-color: var(--gold); background: rgba(255,215,0,0.1); color: var(--gold); }
+    .chat-message.tip-message { background: rgba(255,215,0,0.05); border-radius: var(--radius); padding: 8px; border-left: 3px solid var(--gold); }
+    .chat-message.tip-message .chat-username { color: var(--gold); }
+    /* Fix chat scrolling */
+    .chat-messages::-webkit-scrollbar { width: 6px; }
+    .chat-messages::-webkit-scrollbar-track { background: transparent; }
+    .chat-messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    .chat-messages { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+  </style>
+  
+  <!-- Socket.io -->
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script>
+    let socket = null;
+    
+    function connectSocket(liveId) {
+      // Connect to Socket.io server
+      socket = io(window.location.origin, { 
+        auth: { token: localStorage.getItem('token') },
+        transports: ['websocket', 'polling']
+      });
+      
+      socket.on('connect', () => {
+        console.log('Connected to live chat');
+        socket.emit('live:join', { liveId });
+      });
+      
+      socket.on('live:message', (data) => {
+        if (data.liveId === liveId) {
+          addChatMessage(data.username, data.text, data.userId === socket.userId, data.isTip);
+        }
+      });
+      
+      socket.on('live:viewerUpdate', (data) => {
+        if (data.liveId === liveId) {
+          document.getElementById('viewerCount').querySelector('span').textContent = data.count;
+          document.getElementById('chatUserCount').textContent = data.count + ' watching';
+        }
+      });
+      
+      socket.on('live:tip', (data) => {
+        if (data.liveId === liveId) {
+          addChatMessage(data.username, `💰 Tipped $${data.amount}${data.message ? ': ' + data.message : ''}`, false, true);
+          // Show tip animation
+          showTipAnimation(data.amount);
+        }
+      });
+      
+      socket.on('disconnect', () => {
+        console.log('Disconnected from live chat');
+      });
+    }
+    
+    function showTipAnimation(amount) {
+      const toast = document.createElement('div');
+      toast.style.cssText = 'position:fixed;top:20px;right:20px;background:linear-gradient(135deg,var(--gold),#B8860B);color:white;padding:16px 24px;border-radius:var(--radius-lg);z-index:9999;animation:slideInRight 0.5s ease-out;font-weight:600;box-shadow:0 4px 20px rgba(255,215,0,0.3);';
+      toast.innerHTML = `<i class="ti ti-gift" style="margin-right:8px;"></i> Someone tipped $${amount}!`;
+      document.body.appendChild(toast);
+      setTimeout(() => {
+        toast.style.animation = 'slideOutRight 0.5s ease-out';
+        setTimeout(() => toast.remove(), 500);
+      }, 3000);
+    }
+  </script>
+  <style>
+    @keyframes slideInRight { from { transform: translateX(100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @keyframes slideOutRight { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100px); opacity: 0; } }
+  </style>
+  
+  <script>
+    // Mobile nav
+    const path = window.location.pathname;
+    document.querySelectorAll('.mobile-nav-item').forEach(item => {
+      if (path.includes(item.getAttribute('href').replace('.html', ''))) item.classList.add('active');
+      else item.classList.remove('active');
+    });
+    
+    let selectedTipAmount = 0;
+    function openTipModal() { 
+      document.getElementById('tipModal').style.display = 'flex'; 
+    }
+    function closeTipModal() { 
+      document.getElementById('tipModal').style.display = 'none'; 
+      selectedTipAmount = 0;
+      document.querySelectorAll('.tip-amount-btn').forEach(b => b.classList.remove('active'));
+    }
+    function selectTip(amount) {
+      selectedTipAmount = amount;
+      document.querySelectorAll('.tip-amount-btn').forEach(b => b.classList.remove('active'));
+      if (amount === 'custom') {
+        document.getElementById('customTipWrap').style.display = 'block';
+        document.getElementById('customTipAmount').focus();
+      } else {
+        document.getElementById('customTipWrap').style.display = 'none';
+        event.target.classList.add('active');
+      }
+    }
+    function sendTip() {
+      const amount = selectedTipAmount === 'custom' ? parseInt(document.getElementById('customTipAmount').value) : selectedTipAmount;
+      if (!amount || amount < 1) return Toast.show('Please select a tip amount', 'warning');
+      const msg = document.getElementById('tipMessage').value.trim();
+      Toast.show(`Tip of $${amount} sent! ${msg ? 'Message: ' + msg : ''}`, 'success');
+      closeTipModal();
+      // Add tip message to chat
+      addChatMessage('You', `💰 Tipped $${amount}${msg ? ': ' + msg : ''}`, true, true);
+    }
   </script>
 </body>
 </html>

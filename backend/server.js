@@ -107,15 +107,79 @@ io.use(async (socket, next) => {
   }
 });
 
+// Track live stream rooms and viewer counts
+const liveRooms = new Map(); // liveId -> { viewers: Set, creatorId: string }
+
 io.on('connection', (socket) => {
   if (socket.userId) {
     socket.join(`user:${socket.userId}`);
   }
+  
+  // Conversation chat
   socket.on('join:conversation', (convId) => {
     socket.join(`conversation:${convId}`);
   });
   socket.on('leave:conversation', (convId) => {
     socket.leave(`conversation:${convId}`);
+  });
+  
+  // Live stream chat
+  socket.on('live:join', ({ liveId }) => {
+    socket.liveId = liveId;
+    socket.join(`live:${liveId}`);
+    
+    // Track viewer
+    if (!liveRooms.has(liveId)) {
+      liveRooms.set(liveId, { viewers: new Set(), creatorId: null });
+    }
+    const room = liveRooms.get(liveId);
+    room.viewers.add(socket.id);
+    
+    // Broadcast viewer count update
+    io.to(`live:${liveId}`).emit('live:viewerUpdate', { 
+      liveId, 
+      count: room.viewers.size 
+    });
+  });
+  
+  socket.on('live:message', ({ liveId, text, username }) => {
+    // Broadcast message to all viewers except sender
+    socket.to(`live:${liveId}`).emit('live:message', {
+      liveId,
+      text: text.slice(0, 200), // Limit message length
+      username: username || 'Anonymous',
+      userId: socket.userId,
+      timestamp: Date.now()
+    });
+  });
+  
+  socket.on('live:tip', ({ liveId, amount, message, username }) => {
+    // Broadcast tip to all viewers
+    io.to(`live:${liveId}`).emit('live:tip', {
+      liveId,
+      amount,
+      message: message?.slice(0, 100),
+      username: username || 'Someone'
+    });
+  });
+  
+  socket.on('disconnect', () => {
+    // Remove from live room if applicable
+    if (socket.liveId && liveRooms.has(socket.liveId)) {
+      const room = liveRooms.get(socket.liveId);
+      room.viewers.delete(socket.id);
+      
+      // Clean up empty rooms
+      if (room.viewers.size === 0) {
+        liveRooms.delete(socket.liveId);
+      } else {
+        // Broadcast updated viewer count
+        io.to(`live:${socket.liveId}`).emit('live:viewerUpdate', { 
+          liveId: socket.liveId, 
+          count: room.viewers.size 
+        });
+      }
+    }
   });
 });
 
