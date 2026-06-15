@@ -39,12 +39,26 @@ app.options('*', cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Rate limiting
-const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 100 });
-const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 20, message: 'Too many auth attempts.' });
+// Rate limiting - INCREASED for active use
+const limiter = rateLimit({ 
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 1000, // 1000 requests per 15 min for general API
+  message: { success: false, message: 'Too many requests. Please try again later.' }
+});
+const authLimiter = rateLimit({ 
+  windowMs: 15 * 60 * 1000, // 15 minutes  
+  max: 50, // 50 login/register attempts per 15 min
+  message: { success: false, message: 'Too many auth attempts. Please try again later.' }
+});
+const liveLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 60, // 60 requests per minute for live features
+  message: { success: false, message: 'Too many live requests. Please slow down.' }
+});
 
 app.use('/api/', limiter);
 app.use('/api/auth/', authLimiter);
+app.use('/api/live/', liveLimiter);
 
 const uploadDir = process.env.UPLOAD_PATH
   ? path.resolve(__dirname, process.env.UPLOAD_PATH)

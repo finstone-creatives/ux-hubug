@@ -43,6 +43,17 @@ router.get('/me/following', protect, async (req, res) => {
 
 router.get('/:id', getUser);
 
+// GET /:id/reviews — get reviews for a user
+router.get('/:id/reviews', async (req, res) => {
+  try {
+    // Mock reviews for now - replace with actual Review model query
+    const reviews = [];
+    res.json({ success: true, reviews });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 // Protected profile routes
 router.put('/me',             protect, updateMe);
 router.post('/me/avatar',     protect, upload.single('avatar'), uploadAvatar);
