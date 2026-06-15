@@ -33,9 +33,9 @@ const AdminLayout = {
 
     let html = `
       <div style="padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px">
-        <div class="logo-mark">UX</div>
+        <div class="logo-mark">NX</div>
         <div>
-          <div class="logo-name" style="font-size:1rem">UX<span>HUB</span></div>
+          <div class="logo-name" style="font-size:1rem">Nxt<span>-door</span></div>
           <div style="font-size:0.68rem;color:var(--text3);font-weight:700;letter-spacing:0.08em;text-transform:uppercase">cPanel</div>
         </div>
       </div>
@@ -55,7 +55,7 @@ const AdminLayout = {
     html += `</div>
       <div style="padding:14px;border-top:1px solid var(--border)">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-          <div class="avatar avatar-sm" style="background:var(--gradient)">${user ? user.username?.[0]?.toUpperCase() : 'A' : 'A'}</div>
+          <div class="avatar avatar-sm" style="background:var(--grad-brand)">${user ? user.username?.[0]?.toUpperCase() : 'A' : 'A'}</div>
           <div style="min-width:0">
             <div style="font-size:0.82rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${user?.username || 'Admin'}</div>
             <div style="font-size:0.7rem;color:var(--text3)">${user?.role || 'admin'}</div>
@@ -68,7 +68,7 @@ const AdminLayout = {
       </div>`;
 
     el.innerHTML = html;
-    el.style.cssText = 'width:240px;background:var(--bg2);border-right:1px solid var(--border);position:fixed;top:0;left:0;bottom:0;display:flex;flex-direction:column;z-index:100;overflow-y:auto;transition:transform 0.35s ease';
+    el.style.cssText = 'width:240px;background:var(--bg2,#05000d);border-right:1px solid var(--border);position:fixed;top:0;left:0;bottom:0;display:flex;flex-direction:column;z-index:100;overflow-y:auto;transition:transform 0.35s ease';
   },
 };
 window.AdminLayout = AdminLayout;
