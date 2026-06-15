@@ -1,9 +1,19 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
-  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Earnings — UX-HUB</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Earnings — Nxt-door</title>
+  <meta name="robots" content="noindex" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#e50914" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Nxt-door" />
+  <link rel="apple-touch-icon" href="/assets/icons/icon-192.svg" />
+  <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css">
   <link rel="stylesheet" href="/assets/css/main.css" />
@@ -15,45 +25,40 @@
 <div class="page-wrap">
   <main class="main-content">
     <div class="inner">
-
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:28px">
         <div><div class="label">Creator Hub</div><h1 style="font-size:1.8rem;margin-top:4px">My Earnings</h1></div>
         <button class="btn btn-brand btn-md" onclick="openModal('withdrawModal')"><i class="ti ti-cash"></i> Request Payout</button>
       </div>
 
-      <!-- BALANCE CARDS -->
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;margin-bottom:28px">
-        <div class="card" style="background:radial-gradient(ellipse at top,rgba(255,45,120,0.15),transparent)">
+        <div class="card" style="background:radial-gradient(ellipse at top,rgba(229,9,20,0.1),transparent)">
           <div class="card-body">
             <div class="label mb-8">Available Balance</div>
-            <div id="availableBalanceValue" style="font-family:var(--font-display);font-size:2.6rem;font-weight:800;color:var(--green)">$1,920</div>
+            <div id="availableBalanceValue" style="font-family:var(--font-display);font-size:2.6rem;font-weight:800;color:var(--green)">$0</div>
             <div style="font-size:0.78rem;color:var(--text3);margin-top:4px">Ready to withdraw</div>
             <button class="btn btn-success btn-sm mt-12" onclick="openModal('withdrawModal')"><i class="ti ti-send"></i> Withdraw Now</button>
           </div>
         </div>
-        <div class="stat-card"><div class="stat-card-header"><div class="stat-card-icon gold"><i class="ti ti-currency-dollar"></i></div></div><div class="stat-card-value" id="monthTotalValue">$2,840</div><div class="stat-card-label">This Month Total</div></div>
-        <div class="stat-card"><div class="stat-card-header"><div class="stat-card-icon brand"><i class="ti ti-crown"></i></div></div><div class="stat-card-value" id="subscriptionValue">$1,900</div><div class="stat-card-label">Subscription Revenue</div></div>
-        <div class="stat-card"><div class="stat-card-header"><div class="stat-card-icon purple"><i class="ti ti-coin"></i></div></div><div class="stat-card-value" id="tipsValue">$940</div><div class="stat-card-label">Tips & PPV</div></div>
-        <div class="stat-card"><div class="stat-card-header"><div class="stat-card-icon blue"><i class="ti ti-calendar"></i></div></div><div class="stat-card-value" id="allTimeValue">$18,400</div><div class="stat-card-label">All Time Earnings</div></div>
+        <div class="stat-card"><div class="stat-card-header"><div class="stat-card-icon gold"><i class="ti ti-currency-dollar"></i></div></div><div class="stat-card-value" id="monthTotalValue">$0</div><div class="stat-card-label">This Month</div></div>
+        <div class="stat-card"><div class="stat-card-header"><div class="stat-card-icon brand"><i class="ti ti-crown"></i></div></div><div class="stat-card-value" id="subscriptionValue">$0</div><div class="stat-card-label">Subscriptions</div></div>
+        <div class="stat-card"><div class="stat-card-header"><div class="stat-card-icon purple"><i class="ti ti-coin"></i></div></div><div class="stat-card-value" id="tipsValue">$0</div><div class="stat-card-label">Tips & PPV</div></div>
+        <div class="stat-card"><div class="stat-card-header"><div class="stat-card-icon blue"><i class="ti ti-calendar"></i></div></div><div class="stat-card-value" id="allTimeValue">$0</div><div class="stat-card-label">All Time</div></div>
       </div>
 
-      <!-- REVENUE CHART -->
       <div class="card" style="margin-bottom:24px">
-        <div class="card-header"><h3><i class="ti ti-chart-line" style="color:var(--brand)"></i> Monthly Breakdown</h3></div>
+        <div class="card-header"><h3><i class="ti ti-chart-bar" style="color:var(--red)"></i> Monthly Breakdown</h3></div>
         <div class="card-body" style="display:flex;align-items:flex-end;gap:10px;height:180px;padding-bottom:28px" id="earningsChart"></div>
       </div>
 
       <div style="display:grid;grid-template-columns:1fr 360px;gap:24px">
-
-        <!-- TRANSACTIONS -->
         <div class="card">
           <div class="card-header"><h3>Transaction History</h3>
-            <select class="select input-sm" style="width:140px">
-              <option>All Types</option>
-              <option>Subscriptions</option>
-              <option>Tips</option>
-              <option>Pay-Per-View</option>
-              <option>Payouts</option>
+            <select class="select input-sm" style="width:140px" id="txFilter" onchange="loadEarnings()">
+              <option value="">All Types</option>
+              <option value="subscription">Subscriptions</option>
+              <option value="tip">Tips</option>
+              <option value="ppv">Pay-Per-View</option>
+              <option value="payout">Payouts</option>
             </select>
           </div>
           <div class="table-wrap" style="border:none">
@@ -63,74 +68,61 @@
             </table>
           </div>
         </div>
-
-        <!-- PAYOUT SETTINGS -->
         <div style="display:flex;flex-direction:column;gap:20px">
           <div class="card">
             <div class="card-header"><h3>Payout Method</h3></div>
             <div class="card-body" style="display:flex;flex-direction:column;gap:12px">
-              <div class="card" style="border-color:var(--brand);background:var(--brand-light);padding:14px">
-                <div style="display:flex;align-items:center;gap:10px">
-                  <i class="ti ti-device-mobile" style="font-size:24px;color:var(--gold)"></i>
-                  <div><div style="font-weight:700;font-size:0.9rem">MTN Mobile Money</div><div style="font-size:0.78rem;color:var(--text3)">+256 77x xxx xxx</div></div>
-                  <span class="badge badge-verified" style="margin-left:auto;font-size:0.65rem"><i class="ti ti-check"></i> Active</span>
-                </div>
+              <div style="display:flex;align-items:center;gap:10px;padding:12px;background:rgba(229,9,20,0.06);border:1px solid var(--red);border-radius:var(--radius)">
+                <i class="ti ti-device-mobile" style="font-size:22px;color:var(--gold)"></i>
+                <div style="flex:1"><div style="font-weight:700;font-size:0.9rem">MTN Mobile Money</div><div style="font-size:0.75rem;color:var(--text3)">+256 77x xxx xxx</div></div>
+                <span style="font-size:0.65rem;color:var(--green);font-weight:700">Active</span>
               </div>
-              <button class="btn btn-outline btn-sm btn-full" onclick="openModal('payoutMethodModal')">
-                <i class="ti ti-plus"></i> Add Payment Method
-              </button>
+              <button class="btn btn-outline btn-sm btn-full"><i class="ti ti-plus"></i> Add Payment Method</button>
             </div>
           </div>
-
           <div class="card">
             <div class="card-header"><h3>Payout Schedule</h3></div>
             <div class="card-body" style="display:flex;flex-direction:column;gap:12px">
               <div style="display:flex;align-items:center;justify-content:space-between">
                 <span style="font-size:0.88rem">Next Payout</span>
-                <strong style="color:var(--brand)">June 1, 2026</strong>
+                <strong style="color:var(--red)">July 1, 2026</strong>
               </div>
               <div style="display:flex;align-items:center;justify-content:space-between">
-                <span style="font-size:0.88rem">Minimum</span>
-                <strong>$50</strong>
+                <span style="font-size:0.88rem">Minimum</span><strong>$50</strong>
               </div>
               <div style="display:flex;align-items:center;justify-content:space-between">
-                <span style="font-size:0.88rem">Platform Fee</span>
-                <strong>20%</strong>
+                <span style="font-size:0.88rem">Platform Fee</span><strong>20%</strong>
               </div>
               <div class="divider" style="margin:4px 0"></div>
               <select class="select" id="scheduleSelect">
-                <option>Weekly</option>
-                <option selected>Monthly</option>
-                <option>Manual</option>
+                <option>Weekly</option><option selected>Monthly</option><option>Manual</option>
               </select>
               <button class="btn btn-brand btn-sm btn-full"><i class="ti ti-device-floppy"></i> Save Schedule</button>
             </div>
           </div>
         </div>
       </div>
-
     </div>
   </main>
 </div>
 
-<!-- WITHDRAW MODAL -->
 <div class="modal-backdrop" id="withdrawModal">
   <div class="modal-box" style="max-width:440px">
     <button class="modal-close" onclick="closeModal('withdrawModal')"><i class="ti ti-x"></i></button>
     <div class="modal-title">Request Payout</div>
-    <p class="modal-sub">Available: <strong style="color:var(--green)">$1,920.00</strong></p>
+    <p class="modal-sub">Available: <strong id="modalBalance" style="color:var(--green)">$0</strong></p>
     <div style="display:flex;flex-direction:column;gap:14px">
       <div class="form-group">
         <label class="form-label">Amount (USD)</label>
-        <div class="input-group"><i class="ti ti-currency-dollar"></i><input class="input" type="number" id="withdrawAmount" value="1920" min="50" max="1920" /></div>
-        <div class="form-hint">Minimum $50 · Maximum $1,920</div>
+        <div class="input-group"><i class="ti ti-currency-dollar"></i><input class="input" type="number" id="withdrawAmount" value="0" min="50" /></div>
+        <div class="form-hint">Minimum $50</div>
       </div>
       <div class="form-group">
         <label class="form-label">Payout Method</label>
         <select class="select" id="withdrawMethod">
-          <option value="mtn">MTN Mobile Money (+256 77x xxx xxx)</option>
+          <option value="mtn">MTN Mobile Money</option>
           <option value="airtel">Airtel Money</option>
-          <option value="stripe">Stripe / Bank Transfer</option>
+          <option value="stripe">Bank Transfer / Card</option>
         </select>
       </div>
       <div style="padding:12px;background:var(--surface2);border-radius:var(--radius);font-size:0.82rem;color:var(--text3)">
@@ -143,75 +135,70 @@
 
 <script src="/assets/js/app.js"></script>
 <script src="/assets/js/layout.js"></script>
+<script src="/assets/js/pwa.js"></script>
 <script>
   Auth.requireAuth('/login.html');
   Auth.requireCreator();
   Layout.init('Earnings');
 
-  async function renderEarnings() {
+  async function loadEarnings() {
     try {
       const res = await api.get('/users/me/earnings');
-      const data = res.earnings || {};
-      document.getElementById('availableBalanceValue').textContent = fmt.money(data.availableBalance || 0);
-      document.getElementById('monthTotalValue').textContent = fmt.money(data.thisMonthTotal || 0);
-      document.getElementById('subscriptionValue').textContent = fmt.money(data.subscriptionRevenue || 0);
-      document.getElementById('tipsValue').textContent = fmt.money(data.tipsAndPpv || 0);
-      document.getElementById('allTimeValue').textContent = fmt.money(data.allTimeEarnings || 0);
+      const data = res.earnings||{};
+      const bal = data.availableBalance||0;
+      document.getElementById('availableBalanceValue').textContent = fmt.money(bal);
+      document.getElementById('modalBalance').textContent = fmt.money(bal);
+      document.getElementById('withdrawAmount').value = Math.floor(bal);
+      document.getElementById('withdrawAmount').max = Math.floor(bal);
+      document.getElementById('monthTotalValue').textContent = fmt.money(data.thisMonthTotal||0);
+      document.getElementById('subscriptionValue').textContent = fmt.money(data.subscriptionRevenue||0);
+      document.getElementById('tipsValue').textContent = fmt.money(data.tipsAndPpv||0);
+      document.getElementById('allTimeValue').textContent = fmt.money(data.allTimeEarnings||0);
 
-      const chartData = Array.isArray(res.monthlyBreakdown) ? res.monthlyBreakdown : [];
+      const chart = Array.isArray(res.monthlyBreakdown) ? res.monthlyBreakdown : [];
       const chartEl = document.getElementById('earningsChart');
-      if (chartData.length) {
-        const maxAmount = Math.max(...chartData.map(item => item.amount || 0), 1);
-        chartEl.innerHTML = chartData.map(item => `
+      if (chart.length) {
+        const max = Math.max(...chart.map(d=>d.amount||0),1);
+        chartEl.innerHTML = chart.map(d=>`
           <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px">
-            <div style="font-size:0.68rem;color:var(--text3);font-weight:600">${fmt.money(item.amount || 0)}</div>
-            <div style="width:100%;background:var(--gradient-btn);border-radius:5px 5px 0 0;height:${Math.max(6, Math.round((item.amount || 0) / maxAmount * 140))}px"></div>
-            <div style="font-size:0.7rem;color:var(--text3)">${fmt.esc(item.label)}</div>
+            <div style="font-size:0.68rem;color:var(--text3);font-weight:600">${fmt.money(d.amount||0)}</div>
+            <div style="width:100%;background:var(--grad-brand);border-radius:5px 5px 0 0;height:${Math.max(6,Math.round((d.amount||0)/max*140))}px"></div>
+            <div style="font-size:0.7rem;color:var(--text3)">${fmt.esc(d.label)}</div>
           </div>`).join('');
       } else {
-        chartEl.innerHTML = '<div class="table-empty">No earnings data available.</div>';
+        chartEl.innerHTML = '<div style="color:var(--text3);font-size:0.85rem;text-align:center;width:100%;align-self:center">No earnings data yet. Start posting content!</div>';
       }
 
+      const txs = Array.isArray(res.transactions) ? res.transactions : [];
       const txBody = document.getElementById('txBody');
-      const transactions = Array.isArray(res.transactions) ? res.transactions : [];
-      if (!transactions.length) {
-        txBody.innerHTML = '<tr><td colspan="6" class="table-empty">No transactions found.</td></tr>';
-      } else {
-        txBody.innerHTML = transactions.map(t => {
-          const isPayout = t.type === 'payout';
-          const fee = isPayout ? 0 : +(t.fee || 0).toFixed(2);
-          const net = isPayout ? t.amount : +(t.net || 0).toFixed(2);
-          const color = isPayout ? 'var(--red)' : 'var(--green)';
+      txBody.innerHTML = !txs.length
+        ? '<tr><td colspan="6" class="table-empty">No transactions yet.</td></tr>'
+        : txs.map(t=>{
+          const isPayout=t.type==='payout';
+          const net=isPayout?t.amount:+(t.net||0).toFixed(2);
+          const color=isPayout?'var(--red)':'var(--green)';
           return `<tr>
-            <td>
-              <div style="display:flex;align-items:center;gap:8px">
-                <div style="width:32px;height:32px;border-radius:var(--radius);background:${isPayout?'var(--red-bg)':t.type==='sub'?'var(--brand-light)':t.type==='tip'?'var(--gold-bg)':'var(--purple-bg)'};display:flex;align-items:center;justify-content:center;font-size:14px;color:${isPayout?'var(--red)':t.type==='sub'?'var(--brand)':t.type==='tip'?'var(--gold)':'var(--purple)'}">
-                  <i class="ti ti-${isPayout?'cash':t.type==='sub'?'crown':t.type==='tip'?'coin':'lock'}"></i>
-                </div>
-                <span style="font-size:0.85rem;font-weight:600">${fmt.esc(t.desc)}</span>
-              </div>
-            </td>
-            <td style="font-weight:700;color:${color}">${t.amount < 0 ? '-' : '+'}$${Math.abs(t.amount).toFixed(2)}</td>
-            <td style="color:var(--text3);font-size:0.8rem">${isPayout ? '—' : '-$'+fee.toFixed(2)}</td>
-            <td style="font-weight:700;color:${color}">${isPayout ? '-$'+Math.abs(t.amount).toFixed(2) : '+$'+net.toFixed(2)}</td>
-            <td style="color:var(--text3);font-size:0.78rem">${fmt.date(t.date)}</td>
-            <td><span class="badge" style="background:${t.status==='active' || t.status==='completed' ? 'var(--green-bg)' : 'var(--blue-bg)'};color:${t.status==='active' || t.status==='completed' ? 'var(--green)' : 'var(--blue)'};font-size:0.65rem">${fmt.esc(t.status)}</span></td>
+            <td style="font-size:0.85rem;font-weight:600">${fmt.esc(t.desc||t.description||'Transaction')}</td>
+            <td style="font-weight:700;color:${color}">${t.amount<0?'-':'+'}${fmt.money(Math.abs(t.amount))}</td>
+            <td style="color:var(--text3);font-size:0.8rem">${isPayout?'—':fmt.money(t.fee||0)}</td>
+            <td style="font-weight:700;color:${color}">${fmt.money(Math.abs(net))}</td>
+            <td style="color:var(--text3);font-size:0.78rem">${fmt.date(t.date||t.createdAt)}</td>
+            <td><span class="tag ${t.status==='completed'?'tag-green':t.status==='pending'?'tag-warning':'tag-surface'}" style="font-size:0.65rem">${fmt.esc(t.status||'active')}</span></td>
           </tr>`;
         }).join('');
-      }
-    } catch (err) {
-      console.error('Earnings load failed', err);
-      document.getElementById('earningsChart').innerHTML = '<div class="table-empty">Unable to load chart.</div>';
-      document.getElementById('txBody').innerHTML = '<tr><td colspan="6" class="table-empty">Unable to load transactions.</td></tr>';
+    } catch(err) {
+      document.getElementById('earningsChart').innerHTML='<div style="color:var(--text3);font-size:0.85rem">Unable to load data.</div>';
+      document.getElementById('txBody').innerHTML='<tr><td colspan="6" class="table-empty">Unable to load transactions.</td></tr>';
     }
   }
 
-  renderEarnings();
+  loadEarnings();
 
   function submitWithdraw() {
-    const amount = document.getElementById('withdrawAmount').value;
+    const amount=document.getElementById('withdrawAmount').value;
+    if (!amount||amount<50) return Toast.show('Minimum withdrawal is $50','warning');
     closeModal('withdrawModal');
-    Toast.show(`Payout request of $${amount} submitted. Processing in 1–3 days.`, 'success');
+    Toast.show(`Payout request of $${amount} submitted. Processing in 1–3 days.`,'success');
   }
 </script>
 </body>
