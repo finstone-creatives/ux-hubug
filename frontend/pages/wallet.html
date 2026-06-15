@@ -2,20 +2,37 @@
 <html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Wallet — UX-HUB</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Wallet — Nxt-door</title>
+  <meta name="robots" content="noindex" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#e50914" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Nxt-door" />
+  <link rel="apple-touch-icon" href="/assets/icons/icon-192.svg" />
+  <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css" rel="stylesheet">
   <link rel="stylesheet" href="/assets/css/main.css" />
   <style>
-    .wallet-grid { display:grid; grid-template-columns:1fr 320px; gap:24px; }
-    .wallet-card { background:var(--surface); border:1px solid var(--border); border-radius:1rem; padding:24px; }
-    .wallet-stats { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; margin-top:18px; }
-    .stat-box { background:var(--surface2); border:1px solid var(--border); border-radius:1rem; padding:18px; }
-    .stat-box h3 { margin:0 0 8px; font-size:1.2rem; }
-    .placeholder { color:var(--text3); }
-    @media(max-width:1024px){ .wallet-grid { grid-template-columns:1fr; } }
+    .wallet-grid{display:grid;grid-template-columns:1fr 320px;gap:24px}
+    .wallet-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px}
+    .wallet-balance{font-family:var(--font-display);font-size:3rem;font-weight:800;color:var(--green);margin:10px 0}
+    .wallet-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:18px}
+    .stat-box{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px}
+    .stat-box .label{margin-bottom:8px}
+    .stat-box strong{font-family:var(--font-display);font-size:1.5rem;display:block}
+    .tx-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+    .tx-item:last-child{border-bottom:none}
+    .tx-icon{width:36px;height:36px;border-radius:var(--radius);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+    .tx-info{flex:1;min-width:0}
+    .tx-desc{font-size:0.88rem;font-weight:600}
+    .tx-date{font-size:0.75rem;color:var(--text3);margin-top:2px}
+    .tx-amount{font-weight:700;font-size:0.9rem;text-align:right}
+    @media(max-width:1024px){.wallet-grid{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
@@ -25,40 +42,143 @@
   <div class="page-wrap">
     <main class="main-content">
       <div class="inner-lg">
-        <div class="page-header" style="margin-bottom:24px; display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+        <div style="margin-bottom:24px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap">
           <div>
-            <h1>Wallet</h1>
-            <p>View your balance, payments, and transaction history for UX-HUB.</p>
+            <div class="label">Finance</div>
+            <h1 style="margin-top:4px">My Wallet</h1>
+            <p style="color:var(--text3)">Your balance, payments, and transaction history on Nxt-door.</p>
           </div>
+          <button class="btn btn-brand btn-md" onclick="openModal('topupModal')"><i class="ti ti-plus"></i> Add Funds</button>
         </div>
         <div class="wallet-grid">
-          <div class="wallet-card">
-            <h2>Balance</h2>
-            <p class="placeholder">$0.00</p>
-            <div class="wallet-stats">
-              <div class="stat-box">
-                <h3>Pending</h3>
-                <p class="placeholder">$0.00</p>
-              </div>
-              <div class="stat-box">
-                <h3>Available</h3>
-                <p class="placeholder">$0.00</p>
+          <div>
+            <div class="wallet-card" style="background:radial-gradient(ellipse at top,rgba(229,9,20,0.08),transparent),var(--surface);margin-bottom:20px">
+              <div class="label">Total Balance</div>
+              <div class="wallet-balance" id="walletBalance">$0.00</div>
+              <div style="font-size:0.82rem;color:var(--text3)">Available for purchases and tips</div>
+              <div class="wallet-stats">
+                <div class="stat-box">
+                  <div class="label">Pending</div>
+                  <strong id="walletPending">$0.00</strong>
+                  <div style="font-size:0.72rem;color:var(--text3);margin-top:4px">Processing</div>
+                </div>
+                <div class="stat-box">
+                  <div class="label">Spent Total</div>
+                  <strong id="walletSpent">$0.00</strong>
+                  <div style="font-size:0.72rem;color:var(--text3);margin-top:4px">All time</div>
+                </div>
               </div>
             </div>
+            <div class="card">
+              <div class="card-header">
+                <h3>Transaction History</h3>
+                <button class="btn btn-surface btn-sm" onclick="loadWallet()"><i class="ti ti-refresh"></i></button>
+              </div>
+              <div id="txList" class="card-body"><div class="loading-center"><div class="spinner"></div></div></div>
+            </div>
           </div>
-          <div class="wallet-card">
-            <h2>Recent activity</h2>
-            <p class="placeholder">No transactions yet. Once you make a purchase or earn revenue, they’ll appear here.</p>
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div class="card">
+              <div class="card-header"><h3>Quick Top-up</h3></div>
+              <div class="card-body" style="display:flex;flex-direction:column;gap:10px">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                  ${[5,10,20,50].map(a=>`<button class="btn btn-surface btn-sm" onclick="quickTopup(${a})">$${a}</button>`).join('')}
+                </div>
+                <div class="divider-text">or custom</div>
+                <div class="input-group"><i class="ti ti-currency-dollar"></i><input class="input" type="number" id="customAmount" placeholder="Enter amount" min="1" /></div>
+                <button class="btn btn-brand btn-md btn-full" onclick="openModal('topupModal')"><i class="ti ti-plus"></i> Top Up Wallet</button>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header"><h3>Payment Methods</h3></div>
+              <div class="card-body" style="display:flex;flex-direction:column;gap:10px">
+                <div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--surface2);border-radius:var(--radius)">
+                  <i class="ti ti-device-mobile" style="font-size:20px;color:var(--gold)"></i>
+                  <div style="flex:1"><div style="font-size:0.85rem;font-weight:600">MTN Mobile Money</div><div style="font-size:0.72rem;color:var(--text3)">+256 77x xxx xxx</div></div>
+                  <span style="font-size:0.65rem;color:var(--green);font-weight:600">Active</span>
+                </div>
+                <button class="btn btn-outline btn-sm btn-full"><i class="ti ti-plus"></i> Add Payment Method</button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </main>
   </div>
+
+  <!-- TOP UP MODAL -->
+  <div class="modal-backdrop" id="topupModal">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeModal('topupModal')"><i class="ti ti-x"></i></button>
+      <div class="modal-title">Add Funds</div>
+      <div class="modal-sub">Choose an amount and payment method</div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="form-group">
+          <label class="form-label">Amount (USD)</label>
+          <div class="input-group"><i class="ti ti-currency-dollar"></i><input class="input" type="number" id="topupAmount" placeholder="e.g. 20" min="1" /></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Payment Method</label>
+          <select class="select" id="topupMethod">
+            <option value="mtn">MTN Mobile Money</option>
+            <option value="airtel">Airtel Money</option>
+            <option value="stripe">Card (Visa / Mastercard)</option>
+          </select>
+        </div>
+        <button class="btn btn-brand btn-lg btn-full" onclick="processTopup()"><i class="ti ti-lock"></i> Pay Securely</button>
+      </div>
+    </div>
+  </div>
+
   <script src="/assets/js/app.js"></script>
   <script src="/assets/js/layout.js"></script>
+  <script src="/assets/js/pwa.js"></script>
   <script>
     Auth.requireAuth('/login.html');
     Layout.init('Wallet');
+
+    async function loadWallet() {
+      const txList = document.getElementById('txList');
+      try {
+        const res = await api.get('/payments/wallet');
+        const wallet = res.wallet||{};
+        document.getElementById('walletBalance').textContent = fmt.money(wallet.balance||0);
+        document.getElementById('walletPending').textContent = fmt.money(wallet.pending||0);
+        document.getElementById('walletSpent').textContent = fmt.money(wallet.spent||0);
+        const txs = res.transactions||[];
+        if (!txs.length) {
+          txList.innerHTML = '<p style="color:var(--text3);text-align:center;padding:20px">No transactions yet. Add funds to get started.</p>';
+        } else {
+          txList.innerHTML = txs.map(t => `<div class="tx-item">
+            <div class="tx-icon" style="background:${t.amount>0?'rgba(0,200,100,0.12)':'rgba(229,9,20,0.12)'}">
+              <i class="ti ti-${t.amount>0?'arrow-bar-down':'arrow-bar-up'}" style="color:${t.amount>0?'var(--green)':'var(--red)'}"></i>
+            </div>
+            <div class="tx-info">
+              <div class="tx-desc">${fmt.esc(t.description||'Transaction')}</div>
+              <div class="tx-date">${fmt.date(t.createdAt)}</div>
+            </div>
+            <div class="tx-amount" style="color:${t.amount>0?'var(--green)':'var(--red)'}">${t.amount>0?'+':''}${fmt.money(t.amount)}</div>
+          </div>`).join('');
+        }
+      } catch {
+        txList.innerHTML = '<p style="color:var(--text3);text-align:center;padding:20px">Unable to load transactions.</p>';
+      }
+    }
+
+    function quickTopup(amount) {
+      document.getElementById('topupAmount').value = amount;
+      openModal('topupModal');
+    }
+
+    function processTopup() {
+      const amt = document.getElementById('topupAmount').value;
+      const method = document.getElementById('topupMethod').value;
+      if (!amt||amt<1) return Toast.show('Enter a valid amount','warning');
+      closeModal('topupModal');
+      Toast.show(`Processing $${amt} via ${method==='mtn'?'MTN Mobile Money':method==='airtel'?'Airtel Money':'Card'}...`,'info');
+    }
+
+    loadWallet();
   </script>
 </body>
 </html>

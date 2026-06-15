@@ -2,27 +2,40 @@
 <html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Watch Live — UX-HUB</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Watch Live — Nxt-door</title>
+  <meta name="description" content="Stream the selected creator session on Nxt-door. Watch live and exclusive content from Africa's best creators." />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#000000" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Nxt-door" />
+  <link rel="apple-touch-icon" href="/assets/icons/icon-192.svg" />
+  <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css" rel="stylesheet">
   <link rel="stylesheet" href="/assets/css/main.css" />
   <style>
-    .watch-grid { display:grid; grid-template-columns:1fr 320px; gap:24px; }
-    .watch-card { background:var(--surface); border:1px solid var(--border); border-radius:1rem; overflow:hidden; }
-    .watch-player { width:100%; background:#000; min-height:320px; display:flex; align-items:center; justify-content:center; }
-    .watch-player video { width:100%; height:100%; max-height:520px; }
-    .watch-details { padding:20px; display:flex; flex-direction:column; gap:16px; }
-    .watch-title { margin:0; font-size:1.45rem; font-weight:700; }
-    .watch-meta { display:flex; flex-wrap:wrap; gap:12px; color:var(--text3); font-size:0.9rem; }
-    .watch-description { color:var(--text3); line-height:1.8; }
-    .watch-sidebar { display:flex; flex-direction:column; gap:18px; padding:20px; }
-    .watch-info-box { background:var(--surface2); border:1px solid var(--border); border-radius:1rem; padding:18px; }
-    .watch-info-box h4 { margin:0 0 10px; font-size:1rem; }
-    .watch-info-box p { margin:0; color:var(--text3); font-size:0.95rem; line-height:1.7; }
-    .watch-error { min-height:360px; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:12px; color:var(--text3); text-align:center; }
-    @media(max-width:1024px){ .watch-grid { grid-template-columns:1fr; } }
+    .watch-grid{display:grid;grid-template-columns:1fr 320px;gap:24px}
+    .watch-player-wrap{background:#000;border-radius:var(--radius-xl);overflow:hidden;position:relative}
+    .watch-player-wrap video{width:100%;display:block;max-height:560px}
+    .watch-player-placeholder{height:360px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:var(--text3)}
+    .watch-player-placeholder .ti{font-size:56px;color:var(--text4)}
+    .watch-details{padding:20px}
+    .watch-title{font-size:1.4rem;font-weight:800;margin:0 0 12px}
+    .watch-meta{display:flex;flex-wrap:wrap;gap:12px;color:var(--text3);font-size:0.85rem;margin-bottom:14px}
+    .watch-creator-row{display:flex;align-items:center;gap:12px;padding:14px;background:var(--surface2);border-radius:var(--radius-lg)}
+    .watch-sidebar{display:flex;flex-direction:column;gap:16px}
+    .live-chat-wrap{flex:1;display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;min-height:320px}
+    .live-chat-header{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+    .live-msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:8px;max-height:320px}
+    .live-msg{font-size:0.82rem;line-height:1.5}
+    .live-msg-name{font-weight:700;color:var(--red);margin-right:5px}
+    .live-input-row{padding:10px;border-top:1px solid var(--border);display:flex;gap:8px}
+    .watch-error{min-height:360px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--text3);text-align:center}
+    @media(max-width:1024px){.watch-grid{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
@@ -32,79 +45,133 @@
   <div class="page-wrap">
     <main class="main-content">
       <div class="inner-lg">
-        <div class="page-header" style="margin-bottom:24px; display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap;">
-          <div>
-            <h1>Watch Live</h1>
-            <p>Stream the selected creator session and follow the latest live content from UX-HUB.</p>
-          </div>
-        </div>
         <div id="watchContainer" class="watch-grid"></div>
-        <div id="watchError" class="watch-error" style="display:none;">
-          <i class="ti ti-alert-circle"></i>
-          <div>
-            <strong>Unable to load this stream.</strong>
-            <p>The video may not be available, or the creator stream ended. Try another live session.</p>
-          </div>
+        <div id="watchError" class="watch-error" style="display:none">
+          <i class="ti ti-player-off" style="font-size:52px;color:var(--text4)"></i>
+          <strong>Unable to load this stream</strong>
+          <p style="font-size:0.85rem">The video may not be available or the creator stream ended.</p>
+          <a href="/pages/live.html" class="btn btn-brand btn-sm"><i class="ti ti-live-view"></i> Browse Live Streams</a>
         </div>
       </div>
     </main>
   </div>
   <script src="/assets/js/app.js"></script>
   <script src="/assets/js/layout.js"></script>
+  <script src="/assets/js/pwa.js"></script>
   <script>
     Layout.init('Watch Live');
 
-    function getQueryParam(name) {
-      return new URLSearchParams(window.location.search).get(name) || '';
+    const chatMessages = [
+      'Amazing stream!','You look incredible','Sending love from Kampala',
+      'Fire content','Keep going!','You\'re the best'
+    ];
+    const chatNames = ['Sarah_K','Mike_T','Anita256','James_O','Rose_KE','Bella_UG'];
+    let chatInterval = null;
+
+    function renderChatMsg(name, msg, isTip) {
+      const chat = document.getElementById('liveChat');
+      if (!chat) return;
+      const div = document.createElement('div');
+      div.className = 'live-msg';
+      div.innerHTML = `<span class="live-msg-name">${fmt.esc(name)}</span>${isTip?'<i class="ti ti-coin" style="color:var(--gold)"></i> ':''}${fmt.esc(msg)}`;
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    function startSimulatedChat() {
+      chatInterval = setInterval(() => {
+        const name = chatNames[Math.floor(Math.random()*chatNames.length)];
+        const msg = chatMessages[Math.floor(Math.random()*chatMessages.length)];
+        const isTip = Math.random() > 0.85;
+        renderChatMsg(name, msg, isTip);
+      }, 3000);
+    }
+
+    function sendWatchMsg() {
+      const input = document.getElementById('watchChatInput');
+      if (!input?.value.trim()) return;
+      renderChatMsg(Auth.getUser()?.username||'You', input.value, false);
+      input.value = '';
     }
 
     function createWatchCard(video) {
-      const creator = video.uploader?.username || 'Creator';
-      const views = video.views || 0;
-      const description = video.description ? video.description.replace(/</g,'&lt;').replace(/>/g,'&gt;') : 'No description available yet.';
+      const creator = video.uploader||{};
+      const name = creator.username||'Creator';
+      const views = fmt.num(video.views||0);
+      const desc = video.description||'Exclusive content on Nxt-door.';
       return `
-        <div class="watch-card">
-          <div class="watch-player">
-            ${video.filename ? `<video controls src="/uploads/${encodeURIComponent(video.filename)}" poster="" preload="metadata"></video>` : '<div style="color:#fff;font-size:1rem;">Live video unavailable</div>'}
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div class="watch-player-wrap">
+            ${video.filename
+              ? `<video controls src="/uploads/${encodeURIComponent(video.filename)}" poster="" preload="metadata" style="width:100%;max-height:560px"></video>`
+              : `<div class="watch-player-placeholder"><i class="ti ti-live-view"></i><p>Live stream unavailable right now.</p></div>`
+            }
           </div>
           <div class="watch-details">
-            <h2 class="watch-title">${video.title ? video.title.replace(/</g,'&lt;').replace(/>/g,'&gt;') : 'Live session'}</h2>
-            <div class="watch-meta"><span>${creator}</span><span>${video.category || 'Live content'}</span><span>${views} views</span></div>
-            <p class="watch-description">${description}</p>
+            <h1 class="watch-title">${fmt.esc(video.title||'Live Session')}</h1>
+            <div class="watch-meta">
+              <span class="badge badge-live"><span class="live-dot"></span> LIVE</span>
+              <span><i class="ti ti-eye"></i> ${views} views</span>
+              <span>${fmt.esc(video.category||'Creator content')}</span>
+            </div>
+            <div class="watch-creator-row">
+              <div class="avatar avatar-md" style="background:var(--grad-brand)">${fmt.initials(name)}</div>
+              <div style="flex:1">
+                <div style="font-weight:700">${fmt.esc(name)}</div>
+                <div style="font-size:0.75rem;color:var(--text3)">Creator on Nxt-door</div>
+              </div>
+              <a href="/pages/profile.html?id=${creator._id||''}" class="btn btn-outline btn-sm">View Profile</a>
+              <button class="btn btn-brand btn-sm" onclick="window.location='/pages/checkout.html?creator=${creator._id||''}&tier=Basic&price=9'"><i class="ti ti-crown"></i> Subscribe</button>
+            </div>
+            ${desc ? `<p style="margin-top:14px;color:var(--text2);line-height:1.7;font-size:0.9rem">${fmt.esc(desc)}</p>` : ''}
           </div>
         </div>
         <aside class="watch-sidebar">
-          <div class="watch-info-box">
-            <h4>Creator</h4>
-            <p>${creator}</p>
+          <div class="live-chat-wrap">
+            <div class="live-chat-header">
+              <h4 style="font-size:0.9rem;margin:0"><i class="ti ti-message-circle" style="color:var(--red)"></i> Live Chat</h4>
+              <span class="tag tag-surface" style="font-size:0.7rem"><i class="ti ti-users"></i> <span id="chatCount">${Math.floor(Math.random()*80)+10}</span></span>
+            </div>
+            <div class="live-msgs" id="liveChat"></div>
+            <div class="live-input-row">
+              <input class="input input-sm" type="text" id="watchChatInput" placeholder="Say something..." style="flex:1" onkeydown="if(event.key==='Enter')sendWatchMsg()" />
+              <button class="btn btn-brand btn-sm" onclick="sendWatchMsg()"><i class="ti ti-send"></i></button>
+            </div>
           </div>
-          <div class="watch-info-box">
-            <h4>Category</h4>
-            <p>${video.category || 'Live stream'}</p>
-          </div>
-          <div class="watch-info-box">
-            <h4>Uploaded</h4>
-            <p>${new Date(video.createdAt || Date.now()).toLocaleDateString()}</p>
+          <div class="card">
+            <div class="card-header"><h4 style="font-size:0.9rem"><i class="ti ti-coin" style="color:var(--gold)"></i> Send a Tip</h4></div>
+            <div class="card-body">
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px">
+                ${[2,5,10,20,50,100].map(a=>`<button class="btn btn-surface btn-sm" onclick="sendTip(${a},this)">$${a}</button>`).join('')}
+              </div>
+              <button class="btn btn-brand btn-sm btn-full" id="sendTipBtn"><i class="ti ti-coin"></i> Send Tip</button>
+            </div>
           </div>
         </aside>`;
     }
 
+    let selectedTipAmt = 0;
+    function sendTip(amt, btn) {
+      document.querySelectorAll('.card-body .btn-surface').forEach(b=>b.style.borderColor='');
+      btn.style.borderColor = 'var(--gold)';
+      selectedTipAmt = amt;
+      document.getElementById('sendTipBtn').textContent = `Send $${amt} Tip`;
+    }
+
     async function loadWatchPage() {
-      const id = getQueryParam('id');
+      const id = new URLSearchParams(window.location.search).get('id');
       const container = document.getElementById('watchContainer');
       const error = document.getElementById('watchError');
-      container.innerHTML = '';
-      error.style.display = 'none';
-      if (!id) {
-        error.style.display = 'flex';
-        return;
-      }
+      if (!id) { error.style.display='flex'; return; }
       try {
-        const response = await api.get(`/videos/${encodeURIComponent(id)}`);
-        if (!response.success || !response.video) throw new Error('Video not found');
-        container.innerHTML = createWatchCard(response.video);
-      } catch (err) {
-        error.style.display = 'flex';
+        const r = await api.get(`/videos/${encodeURIComponent(id)}`);
+        if (!r.success||!r.video) throw new Error('Video not found');
+        container.innerHTML = createWatchCard(r.video);
+        document.title = `${r.video.title||'Live'} — Nxt-door`;
+        startSimulatedChat();
+        api.post(`/videos/${id}/view`).catch(()=>{});
+      } catch {
+        error.style.display='flex';
       }
     }
 

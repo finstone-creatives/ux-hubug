@@ -2,18 +2,32 @@
 <html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bookings — UX-HUB</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Bookings — Nxt-door</title>
+  <meta name="robots" content="noindex" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#e50914" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Nxt-door" />
+  <link rel="apple-touch-icon" href="/assets/icons/icon-192.svg" />
+  <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css" rel="stylesheet">
   <link rel="stylesheet" href="/assets/css/main.css" />
   <style>
-    .page-panel { display:flex; flex-direction:column; gap:18px; }
-    .panel-card { background:var(--surface); border:1px solid var(--border); border-radius:1rem; padding:24px; }
-    .panel-list { display:grid; gap:14px; }
-    .panel-item { background:var(--surface2); border:1px solid var(--border); border-radius:0.95rem; padding:18px; }
-    .placeholder { color:var(--text3); }
+    .booking-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;display:flex;gap:16px;align-items:flex-start}
+    .booking-avatar{width:56px;height:56px;border-radius:50%;background:var(--grad-brand);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:1.1rem;flex-shrink:0}
+    .booking-info{flex:1;min-width:0}
+    .booking-name{font-weight:700;font-size:0.95rem}
+    .booking-meta{font-size:0.78rem;color:var(--text3);margin:4px 0}
+    .booking-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    .status-badge{padding:3px 10px;border-radius:var(--radius-full);font-size:0.7rem;font-weight:700}
+    .status-upcoming{background:rgba(59,130,246,0.12);color:#3b82f6}
+    .status-completed{background:rgba(0,200,100,0.12);color:var(--green)}
+    .status-cancelled{background:rgba(229,9,20,0.12);color:var(--red)}
   </style>
 </head>
 <body>
@@ -23,31 +37,85 @@
   <div class="page-wrap">
     <main class="main-content">
       <div class="inner-lg">
-        <div class="page-header" style="margin-bottom:24px; display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+        <div style="margin-bottom:24px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap">
           <div>
-            <h1>Bookings</h1>
-            <p>Manage your upcoming sessions and creator appointments in one place.</p>
+            <div class="label">Sessions</div>
+            <h1 style="margin-top:4px">Bookings</h1>
+            <p style="color:var(--text3)">Manage your upcoming sessions and creator appointments.</p>
           </div>
         </div>
-        <div class="page-panel">
-          <div class="panel-card">
-            <h2>Upcoming bookings</h2>
-            <div class="panel-list">
-              <div class="panel-item">
-                <strong>No bookings yet.</strong>
-                <p class="placeholder">Book a creator session to see it listed here.</p>
-              </div>
-            </div>
-          </div>
+        <div class="tabs" style="margin-bottom:20px">
+          <button class="tab active" onclick="switchTab('upcoming',this)">Upcoming</button>
+          <button class="tab" onclick="switchTab('past',this)">Past</button>
         </div>
+        <div id="bookingsList"></div>
       </div>
     </main>
   </div>
   <script src="/assets/js/app.js"></script>
   <script src="/assets/js/layout.js"></script>
+  <script src="/assets/js/pwa.js"></script>
   <script>
     Auth.requireAuth('/login.html');
     Layout.init('Bookings');
+
+    let currentTab = 'upcoming';
+
+    function switchTab(tab, btn) {
+      currentTab = tab;
+      document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+      btn.classList.add('active');
+      loadBookings();
+    }
+
+    async function loadBookings() {
+      const list = document.getElementById('bookingsList');
+      list.innerHTML = '<div class="loading-center"><div class="spinner"></div></div>';
+      try {
+        const res = await api.get(`/bookings?status=${currentTab}`);
+        const bookings = res.bookings||[];
+        if (!bookings.length) {
+          list.innerHTML = `<div class="empty-state" style="display:flex;flex-direction:column;min-height:240px">
+            <i class="ti ti-calendar" style="font-size:48px;color:var(--text4);margin-bottom:16px"></i>
+            <strong>No ${currentTab} bookings</strong>
+            <p style="margin:8px 0 20px;font-size:0.85rem;color:var(--text3)">Book a creator session to see it listed here.</p>
+            <a href="/index.html" class="btn btn-brand btn-sm"><i class="ti ti-compass"></i> Find Creators</a>
+          </div>`;
+          return;
+        }
+        list.innerHTML = bookings.map(b => {
+          const creator = b.creator?.username||'Creator';
+          const initials = creator.slice(0,2).toUpperCase();
+          const statusClass = b.status==='upcoming'?'status-upcoming':b.status==='completed'?'status-completed':'status-cancelled';
+          return `<div class="booking-card" style="margin-bottom:12px">
+            <div class="booking-avatar">${initials}</div>
+            <div class="booking-info">
+              <div class="booking-name">${fmt.esc(creator)}</div>
+              <div class="booking-meta"><i class="ti ti-calendar"></i> ${fmt.date(b.scheduledAt)} at ${new Date(b.scheduledAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div>
+              <div class="booking-meta"><i class="ti ti-clock"></i> ${b.duration||60} min &middot; $${b.price||0}</div>
+              <div style="margin-top:6px"><span class="status-badge ${statusClass}">${b.status}</span></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              ${b.status==='upcoming'?`<button class="btn btn-surface btn-sm" onclick="cancelBooking('${b._id}')">Cancel</button>`:''}
+              <a href="/pages/messages.html?userid=${b.creator?._id||''}" class="btn btn-brand btn-sm">Message</a>
+            </div>
+          </div>`;
+        }).join('');
+      } catch {
+        list.innerHTML = '<div class="empty-state" style="display:flex;min-height:200px"><i class="ti ti-alert-circle" style="font-size:40px;color:var(--text4)"></i><p>Unable to load bookings.</p></div>';
+      }
+    }
+
+    async function cancelBooking(id) {
+      if (!confirm('Cancel this booking?')) return;
+      try {
+        await api.post(`/bookings/${id}/cancel`);
+        Toast.show('Booking cancelled.','info');
+        loadBookings();
+      } catch(err) { Toast.show(err.message||'Unable to cancel','error'); }
+    }
+
+    loadBookings();
   </script>
 </body>
 </html>
