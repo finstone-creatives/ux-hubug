@@ -1,8 +1,20 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
-  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sign In — UX-HUB</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Sign In — Nxt-door</title>
+  <meta name="description" content="Sign in to your Nxt-door account to access exclusive creator content, live streams, and more." />
+  <meta name="robots" content="noindex" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#e50914" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Nxt-door" />
+  <link rel="apple-touch-icon" href="/assets/icons/icon-192.svg" />
+  <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css">
   <link rel="stylesheet" href="/assets/css/main.css">
@@ -11,8 +23,11 @@
 <div class="auth-layout">
   <div class="auth-card fade-in">
     <div class="auth-logo-wrap">
-      <a href="/index.html" class="logo-name">UX<span style="color:var(--brand)">HUB</span></a>
-      <p class="text-sm" style="color:var(--text3);margin-top:6px">Welcome back</p>
+      <a href="/index.html" style="text-decoration:none;display:flex;align-items:center;gap:10px;justify-content:center">
+        <div class="logo-mark" style="width:40px;height:40px;font-size:1rem;display:flex;align-items:center;justify-content:center">NX</div>
+        <span class="logo-name" style="font-size:1.6rem">Nxt<span>-door</span></span>
+      </a>
+      <p class="text-sm" style="color:var(--text3);margin-top:8px">Welcome back</p>
     </div>
     <div id="alertBox" style="display:none;margin-bottom:16px"></div>
     <form id="loginForm" onsubmit="handleLogin(event)">
@@ -38,36 +53,38 @@
       </div>
     </form>
     <div class="divider-text">or</div>
-    <p class="text-sm text-center" style="color:var(--text3)">No account? <a href="/register.html" style="color:var(--brand);font-weight:600">Join free</a></p>
+    <p class="text-sm text-center" style="color:var(--text3)">No account? <a href="/register.html" style="color:var(--red);font-weight:600">Join free</a></p>
   </div>
 </div>
 <script src="/assets/js/app.js"></script>
+<script src="/assets/js/pwa.js"></script>
 <script>
   Theme.init();
+  if (Auth.isLoggedIn()) {
+    const u = Auth.getUser();
+    window.location.href = u?.role === 'creator' ? '/creator/dashboard.html' : '/pages/feed.html';
+  }
   async function handleLogin(e) {
     e.preventDefault();
     const btn = document.getElementById('loginBtn');
     btn.innerHTML = '<i class="ti ti-loader-2" style="animation:spin 0.6s linear infinite"></i> Signing in...';
     btn.disabled = true;
     try {
-      const data = await api.post('/auth/login', { email: document.getElementById('email').value, password: document.getElementById('password').value });
+      const data = await api.post('/auth/login', {
+        email: document.getElementById('email').value,
+        password: document.getElementById('password').value
+      });
       if (data.success) {
         Auth.setSession(data.token, data.user);
-        if (data.user.role === 'creator') {
-          window.location.href = '/creator/dashboard.html';
-        } else if (data.user.role === 'admin' || data.user.role === 'moderator') {
-          window.location.href = '/admin/dashboard.html';
-        } else {
-          window.location.href = '/index.html';
-        }
+        if (data.user.role === 'creator') window.location.href = '/creator/dashboard.html';
+        else if (data.user.role === 'admin' || data.user.role === 'moderator') window.location.href = '/admin/dashboard.html';
+        else window.location.href = '/pages/feed.html';
       } else {
         showAlert('alertBox', data.message, 'error');
         btn.innerHTML = '<i class="ti ti-login"></i> Sign In'; btn.disabled = false;
       }
     } catch (err) {
-      const message = err?.message || 'Server error.';
-      showAlert('alertBox', message, 'error');
-      console.error('Login error:', err);
+      showAlert('alertBox', err?.message || 'Server error.', 'error');
       btn.innerHTML = '<i class="ti ti-login"></i> Sign In'; btn.disabled = false;
     }
   }
@@ -77,4 +94,5 @@
     btn.querySelector('i').className = `ti ti-eye${input.type === 'text' ? '-off' : ''}`;
   }
 </script>
-</body></html>
+</body>
+</html>

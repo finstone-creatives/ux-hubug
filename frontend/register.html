@@ -1,8 +1,20 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
-  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Create Account — UX-HUB</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Create Account — Nxt-door</title>
+  <meta name="description" content="Join Nxt-door for free. Create your account and connect with Africa's best creators. 18+ only." />
+  <meta name="robots" content="noindex" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#e50914" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Nxt-door" />
+  <link rel="apple-touch-icon" href="/assets/icons/icon-192.svg" />
+  <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css">
   <link rel="stylesheet" href="/assets/css/main.css">
@@ -11,8 +23,11 @@
 <div class="auth-layout" style="padding:40px 20px">
   <div class="auth-card fade-in" style="max-width:480px">
     <div class="auth-logo-wrap">
-      <a href="/index.html" class="logo-name">UX<span style="color:var(--brand)">HUB</span></a>
-      <p class="text-sm" style="color:var(--text3);margin-top:6px">Create your free account — 18+ only</p>
+      <a href="/index.html" style="text-decoration:none;display:flex;align-items:center;gap:10px;justify-content:center">
+        <div class="logo-mark" style="width:40px;height:40px;font-size:1rem;display:flex;align-items:center;justify-content:center">NX</div>
+        <span class="logo-name" style="font-size:1.6rem">Nxt<span>-door</span></span>
+      </a>
+      <p class="text-sm" style="color:var(--text3);margin-top:8px">Create your free account — 18+ only</p>
     </div>
     <div id="alertBox" style="display:none;margin-bottom:16px"></div>
     <form onsubmit="handleRegister(event)">
@@ -49,7 +64,7 @@
         </div>
         <label class="checkbox-wrap">
           <input type="checkbox" id="ageConfirm" required />
-          <span>I confirm I am <strong>18 years or older</strong> and agree to the <a href="/pages/terms.html" style="color:var(--brand)">Terms of Service</a> and <a href="/pages/privacy.html" style="color:var(--brand)">Privacy Policy</a>.</span>
+          <span>I confirm I am <strong>18 years or older</strong> and agree to the <a href="/pages/terms.html" style="color:var(--red)">Terms of Service</a> and <a href="/pages/privacy.html" style="color:var(--red)">Privacy Policy</a>.</span>
         </label>
         <button type="submit" class="btn btn-brand btn-md btn-full" id="regBtn">
           <i class="ti ti-user-plus"></i> Create Account
@@ -57,10 +72,11 @@
       </div>
     </form>
     <div class="divider-text">or</div>
-    <p class="text-sm text-center" style="color:var(--text3)">Already have an account? <a href="/login.html" style="color:var(--brand);font-weight:600">Sign in</a></p>
+    <p class="text-sm text-center" style="color:var(--text3)">Already have an account? <a href="/login.html" style="color:var(--red);font-weight:600">Sign in</a></p>
   </div>
 </div>
 <script src="/assets/js/app.js"></script>
+<script src="/assets/js/pwa.js"></script>
 <script>
   Theme.init();
   async function handleRegister(e) {
@@ -83,17 +99,14 @@
       });
       if (data.success) {
         Auth.setSession(data.token, data.user);
-        window.location.href = data.user.role === 'creator' ? '/creator/dashboard.html' : '/index.html';
+        window.location.href = data.user.role === 'creator' ? '/creator/dashboard.html' : '/pages/feed.html';
       } else {
         showAlert('alertBox', data.message, 'error');
         btn.innerHTML = '<i class="ti ti-user-plus"></i> Create Account'; btn.disabled = false;
       }
     } catch (err) {
-      const message = err?.message || 'Server error.';
-      showAlert('alertBox', message, 'error');
-      console.error('Registration error:', err);
-      btn.innerHTML = '<i class="ti ti-user-plus"></i> Create Account';
-      btn.disabled = false;
+      showAlert('alertBox', err?.message || 'Server error.', 'error');
+      btn.innerHTML = '<i class="ti ti-user-plus"></i> Create Account'; btn.disabled = false;
     }
   }
   function togglePw(btn) {
@@ -102,4 +115,5 @@
     btn.querySelector('i').className = `ti ti-eye${input.type === 'text' ? '-off' : ''}`;
   }
 </script>
-</body></html>
+</body>
+</html>
