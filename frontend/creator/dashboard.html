@@ -25,25 +25,33 @@
 <div class="page-wrap">
   <main class="main-content">
     <div class="inner-lg">
-      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:28px">
-        <div>
+      <!-- Mobile Header -->
+      <div class="creator-mobile-header" style="display:none;margin-bottom:20px;text-align:center;">
+        <div class="creator-avatar-large" id="mobileCreatorAvatar" style="width:80px;height:80px;border-radius:50%;background:var(--grad-brand);display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:700;color:white;margin:0 auto 12px;">?</div>
+        <h1 style="font-size:1.4rem;margin:0;"><span id="mobileCreatorName">Creator</span></h1>
+        <p style="color:var(--text3);font-size:0.9rem;margin:4px 0 0;">Welcome back!</p>
+      </div>
+      
+      <div class="dash-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:28px">
+        <div class="dash-header-text">
           <div class="label">Creator Hub</div>
-          <h1 style="font-size:1.8rem;margin-top:4px">Good to see you, <span id="creatorGreeting" style="background:var(--grad-brand);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Creator</span></h1>
+          <h1 style="font-size:1.8rem;margin-top:4px">Good to see you, <span id="creatorGreeting" style="background:var(--grad-brand);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent">Creator</span></h1>
           <p style="color:var(--text3)">Here's how your content is performing.</p>
         </div>
-        <div style="display:flex;gap:10px">
-          <a href="/creator/new-post.html" class="btn btn-brand btn-md"><i class="ti ti-plus"></i> New Post</a>
-          <a href="/creator/go-live.html" class="btn btn-outline btn-md"><i class="ti ti-live-view"></i> Go Live</a>
+        <div class="dash-header-actions" style="display:flex;gap:10px">
+          <a href="/creator/new-post.html" class="btn btn-brand btn-md dash-action-btn"><i class="ti ti-plus"></i> <span class="btn-text">New Post</span></a>
+          <a href="/creator/go-live.html" class="btn btn-outline btn-md dash-action-btn"><i class="ti ti-live-view"></i> <span class="btn-text">Go Live</span></a>
         </div>
       </div>
 
-      <div class="stat-grid" style="margin-bottom:28px">
-        <div class="stat-card">
+      <!-- Stats Grid -->
+      <div class="stat-grid" id="statsGrid" style="margin-bottom:28px;display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;">
+        <div class="stat-card" onclick="location.href='/creator/earnings.html'" style="cursor:pointer;">
           <div class="stat-card-header"><div class="stat-card-icon gold"><i class="ti ti-currency-dollar"></i></div><span class="tag tag-green" style="font-size:0.7rem"><i class="ti ti-trending-up"></i> Live</span></div>
           <div class="stat-card-value" id="earningsValue">$0</div>
           <div class="stat-card-label">Earnings this month</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card" style="cursor:pointer;">
           <div class="stat-card-header"><div class="stat-card-icon brand"><i class="ti ti-users"></i></div><span class="tag tag-green" style="font-size:0.7rem"><i class="ti ti-trending-up"></i> Live</span></div>
           <div class="stat-card-value" id="subsValue">0</div>
           <div class="stat-card-label">Active Subscribers</div>
@@ -70,7 +78,27 @@
         </div>
       </div>
 
-      <div style="display:grid;grid-template-columns:1fr 340px;gap:24px;align-items:start" id="dashGrid">
+      <!-- Quick Actions Mobile -->
+      <div class="quick-actions-mobile" style="display:none;gap:12px;margin-bottom:24px;overflow-x:auto;padding-bottom:8px;">
+        <a href="/creator/new-post.html" class="quick-action-card" style="min-width:120px;padding:16px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);text-align:center;text-decoration:none;color:var(--text);">
+          <i class="ti ti-photo" style="font-size:1.8rem;color:var(--red);margin-bottom:8px;display:block;"></i>
+          <span style="font-size:0.85rem;font-weight:600;">New Post</span>
+        </a>
+        <a href="/creator/go-live.html" class="quick-action-card" style="min-width:120px;padding:16px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);text-align:center;text-decoration:none;color:var(--text);">
+          <i class="ti ti-live-view" style="font-size:1.8rem;color:var(--red);margin-bottom:8px;display:block;"></i>
+          <span style="font-size:0.85rem;font-weight:600;">Go Live</span>
+        </a>
+        <a href="/pages/messages.html" class="quick-action-card" style="min-width:120px;padding:16px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);text-align:center;text-decoration:none;color:var(--text);">
+          <i class="ti ti-message" style="font-size:1.8rem;color:var(--blue);margin-bottom:8px;display:block;"></i>
+          <span style="font-size:0.85rem;font-weight:600;">Messages</span>
+        </a>
+        <a href="/creator/earnings.html" class="quick-action-card" style="min-width:120px;padding:16px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);text-align:center;text-decoration:none;color:var(--text);">
+          <i class="ti ti-wallet" style="font-size:1.8rem;color:var(--gold);margin-bottom:8px;display:block;"></i>
+          <span style="font-size:0.85rem;font-weight:600;">Earnings</span>
+        </a>
+      </div>
+
+      <div class="dash-grid" id="dashGrid" style="display:grid;grid-template-columns:1fr 340px;gap:24px;align-items:start;">
         <div style="display:flex;flex-direction:column;gap:24px">
           <div class="card">
             <div class="card-header">
@@ -81,17 +109,20 @@
               <div id="revenueChart" style="display:flex;align-items:flex-end;gap:10px;height:160px;padding-bottom:20px"></div>
             </div>
           </div>
-          <div class="card">
+          <!-- Posts Section -->
+          <div class="card posts-card">
             <div class="card-header">
               <h3><i class="ti ti-files" style="color:var(--red)"></i> Recent Posts</h3>
-              <a href="/creator/new-post.html" class="btn btn-brand btn-sm"><i class="ti ti-plus"></i> New Post</a>
+              <a href="/creator/new-post.html" class="btn btn-brand btn-sm mobile-hide"><i class="ti ti-plus"></i> New</a>
             </div>
-            <div class="table-wrap" style="border:none">
+            <div class="table-wrap desktop-only" style="border:none">
               <table class="data-table">
-                <thead><tr><th>Title</th><th>Type</th><th>Views</th><th>Likes</th><th>Status</th><th>Actions</th></tr></thead>
+                <thead><tr><th>Post</th><th>Views</th><th>Likes</th><th>Status</th><th>Actions</th></tr></thead>
                 <tbody id="postsTable"></tbody>
               </table>
             </div>
+            <!-- Mobile Posts List -->
+            <div class="mobile-posts-list mobile-only" id="mobilePostsList" style="display:none;padding:16px;"></div>
           </div>
         </div>
         <div style="display:flex;flex-direction:column;gap:20px">
@@ -161,17 +192,44 @@
       }
 
       const posts = Array.isArray(res.recentPosts) ? res.recentPosts : [];
+      
+      // Desktop table
       const postsBody = document.getElementById('postsTable');
       postsBody.innerHTML = !posts.length
         ? '<tr><td colspan="6" class="table-empty">No posts yet. <a href="/creator/new-post.html" style="color:var(--red)">Create your first post</a></td></tr>'
         : posts.map(p=>`<tr>
-          <td style="font-weight:600">${fmt.esc(p.title||p.caption||'Post')}</td>
-          <td><span class="tag tag-surface">${fmt.esc(p.type||'post')}</span></td>
+          <td style="font-weight:600">${fmt.esc((p.title||p.caption||'Post').substring(0,30))}${(p.title||p.caption||'').length>30?'...':''}</td>
           <td>${fmt.num(p.views||p.viewsCount||0)}</td>
           <td>${fmt.num(p.likes||p.likesCount||0)}</td>
           <td><span class="tag ${p.status==='approved'?'tag-green':p.status==='pending'?'tag-warning':'tag-surface'}">${fmt.esc(p.status||'active')}</span></td>
-          <td><div style="display:flex;gap:6px"><button class="btn btn-icon btn-sm" title="Edit"><i class="ti ti-edit"></i></button><button class="btn btn-icon btn-sm btn-danger" title="Delete"><i class="ti ti-trash"></i></button></div></td>
+          <td><div style="display:flex;gap:6px"><button class="btn btn-icon btn-sm" title="Edit"><i class="ti ti-edit"></i></button><button class="btn btn-icon btn-sm btn-danger" title="Delete" onclick="deletePost('${p._id}')"><i class="ti ti-trash"></i></button></div></td>
         </tr>`).join('');
+      
+      // Mobile cards
+      const mobilePosts = document.getElementById('mobilePostsList');
+      mobilePosts.innerHTML = !posts.length
+        ? '<div style="text-align:center;padding:20px;color:var(--text3);">No posts yet. <br><a href="/creator/new-post.html" style="color:var(--red);margin-top:8px;display:inline-block;">Create your first post</a></div>'
+        : posts.map(p=>`
+          <div class="mobile-post-card">
+            <div class="mobile-post-thumb">
+              ${p.media?.[0]?.type==='video' ? '<i class="ti ti-video" style="font-size:1.2rem;color:var(--text3);"></i>' : 
+                p.media?.[0]?.url ? `<img src="${p.media[0].url}" />` : 
+                '<i class="ti ti-photo" style="font-size:1.2rem;color:var(--text3);"></i>'}
+            </div>
+            <div class="mobile-post-info">
+              <div class="mobile-post-title">${fmt.esc(p.title||p.caption||'Post')}</div>
+              <div class="mobile-post-meta">
+                <span><i class="ti ti-eye"></i> ${fmt.num(p.views||p.viewsCount||0)}</span>
+                <span><i class="ti ti-heart"></i> ${fmt.num(p.likes||p.likesCount||0)}</span>
+                <span style="color:${p.status==='approved'?'var(--green)':p.status==='pending'?'var(--orange)':'var(--text3)'}">${p.status||'active'}</span>
+              </div>
+              <div class="mobile-post-actions">
+                <button onclick="editPost('${p._id}')">Edit</button>
+                <button class="btn-delete" onclick="deletePost('${p._id}')">Delete</button>
+              </div>
+            </div>
+          </div>
+        `).join('');
 
       const subs = Array.isArray(res.newSubscribers) ? res.newSubscribers : [];
       document.getElementById('newSubsList').innerHTML = !subs.length
@@ -188,6 +246,138 @@
 
   renderCreatorDashboard();
   if (window.innerWidth < 768) document.getElementById('dashGrid').style.gridTemplateColumns='1fr';
+</script>
+<!-- Mobile Bottom Navigation -->
+<nav class="mobile-bottom-nav" id="mobileBottomNav">
+  <a href="/index.html" class="mobile-nav-item" data-page="index"><i class="ti ti-home"></i><span>Home</span></a>
+  <a href="/pages/live.html" class="mobile-nav-item" data-page="live"><i class="ti ti-live-photo"></i><span>Live</span></a>
+  <a href="/creator/dashboard.html" class="mobile-nav-item active" data-page="dashboard"><i class="ti ti-dashboard"></i><span>Dashboard</span></a>
+  <a href="/pages/messages.html" class="mobile-nav-item" data-page="messages"><i class="ti ti-message"></i><span>Messages</span></a>
+  <a href="/pages/profile.html" class="mobile-nav-item" data-page="profile"><i class="ti ti-user"></i><span>Profile</span></a>
+</nav>
+
+<!-- Mobile FAB -->
+<button class="fab-btn" id="fabBtn" onclick="location.href='/creator/new-post.html'">
+  <i class="ti ti-plus"></i>
+</button>
+
+<!-- STYLES -->
+<style>
+  .mobile-bottom-nav {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+    z-index: 900;
+    justify-content: space-around;
+  }
+  .mobile-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 8px;
+    color: var(--text3);
+    text-decoration: none;
+    font-size: 0.65rem;
+    transition: all 0.2s;
+    min-width: 50px;
+  }
+  .mobile-nav-item i { font-size: 1.3rem; }
+  .mobile-nav-item.active { color: var(--red); }
+  
+  .fab-btn {
+    display: none;
+    position: fixed;
+    bottom: calc(80px + env(safe-area-inset-bottom));
+    right: 20px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--grad-brand);
+    border: none;
+    color: white;
+    cursor: pointer;
+    z-index: 899;
+    box-shadow: 0 4px 20px rgba(229, 9, 20, 0.4);
+    align-items: center;
+    justify-content: center;
+  }
+  .fab-btn i { font-size: 1.5rem; }
+  
+  .mobile-only { display: none !important; }
+  
+  @media (max-width: 768px) {
+    .mobile-bottom-nav { display: flex; }
+    .fab-btn { display: flex; }
+    .mobile-only { display: block !important; }
+    .mobile-hide { display: none !important; }
+    .desktop-only { display: none !important; }
+    .creator-mobile-header { display: block !important; }
+    .dash-header-text { display: none; }
+    .dash-header-actions { display: none; }
+    .quick-actions-mobile { display: flex !important; }
+    .dash-grid { grid-template-columns: 1fr !important; }
+    #statsGrid { grid-template-columns: repeat(2, 1fr) !important; }
+    .stat-card { padding: 16px; }
+    .stat-card-value { font-size: 1.5rem; }
+    .page-wrap { padding-bottom: 80px; }
+    .posts-card { margin: 0 -16px; border-radius: 0; border-left: none; border-right: none; }
+    
+    /* Mobile posts cards */
+    .mobile-post-card {
+      display: flex;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .mobile-post-card:last-child { border-bottom: none; }
+    .mobile-post-thumb {
+      width: 60px;
+      height: 60px;
+      border-radius: var(--radius);
+      background: var(--surface2);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .mobile-post-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .mobile-post-info { flex: 1; min-width: 0; }
+    .mobile-post-title { font-weight: 600; font-size: 0.9rem; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .mobile-post-meta { font-size: 0.75rem; color: var(--text3); display: flex; gap: 12px; }
+    .mobile-post-actions { display: flex; gap: 8px; margin-top: 8px; }
+    .mobile-post-actions button {
+      padding: 4px 10px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border2);
+      background: var(--surface2);
+      color: var(--text);
+      font-size: 0.75rem;
+      cursor: pointer;
+    }
+    .mobile-post-actions .btn-delete { color: var(--red); border-color: var(--red-dim); }
+  }
+</style>
+
+<script>
+  // Mobile nav update
+  const path = window.location.pathname;
+  document.querySelectorAll('.mobile-nav-item').forEach(item => {
+    if (path.includes(item.getAttribute('href'))) item.classList.add('active');
+    else item.classList.remove('active');
+  });
+  
+  // Update mobile user info (use existing user var from above)
+  if (typeof user !== 'undefined' && user) {
+    document.getElementById('mobileCreatorName').textContent = user.displayName || user.username || 'Creator';
+    document.getElementById('mobileCreatorAvatar').textContent = (user.displayName || user.username || '??').slice(0, 2).toUpperCase();
+  }
 </script>
 </body>
 </html>

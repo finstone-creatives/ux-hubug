@@ -236,24 +236,71 @@
   </main>
 </div>
 
+<!-- MOBILE BOTTOM NAVIGATION -->
+<nav class="mobile-bottom-nav" id="mobileBottomNav">
+  <a href="/index.html" class="mobile-nav-item active" data-page="index">
+    <i class="ti ti-home"></i>
+    <span>Home</span>
+  </a>
+  <a href="/pages/explore.html" class="mobile-nav-item" data-page="explore">
+    <i class="ti ti-compass"></i>
+    <span>Explore</span>
+  </a>
+  <a href="/pages/live.html" class="mobile-nav-item" data-page="live">
+    <i class="ti ti-live-photo"></i>
+    <span>Live</span>
+  </a>
+  <a href="/pages/messages.html" class="mobile-nav-item" data-page="messages">
+    <i class="ti ti-message"></i>
+    <span>Messages</span>
+  </a>
+  <a href="/pages/profile.html" class="mobile-nav-item" data-page="profile">
+    <i class="ti ti-user"></i>
+    <span>Profile</span>
+  </a>
+</nav>
+
+<!-- FLOATING ACTION BUTTON (Mobile) -->
+<button class="fab-btn" id="fabBtn" onclick="showCreateOptions()">
+  <i class="ti ti-plus"></i>
+</button>
+
+<!-- CREATE OPTIONS MODAL -->
+<div class="fab-modal" id="fabModal" onclick="closeFabModal(event)">
+  <div class="fab-options">
+    <a href="/creator/new-post.html" class="fab-option">
+      <div class="fab-option-icon" style="background:var(--grad-brand);"><i class="ti ti-photo"></i></div>
+      <span>New Post</span>
+    </a>
+    <a href="/creator/go-live.html" class="fab-option">
+      <div class="fab-option-icon" style="background:var(--red);"><i class="ti ti-live-view"></i></div>
+      <span>Go Live</span>
+    </a>
+    <a href="/pages/messages.html" class="fab-option">
+      <div class="fab-option-icon" style="background:var(--blue);"><i class="ti ti-message-circle"></i></div>
+      <span>Message</span>
+    </a>
+  </div>
+</div>
+
 <!-- FOOTER -->
 <footer class="app-footer">
   <div class="inner-lg">
     <div class="footer-grid">
       <div class="footer-brand">
-        <div class="logo-name" style="font-size:1.8rem;margin-bottom:10px">UX<span>HUB</span></div>
-        <p>Africa's most exclusive adult creator platform. For verified adults 18+ only.</p>
+        <div class="logo-name" style="font-size:1.8rem;margin-bottom:10px">Nxt<span>-door</span></div>
+        <p>Africa's premier creator platform. For verified adults 18+ only.</p>
         <div class="footer-social">
-          <a href="#" class="btn btn-icon"><i class="ti ti-brand-twitter"></i></a>
+          <a href="#" class="btn btn-icon"><i class="ti ti-brand-x"></i></a>
           <a href="#" class="btn btn-icon"><i class="ti ti-brand-instagram"></i></a>
           <a href="#" class="btn btn-icon"><i class="ti ti-brand-telegram"></i></a>
         </div>
       </div>
       <div class="footer-links-col">
         <h5>Platform</h5>
-        <a href="/index.html">Explore</a>
+        <a href="/index.html">Home</a>
+        <a href="/pages/explore.html">Explore</a>
         <a href="/pages/live.html">Live</a>
-        <a href="/pages/search.html">Search</a>
         <a href="/pages/trending.html">Trending</a>
       </div>
       <div class="footer-links-col">
@@ -264,27 +311,247 @@
       </div>
       <div class="footer-links-col">
         <h5>Legal</h5>
-        <a href="/pages/terms.html">Terms of Service</a>
-        <a href="/pages/privacy.html">Privacy Policy</a>
-        <a href="/pages/dmca.html">DMCA</a>
-        <a href="/pages/2257.html">18 U.S.C. 2257</a>
+        <a href="/pages/terms.html">Terms</a>
+        <a href="/pages/privacy.html">Privacy</a>
         <a href="/pages/contact.html">Contact</a>
       </div>
     </div>
     <div class="footer-bottom">
-      <p>© 2026 UX-HUB. All rights reserved. This site is for adults 18+.</p>
-      <p style="font-size:0.75rem;color:var(--text3);margin-top:4px">UX-HUB is committed to a safe, verified, adults-only platform.</p>
+      <p>© 2026 Nxt-door. All rights reserved. 18+ only.</p>
     </div>
   </div>
 </footer>
+
+<!-- STYLES -->
+<style>
+  /* Mobile Bottom Navigation */
+  .mobile-bottom-nav {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+    z-index: 900;
+    justify-content: space-around;
+  }
+  .mobile-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    color: var(--text3);
+    text-decoration: none;
+    font-size: 0.7rem;
+    transition: all 0.2s;
+    min-width: 56px;
+  }
+  .mobile-nav-item i {
+    font-size: 1.4rem;
+  }
+  .mobile-nav-item.active {
+    color: var(--red);
+  }
+  
+  /* Floating Action Button */
+  .fab-btn {
+    display: none;
+    position: fixed;
+    bottom: calc(80px + env(safe-area-inset-bottom));
+    right: 20px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--grad-brand);
+    border: none;
+    color: white;
+    cursor: pointer;
+    z-index: 899;
+    box-shadow: 0 4px 20px rgba(229, 9, 20, 0.4);
+    transition: all 0.3s ease;
+  }
+  .fab-btn:hover {
+    transform: scale(1.05);
+  }
+  .fab-btn i {
+    font-size: 1.5rem;
+  }
+  .fab-btn.active {
+    transform: rotate(45deg);
+  }
+  
+  /* FAB Modal */
+  .fab-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    z-index: 898;
+    align-items: flex-end;
+    justify-content: flex-end;
+    padding: 0 20px calc(140px + env(safe-area-inset-bottom)) 0;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .fab-modal.open {
+    display: flex;
+    opacity: 1;
+  }
+  .fab-options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .fab-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: white;
+    text-decoration: none;
+    animation: slideUp 0.3s ease;
+  }
+  .fab-option-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: white;
+  }
+  .fab-option span {
+    font-weight: 600;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  }
+  
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  /* Mobile Responsive */
+  @media (max-width: 768px) {
+    .mobile-bottom-nav { display: flex; }
+    .fab-btn { display: flex; align-items: center; justify-content: center; }
+    .app-footer { padding-bottom: calc(80px + env(safe-area-inset-bottom)); }
+    .page-wrap { padding-bottom: 70px; }
+    
+    /* Improve touch targets */
+    .live-card, .creator-card, .post-card {
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    /* Better mobile hero */
+    .explore-hero {
+      padding: 24px 16px;
+      min-height: auto;
+    }
+    .hero-title {
+      font-size: 1.8rem !important;
+    }
+    .hero-cta {
+      flex-direction: column;
+    }
+    .hero-cta .btn {
+      width: 100%;
+      justify-content: center;
+    }
+    
+    /* Mobile category scroll */
+    .categories-scroll {
+      padding: 0 16px;
+      gap: 8px;
+    }
+    .cat-chip {
+      padding: 8px 14px;
+      font-size: 0.85rem;
+      white-space: nowrap;
+    }
+  }
+</style>
 
 <script src="/assets/js/app.js"></script>
 <script src="/assets/js/layout.js"></script>
 <script>
   Layout.init();
+  
+  // Mobile Navigation & FAB
+  function showCreateOptions() {
+    const btn = document.getElementById('fabBtn');
+    const modal = document.getElementById('fabModal');
+    btn.classList.toggle('active');
+    modal.classList.toggle('open');
+  }
+  
+  function closeFabModal(e) {
+    if (e.target === e.currentTarget) {
+      document.getElementById('fabBtn').classList.remove('active');
+      document.getElementById('fabModal').classList.remove('open');
+    }
+  }
+  
+  // Update active nav item
+  function updateMobileNav() {
+    const path = window.location.pathname;
+    document.querySelectorAll('.mobile-nav-item').forEach(item => {
+      item.classList.remove('active');
+      const itemPath = item.getAttribute('href');
+      if (path === itemPath || (itemPath !== '/' && path.includes(itemPath))) {
+        item.classList.add('active');
+      }
+    });
+  }
+  
+  // Check if user is creator and show/hide FAB options
+  function updateFabOptions() {
+    const user = Auth.getUser();
+    const isCreator = user?.role === 'creator';
+    const fabOptions = document.querySelector('.fab-options');
+    
+    if (!isCreator && fabOptions) {
+      // For non-creators, only show message option
+      fabOptions.innerHTML = `
+        <a href="/pages/messages.html" class="fab-option">
+          <div class="fab-option-icon" style="background:var(--blue);"><i class="ti ti-message-circle"></i></div>
+          <span>Messages</span>
+        </a>
+      `;
+    }
+  }
+  
+  // Pull to refresh simulation
+  let touchStartY = 0;
+  let pullRefresh = document.querySelector('.pull-refresh');
+  
+  document.addEventListener('touchstart', (e) => {
+    if (window.scrollY === 0) {
+      touchStartY = e.touches[0].clientY;
+    }
+  }, { passive: true });
+  
+  document.addEventListener('touchmove', (e) => {
+    if (window.scrollY === 0 && !pullRefresh) {
+      const touchY = e.touches[0].clientY;
+      const diff = touchY - touchStartY;
+      if (diff > 100) {
+        // Could add pull refresh indicator here
+      }
+    }
+  }, { passive: true });
 
   let creators = [];
   let liveVideos = [];
+  
+  // Init mobile features
+  document.addEventListener('DOMContentLoaded', () => {
+    updateMobileNav();
+    updateFabOptions();
+  });
 
   function getCoverColor(seed) {
     const colors = ['#2D1B69', '#1A2D1A', '#2D2D1A', '#1A1A2D', '#2D2A1A', '#1A2D2D', '#2A1A2D'];
