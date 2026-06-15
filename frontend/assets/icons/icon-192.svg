@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <!-- Background -->
+  <rect width="192" height="192" rx="38" fill="#0a0014"/>
+  
+  <!-- Left vertical lines (grey bars) -->
+  <rect x="10" y="38" width="4" height="116" rx="2" fill="#666"/>
+  <rect x="19" y="38" width="4" height="116" rx="2" fill="#555"/>
+  <rect x="28" y="38" width="4" height="116" rx="2" fill="#444"/>
+  <rect x="37" y="38" width="4" height="116" rx="2" fill="#333"/>
+
+  <!-- White N -->
+  <path d="M44 148 L44 44 L60 44 L104 116 L104 44 L120 44 L120 148 L104 148 L60 76 L60 148 Z" fill="white"/>
+
+  <!-- Red X -->
+  <path d="M126 44 L152 96 L126 148 L145 148 L162 115 L179 148 L198 148" fill="none"/>
+  <path d="M124 44 L96 148" stroke="none"/>
+  <line x1="126" y1="44" x2="174" y2="148" stroke="#e50914" stroke-width="18" stroke-linecap="round"/>
+  <line x1="174" y1="44" x2="126" y2="148" stroke="#e50914" stroke-width="18" stroke-linecap="round"/>
+
+  <!-- Pink door frame (right side) -->
+  <!-- Door left bar -->
+  <rect x="158" y="24" width="5" height="144" rx="2.5" fill="#e500cc"/>
+  <!-- Door top bar -->
+  <rect x="158" y="24" width="28" height="5" rx="2.5" fill="#e500cc"/>
+  <!-- Door bottom bar -->
+  <rect x="158" y="163" width="28" height="5" rx="2.5" fill="#e500cc"/>
+  <!-- Door knob -->
+  <circle cx="174" cy="96" r="6" fill="#e500cc"/>
+  <!-- Top spike -->
+  <polygon points="158,24 186,2 186,24" fill="#e500cc"/>
+  <!-- Bottom spike -->
+  <polygon points="158,168 186,190 186,168" fill="#e500cc"/>
+</svg>

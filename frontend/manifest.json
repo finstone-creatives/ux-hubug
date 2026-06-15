@@ -1,0 +1,40 @@
+{
+  "name": "Nxt-door — Africa's Premier Creator Platform",
+  "short_name": "Nxt-door",
+  "description": "Africa's most exclusive adult creator platform. Connect with verified creators, subscribe to exclusive content, go live. 18+ only.",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#e50914",
+  "orientation": "portrait-primary",
+  "lang": "en",
+  "categories": ["entertainment", "social"],
+  "icons": [
+    { "src": "/assets/icons/icon-192.svg", "sizes": "192x192", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/assets/icons/icon-192.svg", "sizes": "192x192", "type": "image/svg+xml", "purpose": "maskable" },
+    { "src": "/assets/icons/icon-512.svg", "sizes": "512x512", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/assets/icons/icon-512.svg", "sizes": "512x512", "type": "image/svg+xml", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Explore Creators",
+      "short_name": "Explore",
+      "url": "/?source=shortcut",
+      "description": "Browse verified creators"
+    },
+    {
+      "name": "Live Streams",
+      "short_name": "Live",
+      "url": "/pages/live.html?source=shortcut",
+      "description": "Watch live streams now"
+    },
+    {
+      "name": "Messages",
+      "short_name": "DMs",
+      "url": "/pages/messages.html?source=shortcut",
+      "description": "Your messages"
+    }
+  ],
+  "prefer_related_applications": false
+}
