@@ -283,15 +283,15 @@
   }
 
   function renderCreatorCard(c) {
-    const name = c.username || 'Creator';
-    const color = getCoverColor(name);
-    const posts = c.uploadCount || 0;
-    const price = c.isPremium ? 25 : 12;
-    const location = c.location || 'East Africa';
+    const name       = c.username || 'Creator';
+    const color      = getCoverColor(name);
+    const posts      = c.uploadCount || 0;
+    const price      = c.isPremium ? 25 : 12;
+    const location   = c.location || 'East Africa';
     const isFollowing = Follow.isFollowing(c._id);
     return `
       <div class="creator-card card-hover">
-        <div class="creator-card-cover" style="background:${color}" onclick="window.location='/pages/profile.html?id=${c._id}'" style="cursor:pointer">
+        <div class="creator-card-cover" style="background:${color};cursor:pointer" onclick="window.location='/pages/profile.html?id=${c._id}'">
           ${c.isOnline ? `<div style="position:absolute;top:10px;right:10px;z-index:2"><span class="tag tag-online"><span class="live-dot" style="width:6px;height:6px;margin-right:4px"></span>Online</span></div>` : ''}
         </div>
         <div class="creator-card-body">
@@ -301,7 +301,7 @@
             </div>
             ${c.isPremium ? `<span class="badge badge-verified" style="margin-top:10px"><i class="ti ti-crown"></i></span>` : ''}
           </div>
-          <div class="creator-card-name" onclick="window.location='/pages/profile.html?id=${c._id}'" style="cursor:pointer">${fmt.esc(name)}</div>
+          <div class="creator-card-name" style="cursor:pointer" onclick="window.location='/pages/profile.html?id=${c._id}'">${fmt.esc(name)}</div>
           <div class="creator-card-handle"><i class="ti ti-map-pin" style="font-size:12px"></i> ${fmt.esc(location)}</div>
           <div class="creator-card-stats">
             <div class="creator-stat"><i class="ti ti-files"></i> <strong>${posts}</strong> posts</div>
@@ -311,7 +311,7 @@
             <span style="font-size:0.8rem;color:var(--text3)">From <strong style="color:var(--text)">$${price}</strong>/mo</span>
             <div style="display:flex;gap:6px;align-items:center">
               <button class="btn-follow ${isFollowing ? 'following' : ''}" onclick="followCreator(this,'${c._id}')" data-uid="${c._id}">
-                <i class="ti ${isFollowing ? 'ti-check' : 'ti-plus'}"></i> ${isFollowing ? 'Following' : 'Follow'}
+                <i class="ti ${isFollowing ? 'ti-check' : 'ti-plus'}"></i>${isFollowing ? ' Following' : ' Follow'}
               </button>
               <button class="btn btn-brand btn-sm" onclick="window.location='/pages/profile.html?id=${c._id}'">Sub</button>
             </div>
@@ -321,7 +321,7 @@
   }
 
   function renderLiveCard(c) {
-    const name = c.uploader?.username || 'Creator';
+    const name  = c.uploader?.username || 'Creator';
     const color = getCoverColor(name);
     return `
       <div class="live-card" onclick="window.location='/pages/live-watch.html?id=${c._id}'" style="cursor:pointer">
@@ -343,10 +343,10 @@
   }
 
   function renderHeroCards(list) {
-    const heroCards = document.getElementById('heroCards');
-    if (!heroCards || !list.length) return;
-    heroCards.innerHTML = list.slice(0, 3).map(c => {
-      const name = c.username || 'Creator';
+    const el = document.getElementById('heroCards');
+    if (!el || !list.length) return;
+    el.innerHTML = list.slice(0, 3).map(c => {
+      const name  = c.username || 'Creator';
       const color = getCoverColor(name);
       return `
         <div class="hero-floating-card">
@@ -366,30 +366,27 @@
     try {
       const r = await api.get('/stats');
       if (!r.success) return;
-      const creatorsEl  = document.getElementById('statCreators');
-      const membersEl   = document.getElementById('statMembers');
-      const liveEl      = document.getElementById('statLive');
-      const liveBadgeEl = document.getElementById('liveBadgeCount');
-      if (creatorsEl)  creatorsEl.textContent  = fmt.num(r.creators || 0) + '+';
-      if (membersEl)   membersEl.textContent   = fmt.num(r.members  || 0) + '+';
-      if (liveEl)      liveEl.textContent      = r.live || 0;
-      if (liveBadgeEl) liveBadgeEl.textContent = `${r.live || 0} Live Now`;
+      const ce = document.getElementById('statCreators');
+      const me = document.getElementById('statMembers');
+      const le = document.getElementById('statLive');
+      const lb = document.getElementById('liveBadgeCount');
+      if (ce) ce.textContent = fmt.num(r.creators || 0) + '+';
+      if (me) me.textContent = fmt.num(r.members  || 0) + '+';
+      if (le) le.textContent = r.live || 0;
+      if (lb) lb.textContent = `${r.live || 0} Live Now`;
     } catch {}
   }
 
   async function followCreator(btn, userId) {
     if (!Auth.isLoggedIn()) { window.location.href = '/login.html'; return; }
-    const icon = btn.querySelector('i');
     btn.disabled = true;
-    const wasFollowing = btn.classList.contains('following');
-    btn.classList.toggle('following', !wasFollowing);
-    if (icon) icon.className = `ti ${!wasFollowing ? 'ti-check' : 'ti-plus'}`;
-    btn.innerHTML = (btn.innerHTML.replace(/Follow(ing)?/, !wasFollowing ? 'Following' : 'Follow'));
     try {
-      await Follow.toggle(userId);
+      const isNow = await Follow.toggle(userId);
+      btn.classList.toggle('following', isNow);
+      btn.innerHTML = isNow
+        ? '<i class="ti ti-check"></i> Following'
+        : '<i class="ti ti-plus"></i> Follow';
     } catch {
-      btn.classList.toggle('following', wasFollowing);
-      if (icon) icon.className = `ti ${wasFollowing ? 'ti-check' : 'ti-plus'}`;
       Toast.show('Could not update follow', 'error');
     }
     btn.disabled = false;
@@ -471,7 +468,7 @@
         return t.includes('live')||t.includes('stream');
       });
       const list = live.length ? live.slice(0,4) : (r.videos||[]).slice(0,4);
-      const g = document.getElementById('liveStrip');
+      const g    = document.getElementById('liveStrip');
       g.innerHTML = list.length
         ? list.map(renderLiveCard).join('')
         : '<div class="empty-state" style="display:flex">No live streams right now.</div>';
