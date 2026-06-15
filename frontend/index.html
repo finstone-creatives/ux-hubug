@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Nxt-door — Africa's Premier Creator Platform</title>
-  <meta name="description" content="Nxt-door is Africa's most exclusive adult creator platform. Connect with creators, subscribe to exclusive content, book private sessions, and experience live interactions. Uganda & East Africa. 18+ only." />
+  <meta name="description" content="Nxt-door is Africa's most exclusive adult creator platform. Connect with creators, subscribe to exclusive content, book private sessions, and experience live interactions. Uganda &amp; East Africa. 18+ only." />
   <meta name="keywords" content="nxt-door, adult creator platform, exclusive content, Africa, Uganda, creators, OnlyFans alternative, live streaming, East Africa" />
   <meta name="robots" content="index, follow" />
   <meta name="author" content="Nxt-door" />
@@ -74,8 +74,8 @@
       <div class="hero-content">
         <div class="hero-text">
           <div class="hero-eyebrow">
-            <span class="badge badge-live"><span class="live-dot"></span> 247 Live Now</span>
-            <span class="tag tag-brand">Uganda & East Africa</span>
+            <span class="badge badge-live"><span class="live-dot"></span> <span id="liveBadgeCount">Live Now</span></span>
+            <span class="tag tag-brand">Uganda &amp; East Africa</span>
           </div>
           <h1 class="hero-title">Africa's Most<br><span class="text-gradient">Exclusive</span> Creator<br>Platform</h1>
           <p class="hero-sub">Connect with creators, subscribe to exclusive content, book private sessions, and experience live interactions. Knock on any door.</p>
@@ -88,9 +88,9 @@
             </a>
           </div>
           <div class="hero-stats">
-            <div class="hero-stat"><strong>2,400+</strong><span>Creators</span></div>
-            <div class="hero-stat"><strong>58K+</strong><span>Members</span></div>
-            <div class="hero-stat"><strong>247</strong><span>Live Now</span></div>
+            <div class="hero-stat"><strong id="statCreators">—</strong><span>Creators</span></div>
+            <div class="hero-stat"><strong id="statMembers">—</strong><span>Members</span></div>
+            <div class="hero-stat"><strong id="statLive">—</strong><span>Live Now</span></div>
           </div>
         </div>
         <div class="hero-cards" id="heroCards"></div>
@@ -180,7 +180,7 @@
           </div>
           <div class="how-card">
             <div class="how-icon"><i class="ti ti-heart"></i></div>
-            <h3>3. Subscribe & Connect</h3>
+            <h3>3. Subscribe &amp; Connect</h3>
             <p>Subscribe for exclusive content, book private sessions, or join live streams and tip your favourites.</p>
           </div>
         </div>
@@ -261,7 +261,7 @@
       </div>
     </div>
     <div class="footer-bottom">
-      <p>© 2026 Nxt-door. All rights reserved. This site is for adults 18+.</p>
+      <p>&copy; 2026 Nxt-door. All rights reserved. This site is for adults 18+.</p>
       <p style="font-size:0.75rem;color:var(--text3);margin-top:4px">Nxt-door is committed to a safe, verified, adults-only platform.</p>
     </div>
   </div>
@@ -273,7 +273,9 @@
 <script>
   Layout.init();
 
-  let creators = [], liveVideos = [];
+  let creators = [];
+  let creatorsPage = 1;
+  let hasMoreCreators = true;
 
   function getCoverColor(seed) {
     const colors = ['#2D1B69','#1A2D1A','#2D2D1A','#1A1A2D','#2D2A1A','#1A2D2D','#2A1A2D'];
@@ -286,27 +288,33 @@
     const posts = c.uploadCount || 0;
     const price = c.isPremium ? 25 : 12;
     const location = c.location || 'East Africa';
+    const isFollowing = Follow.isFollowing(c._id);
     return `
-      <div class="creator-card card-hover" onclick="window.location='/pages/profile.html?id=${c._id}'">
-        <div class="creator-card-cover" style="background:${color}">
+      <div class="creator-card card-hover">
+        <div class="creator-card-cover" style="background:${color}" onclick="window.location='/pages/profile.html?id=${c._id}'" style="cursor:pointer">
           ${c.isOnline ? `<div style="position:absolute;top:10px;right:10px;z-index:2"><span class="tag tag-online"><span class="live-dot" style="width:6px;height:6px;margin-right:4px"></span>Online</span></div>` : ''}
         </div>
         <div class="creator-card-body">
           <div class="creator-card-top">
-            <div class="avatar creator-card-avatar" style="background:${color}">
+            <div class="avatar creator-card-avatar" style="background:${color};cursor:pointer" onclick="window.location='/pages/profile.html?id=${c._id}'">
               ${c.avatar ? `<img src="${c.avatar}" />` : `<span>${fmt.initials(name)}</span>`}
             </div>
             ${c.isPremium ? `<span class="badge badge-verified" style="margin-top:10px"><i class="ti ti-crown"></i></span>` : ''}
           </div>
-          <div class="creator-card-name">${fmt.esc(name)}</div>
+          <div class="creator-card-name" onclick="window.location='/pages/profile.html?id=${c._id}'" style="cursor:pointer">${fmt.esc(name)}</div>
           <div class="creator-card-handle"><i class="ti ti-map-pin" style="font-size:12px"></i> ${fmt.esc(location)}</div>
           <div class="creator-card-stats">
             <div class="creator-stat"><i class="ti ti-files"></i> <strong>${posts}</strong> posts</div>
             <div class="creator-stat"><i class="ti ti-star-filled" style="color:var(--gold)"></i> <strong>4.8</strong></div>
           </div>
-          <div style="margin-top:14px;display:flex;justify-content:space-between;align-items:center">
+          <div style="margin-top:14px;display:flex;justify-content:space-between;align-items:center;gap:8px">
             <span style="font-size:0.8rem;color:var(--text3)">From <strong style="color:var(--text)">$${price}</strong>/mo</span>
-            <button class="btn btn-brand btn-sm">Subscribe</button>
+            <div style="display:flex;gap:6px;align-items:center">
+              <button class="btn-follow ${isFollowing ? 'following' : ''}" onclick="followCreator(this,'${c._id}')" data-uid="${c._id}">
+                <i class="ti ${isFollowing ? 'ti-check' : 'ti-plus'}"></i> ${isFollowing ? 'Following' : 'Follow'}
+              </button>
+              <button class="btn btn-brand btn-sm" onclick="window.location='/pages/profile.html?id=${c._id}'">Sub</button>
+            </div>
           </div>
         </div>
       </div>`;
@@ -334,17 +342,72 @@
       </div>`;
   }
 
+  function renderHeroCards(list) {
+    const heroCards = document.getElementById('heroCards');
+    if (!heroCards || !list.length) return;
+    heroCards.innerHTML = list.slice(0, 3).map(c => {
+      const name = c.username || 'Creator';
+      const color = getCoverColor(name);
+      return `
+        <div class="hero-floating-card">
+          <div class="avatar avatar-sm" style="background:${color};flex-shrink:0">
+            ${c.avatar ? `<img src="${c.avatar}" alt="${fmt.esc(name)}">` : `<span>${fmt.initials(name)}</span>`}
+          </div>
+          <div class="card-info">
+            <div class="card-name">${fmt.esc(name)}</div>
+            <div class="card-sub">${c.isOnline ? '<span style="color:var(--green)">● Online</span>' : (c.location || 'East Africa')}</div>
+          </div>
+          ${c.isOnline ? '<span class="badge badge-live" style="font-size:0.6rem;padding:2px 6px;flex-shrink:0">LIVE</span>' : ''}
+        </div>`;
+    }).join('');
+  }
+
+  async function fetchStats() {
+    try {
+      const r = await api.get('/stats');
+      if (!r.success) return;
+      const creatorsEl  = document.getElementById('statCreators');
+      const membersEl   = document.getElementById('statMembers');
+      const liveEl      = document.getElementById('statLive');
+      const liveBadgeEl = document.getElementById('liveBadgeCount');
+      if (creatorsEl)  creatorsEl.textContent  = fmt.num(r.creators || 0) + '+';
+      if (membersEl)   membersEl.textContent   = fmt.num(r.members  || 0) + '+';
+      if (liveEl)      liveEl.textContent      = r.live || 0;
+      if (liveBadgeEl) liveBadgeEl.textContent = `${r.live || 0} Live Now`;
+    } catch {}
+  }
+
+  async function followCreator(btn, userId) {
+    if (!Auth.isLoggedIn()) { window.location.href = '/login.html'; return; }
+    const icon = btn.querySelector('i');
+    btn.disabled = true;
+    const wasFollowing = btn.classList.contains('following');
+    btn.classList.toggle('following', !wasFollowing);
+    if (icon) icon.className = `ti ${!wasFollowing ? 'ti-check' : 'ti-plus'}`;
+    btn.innerHTML = (btn.innerHTML.replace(/Follow(ing)?/, !wasFollowing ? 'Following' : 'Follow'));
+    try {
+      await Follow.toggle(userId);
+    } catch {
+      btn.classList.toggle('following', wasFollowing);
+      if (icon) icon.className = `ti ${wasFollowing ? 'ti-check' : 'ti-plus'}`;
+      Toast.show('Could not update follow', 'error');
+    }
+    btn.disabled = false;
+  }
+
   function sortCreators() {
     const sort = document.getElementById('sortSelect').value;
     let list = [...creators];
-    if (sort === 'new') list.sort((a,b) => new Date(b.createdAt)-new Date(a.createdAt));
+    if (sort === 'new')    list.sort((a,b) => new Date(b.createdAt)-new Date(a.createdAt));
     else if (sort === 'online') list = list.filter(c=>c.isOnline).concat(list.filter(c=>!c.isOnline));
     renderList(list);
   }
 
   function renderList(list) {
     const g = document.getElementById('creatorsGrid');
-    g.innerHTML = list.length ? list.map(renderCreatorCard).join('') : '<div class="empty-state" style="display:flex;grid-column:1/-1">No creators found.</div>';
+    g.innerHTML = list.length
+      ? list.map(renderCreatorCard).join('')
+      : '<div class="empty-state" style="display:flex;grid-column:1/-1">No creators found.</div>';
   }
 
   function filterCreators(cat) {
@@ -356,11 +419,29 @@
     renderList(f);
   }
 
-  function loadMore() {
+  async function loadMore() {
+    if (!hasMoreCreators) return;
     const btn = document.getElementById('loadMoreBtn');
     btn.innerHTML = '<i class="ti ti-loader-2" style="animation:spin 0.6s linear infinite"></i> Loading...';
     btn.disabled = true;
-    setTimeout(() => { btn.innerHTML = '<i class="ti ti-refresh"></i> Load More Creators'; btn.disabled = false; }, 1200);
+    try {
+      creatorsPage++;
+      const r = await api.get(`/users?role=creator&limit=12&page=${creatorsPage}`);
+      const more = r.users || [];
+      if (!more.length) {
+        hasMoreCreators = false;
+        btn.textContent = 'No more creators';
+        return;
+      }
+      creators = creators.concat(more);
+      const g = document.getElementById('creatorsGrid');
+      more.forEach(c => g.insertAdjacentHTML('beforeend', renderCreatorCard(c)));
+    } catch {
+      creatorsPage--;
+      Toast.show('Failed to load more creators', 'error');
+    }
+    btn.innerHTML = '<i class="ti ti-refresh"></i> Load More Creators';
+    btn.disabled = false;
   }
 
   document.querySelectorAll('.cat-chip').forEach(btn => {
@@ -376,6 +457,7 @@
       const r = await api.get('/users?role=creator&limit=12');
       creators = r.users || [];
       renderList(creators);
+      renderHeroCards(creators);
     } catch {
       document.getElementById('creatorsGrid').innerHTML = '<div class="empty-state" style="display:flex;grid-column:1/-1">Unable to load creators.</div>';
     }
@@ -390,13 +472,19 @@
       });
       const list = live.length ? live.slice(0,4) : (r.videos||[]).slice(0,4);
       const g = document.getElementById('liveStrip');
-      g.innerHTML = list.length ? list.map(renderLiveCard).join('') : '<div class="empty-state" style="display:flex">No live streams right now.</div>';
+      g.innerHTML = list.length
+        ? list.map(renderLiveCard).join('')
+        : '<div class="empty-state" style="display:flex">No live streams right now.</div>';
     } catch {
       document.getElementById('liveStrip').innerHTML = '<div class="empty-state" style="display:flex">No live streams right now.</div>';
     }
   }
 
-  document.addEventListener('DOMContentLoaded', () => { fetchCreators(); fetchLive(); });
+  document.addEventListener('DOMContentLoaded', () => {
+    fetchCreators();
+    fetchLive();
+    fetchStats();
+  });
 </script>
 </body>
 </html>

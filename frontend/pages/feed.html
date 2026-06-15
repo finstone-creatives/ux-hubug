@@ -44,7 +44,6 @@
     .post-actions { display:flex; align-items:center; gap:4px; padding:10px 12px; border-top:1px solid var(--border); }
     .post-action { display:flex; align-items:center; gap:5px; padding:7px 10px; border:none; background:none; color:var(--text3); font-size:0.82rem; font-weight:600; cursor:pointer; border-radius:var(--radius); transition:all var(--t); font-family:var(--font-body); }
     .post-action:hover { background:var(--surface2); color:var(--text); }
-    .post-action.liked { color:var(--red); }
     .post-action .ti { font-size:18px; }
     .post-action-spacer { flex:1; }
     .feed-empty { text-align:center; padding:60px 20px; color:var(--text3); }
@@ -89,11 +88,12 @@
   }
 
   function renderPost(p) {
-    const creator = p.creator || {};
-    const name = creator.username || creator.displayName || 'Creator';
+    const creator  = p.creator || {};
+    const name     = creator.username || creator.displayName || 'Creator';
     const initials = name.slice(0,2).toUpperCase();
     const isPremium = p.isPremium;
-    const liked = false;
+    const liked    = Likes.isLiked(p._id);
+    const saved    = Saves.isSaved(p._id);
 
     let mediaHtml = '';
     if (p.media && p.media.length > 0) {
@@ -111,8 +111,8 @@
     }
 
     const likeCount = p.likesCount || 0;
-    const views = p.viewsCount || 0;
-    const ago = fmt.timeAgo ? fmt.timeAgo(p.createdAt) : new Date(p.createdAt).toLocaleDateString();
+    const views     = p.viewsCount || 0;
+    const ago       = fmt.timeAgo ? fmt.timeAgo(p.createdAt) : new Date(p.createdAt).toLocaleDateString();
 
     return `
     <article class="post-card" data-id="${p._id}">
@@ -132,12 +132,16 @@
       ${p.caption ? `<div class="post-body"><p class="post-text">${fmt.esc(p.caption)}</p></div>` : ''}
       ${mediaHtml}
       <div class="post-actions">
-        <button class="post-action" onclick="toggleLike(this,'${p._id}')">
-          <i class="ti ti-heart"></i> <span class="like-count">${likeCount}</span>
+        <button class="post-action ${liked ? 'liked' : ''}" onclick="toggleLike(this,'${p._id}')">
+          <i class="ti ${liked ? 'ti-heart-filled' : 'ti-heart'}"></i>
+          <span class="like-count">${likeCount}</span>
         </button>
         <button class="post-action"><i class="ti ti-message-circle"></i> Comment</button>
         <button class="post-action" onclick="sharePost('${p._id}')"><i class="ti ti-share"></i></button>
         <span class="post-action-spacer"></span>
+        <button class="post-action ${saved ? 'saved' : ''}" onclick="savePost(this,'${p._id}')" title="${saved ? 'Unsave' : 'Save'}">
+          <i class="ti ${saved ? 'ti-bookmark-filled' : 'ti-bookmark'}"></i>
+        </button>
         <span style="font-size:0.75rem;color:var(--text4)"><i class="ti ti-eye" style="font-size:14px"></i> ${fmt.num(views)}</span>
       </div>
     </article>`;
@@ -149,13 +153,20 @@
     if (reset) { page = 1; showSkeleton(); }
     try {
       const params = new URLSearchParams({ page, limit: 10 });
-      if (currentFeed === 'premium') params.set('premium', 'true');
+      if (currentFeed === 'premium')   params.set('premium', 'true');
+      if (currentFeed === 'following') params.set('feed', 'following');
       const r = await api.get(`/posts?${params}`);
       const posts = r.posts || [];
       const container = document.getElementById('feedContainer');
       if (reset) container.innerHTML = '';
       if (posts.length === 0 && page === 1) {
-        container.innerHTML = `
+        container.innerHTML = currentFeed === 'following' ? `
+          <div class="feed-empty">
+            <i class="ti ti-heart"></i>
+            <h3>Follow some creators</h3>
+            <p style="margin:8px 0 20px">Posts from creators you follow will appear here. Discover creators to follow.</p>
+            <a href="/index.html" class="btn btn-brand btn-md"><i class="ti ti-compass"></i> Discover Creators</a>
+          </div>` : `
           <div class="feed-empty">
             <i class="ti ti-sparkles"></i>
             <h3>Your feed is empty</h3>
@@ -163,14 +174,12 @@
             <a href="/index.html" class="btn btn-brand btn-md"><i class="ti ti-compass"></i> Discover Creators</a>
           </div>`;
       } else {
-        posts.forEach(p => {
-          container.insertAdjacentHTML('beforeend', renderPost(p));
-        });
-        if (posts.length === 10) {
-          const btn = document.createElement('div');
-          btn.style.cssText = 'text-align:center;padding:20px';
-          btn.innerHTML = `<button class="btn btn-outline btn-md" id="loadMoreFeed" onclick="loadMore()"><i class="ti ti-refresh"></i> Load More</button>`;
-          container.appendChild(btn);
+        posts.forEach(p => container.insertAdjacentHTML('beforeend', renderPost(p)));
+        if (posts.length >= 10) {
+          const div = document.createElement('div');
+          div.style.cssText = 'text-align:center;padding:20px';
+          div.innerHTML = `<button class="btn btn-outline btn-md" id="loadMoreFeed" onclick="loadMoreFeed()"><i class="ti ti-refresh"></i> Load More</button>`;
+          container.appendChild(div);
         }
       }
     } catch (err) {
@@ -179,7 +188,7 @@
     loading = false;
   }
 
-  function loadMore() {
+  function loadMoreFeed() {
     const btn = document.getElementById('loadMoreFeed');
     if (btn) btn.closest('div').remove();
     page++;
@@ -194,16 +203,57 @@
   }
 
   async function toggleLike(btn, postId) {
-    const countEl = btn.querySelector('.like-count');
-    const liked = btn.classList.toggle('liked');
-    const count = parseInt(countEl.textContent) || 0;
-    countEl.textContent = liked ? count + 1 : Math.max(0, count - 1);
-    try { await api.post(`/posts/${postId}/like`); } catch {}
+    const countEl  = btn.querySelector('.like-count');
+    const icon     = btn.querySelector('i');
+    const wasLiked = btn.classList.contains('liked');
+    const prevCount = parseInt(countEl.textContent) || 0;
+
+    // Optimistic update
+    btn.classList.toggle('liked', !wasLiked);
+    if (icon) icon.className = `ti ${!wasLiked ? 'ti-heart-filled' : 'ti-heart'}`;
+    countEl.textContent = !wasLiked ? prevCount + 1 : Math.max(0, prevCount - 1);
+    Likes.setLiked(postId, !wasLiked);
+
+    try {
+      const r = await api.post(`/posts/${postId}/like`);
+      if (r.likesCount !== undefined) countEl.textContent = r.likesCount;
+      if (r.liked !== undefined) {
+        btn.classList.toggle('liked', r.liked);
+        if (icon) icon.className = `ti ${r.liked ? 'ti-heart-filled' : 'ti-heart'}`;
+        Likes.setLiked(postId, r.liked);
+      }
+    } catch {
+      // Revert on failure
+      btn.classList.toggle('liked', wasLiked);
+      if (icon) icon.className = `ti ${wasLiked ? 'ti-heart-filled' : 'ti-heart'}`;
+      countEl.textContent = prevCount;
+      Likes.setLiked(postId, wasLiked);
+    }
+  }
+
+  async function savePost(btn, postId) {
+    const wasSaved = btn.classList.contains('saved');
+    const icon = btn.querySelector('i');
+    btn.classList.toggle('saved', !wasSaved);
+    if (icon) icon.className = `ti ${!wasSaved ? 'ti-bookmark-filled' : 'ti-bookmark'}`;
+    try {
+      await Saves.toggle(postId);
+      Toast.show(!wasSaved ? 'Post saved!' : 'Removed from saved', 'success', 2000);
+    } catch {
+      btn.classList.toggle('saved', wasSaved);
+      if (icon) icon.className = `ti ${wasSaved ? 'ti-bookmark-filled' : 'ti-bookmark'}`;
+      Toast.show('Could not save post', 'error');
+    }
   }
 
   function sharePost(id) {
-    navigator.clipboard?.writeText(`${window.location.origin}/pages/post.html?id=${id}`);
-    Toast.show('Link copied!', 'success');
+    const url = `${window.location.origin}/pages/post.html?id=${id}`;
+    if (navigator.share) {
+      navigator.share({ title: 'Check this out on Nxt-door', url });
+    } else {
+      navigator.clipboard?.writeText(url);
+      Toast.show('Link copied!', 'success');
+    }
   }
 
   document.addEventListener('DOMContentLoaded', () => loadFeed(true));
