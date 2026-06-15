@@ -1,9 +1,19 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
-  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Messages — UX-HUB</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Messages — Nxt-door</title>
+  <meta name="robots" content="noindex" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#e50914" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Nxt-door" />
+  <link rel="apple-touch-icon" href="/assets/icons/icon-192.svg" />
+  <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css">
   <link rel="stylesheet" href="/assets/css/main.css" />
@@ -27,10 +37,21 @@
     .msg-empty .ti{font-size:56px}
     .msg-input-area{padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:10px;align-items:flex-end;flex-shrink:0}
     .msg-input-area .input-group{flex:1}
-    .tip-quick{display:flex;gap:6px;padding:8px 20px 0;flex-wrap:wrap}
-    .tip-quick button{padding:5px 12px;border-radius:var(--radius-full);border:1px solid var(--border);background:var(--surface2);font-size:0.75rem;font-weight:700;cursor:pointer;transition:all var(--t);color:var(--text2)}
-    .tip-quick button:hover{border-color:var(--gold);color:var(--gold)}
-    @media(max-width:768px){.msg-layout{grid-template-columns:1fr}.msg-list-panel{display:none}.msg-list-panel.mobile-show{display:flex}}
+    .msg-bubble{background:var(--surface2);border-radius:18px 18px 18px 4px;padding:10px 14px;font-size:0.88rem;max-width:100%;word-break:break-word}
+    .mine .msg-bubble{background:var(--grad-brand);color:#fff;border-radius:18px 18px 4px 18px}
+    .msg-time{font-size:0.7rem;color:var(--text4);margin-top:4px}
+    .mine .msg-time{text-align:right}
+    .typing-indicator{display:flex;gap:4px;padding:6px 14px;align-items:center}
+    .typing-dot{width:7px;height:7px;border-radius:50%;background:var(--text3);animation:bounce 1.4s infinite}
+    .typing-dot:nth-child(2){animation-delay:.2s}
+    .typing-dot:nth-child(3){animation-delay:.4s}
+    @keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}}
+    @media(max-width:768px){
+      .msg-layout{grid-template-columns:1fr;height:auto}
+      .msg-list-panel{display:none;height:calc(100vh - var(--header-h) - var(--bottom-h))}
+      .msg-list-panel.mobile-show{display:flex}
+      .msg-main-panel{height:calc(100vh - var(--header-h) - var(--bottom-h))}
+    }
   </style>
 </head>
 <body>
@@ -38,10 +59,8 @@
 <aside class="app-sidebar" id="appSidebar"></aside>
 <header class="app-header" id="appHeader"></header>
 <div class="page-wrap">
-  <main class="main-content" style="display:flex;flex-direction:column">
+  <main class="main-content" style="display:flex;flex-direction:column;padding:0">
     <div class="msg-layout">
-
-      <!-- THREAD LIST -->
       <div class="msg-list-panel" id="threadPanel">
         <div class="msg-list-header">
           <h3 style="font-size:1rem">Messages</h3>
@@ -55,8 +74,6 @@
         </div>
         <div class="msg-list" id="threadList"></div>
       </div>
-
-      <!-- CHAT AREA -->
       <div class="msg-main-panel" id="chatPanel">
         <div class="msg-empty" id="emptyState">
           <i class="ti ti-messages"></i>
@@ -65,31 +82,31 @@
         </div>
         <div id="activeChat" style="display:none;flex-direction:column;height:100%">
           <div class="msg-main-header" id="chatHeader"></div>
-          <div class="tip-quick" id="tipQuick"></div>
           <div class="msg-messages" id="messagesList"></div>
+          <div id="typingArea" style="padding:0 20px;display:none">
+            <div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div><span style="font-size:0.75rem;color:var(--text3);margin-left:6px">typing...</span></div>
+          </div>
           <div class="msg-input-area">
             <div class="input-group">
               <button type="button" class="btn btn-icon btn-sm" onclick="attachMedia()" style="border:none;background:none"><i class="ti ti-paperclip" style="font-size:18px;color:var(--text3)"></i></button>
-              <input class="input" type="text" id="msgInput" placeholder="Type a message..." onkeydown="if(event.key==='Enter')sendMessage()" style="flex:1" />
+              <input class="input" type="text" id="msgInput" placeholder="Type a message..." onkeydown="handleMsgKey(event)" style="flex:1" />
             </div>
             <button class="btn btn-brand btn-md" onclick="sendMessage()"><i class="ti ti-send"></i></button>
           </div>
         </div>
       </div>
-
     </div>
   </main>
 </div>
 <script src="/assets/js/app.js"></script>
 <script src="/assets/js/layout.js"></script>
 <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+<script src="/assets/js/pwa.js"></script>
 <script>
   Auth.requireAuth('/login.html');
   Layout.init('Messages');
   const myUser = Auth.getUser();
-
-  let conversations = [];
-  let activeThread = null;
+  let conversations = [], activeThread = null, socket = null;
 
   async function loadConversations() {
     try {
@@ -97,29 +114,24 @@
       conversations = res.conversations || [];
       renderThreads(conversations);
     } catch (err) {
-      console.error('Failed to load conversations', err);
       Toast.show(err.message || 'Unable to load conversations', 'error');
     }
   }
 
   function renderThreads(list) {
     document.getElementById('threadList').innerHTML = list.map(t => {
-      const other = (t.participants || []).find(p => String(p._id || p) !== String(myUser?._id));
-      const name = other ? (other.username || 'User') : 'Conversation';
+      const other = (t.participants||[]).find(p => String(p._id||p) !== String(myUser?._id));
+      const name = other ? (other.username||'User') : 'Conversation';
       const last = t.lastMessage?.text || '';
       const time = t.lastMessage?.createdAt ? fmt.timeAgo(t.lastMessage.createdAt) : '';
-      const unread = t.unread ? (t.unread[myUser._id] || t.unread[String(myUser._id)] || 0) : 0;
-      return `
-      <div class="msg-thread-item ${activeThread?.id===t._id?'active':''}" onclick="openThread('${t._id}')">
-        <div class="avatar avatar-sm" style="background:var(--gradient)">${fmt.initials(name)}</div>
+      const unread = t.unread ? (t.unread[myUser?._id] || 0) : 0;
+      return `<div class="msg-thread-item ${activeThread?.id===t._id?'active':''}" onclick="openThread('${t._id}')">
+        <div class="avatar avatar-sm" style="background:var(--grad-brand)">${fmt.initials(name)}</div>
         <div class="msg-thread-meta">
-          <div class="msg-thread-row">
-            <span class="msg-thread-name">${fmt.esc(name)}</span>
-            <span class="msg-thread-time">${time}</span>
-          </div>
+          <div class="msg-thread-row"><span class="msg-thread-name">${fmt.esc(name)}</span><span class="msg-thread-time">${time}</span></div>
           <div class="msg-thread-row" style="margin-top:2px">
             <span class="msg-thread-preview">${fmt.esc(last)}</span>
-            ${unread > 0 ? `<span class="chat-item-unread">${unread}</span>` : ''}
+            ${unread>0?`<span class="badge badge-brand" style="font-size:0.65rem">${unread}</span>`:''}
           </div>
         </div>
       </div>`;
@@ -128,54 +140,36 @@
 
   async function openThread(id) {
     try {
-      const conv = conversations.find(c => String(c._id) === String(id));
+      const conv = conversations.find(c => String(c._id)===String(id));
       if (!conv) return;
-      activeThread = { ...conv, id: conv._id };
-      // mark unread locally
-      if (activeThread.unread) activeThread.unread[myUser._id] = 0;
+      activeThread = {...conv, id:conv._id};
       renderThreads(conversations);
-
-      // load messages
       const res = await api.get(`/messages/conversations/${id}/messages`);
       activeThread.msgs = res.messages || [];
-
       document.getElementById('emptyState').style.display = 'none';
       const ac = document.getElementById('activeChat');
       ac.style.display = 'flex';
-
-      const other = (activeThread.participants || []).find(p => String(p._id || p) !== String(myUser?._id));
-      const name = other ? (other.username || 'User') : 'Conversation';
-
+      const other = (activeThread.participants||[]).find(p => String(p._id||p) !== String(myUser?._id));
+      const name = other ? (other.username||'User') : 'Conversation';
       document.getElementById('chatHeader').innerHTML = `
-      <div class="avatar avatar-md" style="background:var(--gradient)">${fmt.initials(name)}</div>
-      <div style="flex:1">
-        <div style="font-weight:700">${fmt.esc(name)}</div>
-        <div style="font-size:0.75rem;color:var(--text3)">${other ? 'Member' : ''}</div>
-      </div>
-      <a href="/pages/profile.html?id=${other?._id || ''}" class="btn btn-surface btn-sm"><i class="ti ti-user"></i> Profile</a>
-      <button class="btn btn-icon btn-sm" onclick="clearChat()"><i class="ti ti-trash"></i></button>`;
-
-      document.getElementById('tipQuick').innerHTML = '';
-
+        <div class="avatar avatar-md" style="background:var(--grad-brand)">${fmt.initials(name)}</div>
+        <div style="flex:1"><div style="font-weight:700">${fmt.esc(name)}</div><div style="font-size:0.75rem;color:var(--text3)">Member</div></div>
+        <a href="/pages/profile.html?id=${other?._id||''}" class="btn btn-surface btn-sm"><i class="ti ti-user"></i> Profile</a>`;
       renderMessages();
-      // mark as read on server
       api.post(`/messages/conversations/${id}/read`).catch(()=>{});
-    } catch (err) {
-      console.error(err);
-      Toast.show(err.message || 'Unable to open conversation','error');
-    }
+      if (socket) { socket.emit('join:conversation', id); }
+    } catch (err) { Toast.show(err.message||'Unable to open conversation','error'); }
   }
 
   function renderMessages() {
     if (!activeThread) return;
-    document.getElementById('messagesList').innerHTML = (activeThread.msgs || []).map(m => {
-      const mine = String(m.sender._id || m.sender) === String(myUser?._id);
-      return `
-      <div class="msg ${mine ? 'mine' : ''}" style="max-width:75%;align-self:${mine ? 'flex-end' : 'flex-start'}">
-        ${!mine ? `<div class="avatar avatar-xs" style="background:var(--gradient);flex-shrink:0;align-self:flex-end">${fmt.initials(m.sender.username || '')}</div>` : ''}
+    document.getElementById('messagesList').innerHTML = (activeThread.msgs||[]).map(m => {
+      const mine = String(m.sender?._id||m.sender) === String(myUser?._id);
+      return `<div class="msg${mine?' mine':''}" style="display:flex;gap:8px;align-items:flex-end;${mine?'flex-direction:row-reverse':''}">
+        ${!mine?`<div class="avatar avatar-xs" style="background:var(--grad-brand);flex-shrink:0">${fmt.initials(m.sender?.username||'')}</div>`:''}
         <div>
           <div class="msg-bubble">${fmt.esc(m.text)}</div>
-          <div class="msg-time">${new Date(m.createdAt).toLocaleString()}</div>
+          <div class="msg-time">${fmt.timeAgo(m.createdAt)}</div>
         </div>
       </div>`;
     }).join('');
@@ -185,90 +179,80 @@
 
   async function sendMessage() {
     const input = document.getElementById('msgInput');
-    const text  = input.value.trim();
+    const text = input.value.trim();
     if (!text || !activeThread) return;
     try {
-      const res = await api.post(`/messages/conversations/${activeThread._id}/messages`, { text });
+      const res = await api.post(`/messages/conversations/${activeThread._id}/messages`, {text});
       activeThread.msgs.push(res.message);
-      activeThread.lastMessage = res.conversation.lastMessage || { text };
       input.value = '';
       renderMessages();
       loadConversations();
-    } catch (err) {
-      console.error(err);
-      Toast.show(err.message || 'Failed to send message','error');
-    }
+      if (socket) socket.emit('stop:typing', activeThread._id);
+    } catch (err) { Toast.show(err.message||'Failed to send','error'); }
+  }
+
+  function handleMsgKey(e) {
+    if (e.key==='Enter') sendMessage();
+    else if (socket && activeThread) socket.emit('typing', activeThread._id);
   }
 
   function filterThreads(q) {
     const filtered = conversations.filter(t => {
-      const other = (t.participants || []).find(p => String(p._id || p).toLowerCase().includes(q.toLowerCase()) || (p.username||'').toLowerCase().includes(q.toLowerCase()));
-      return !!other;
+      const other = (t.participants||[]).find(p => (p.username||'').toLowerCase().includes(q.toLowerCase()));
+      return !!other || !q;
     });
     renderThreads(filtered);
   }
 
-  async function newMessage()  {
-    const id = prompt('Enter the user ID of the creator you want to message');
+  async function newMessage() {
+    const id = prompt('Enter the user ID or username of the creator you want to message');
     if (!id) return;
     try {
-      const res = await api.post('/messages/conversations', { recipientId: id });
-      // reload conversations and open
+      const res = await api.post('/messages/conversations', {recipientId:id});
       await loadConversations();
       openThread(res.conversation._id);
-    } catch (err) {
-      Toast.show(err.message || 'Unable to start conversation','error');
-    }
+    } catch (err) { Toast.show(err.message||'Unable to start conversation','error'); }
   }
 
-  function clearChat()   { if (!activeThread) return; activeThread.msgs = []; renderMessages(); }
   function attachMedia() { Toast.show('Media attachment coming soon.', 'info'); }
 
-  // initial load
-  loadConversations();
-
-  // --- Socket.IO realtime ---
-  const SOCKET_URL = API.replace('/api', '') ;
+  // Socket.IO realtime
   try {
-    const socket = io(SOCKET_URL, { auth: { token: Auth.getToken() } });
-    socket.on('connect_error', (err) => { console.warn('Socket connect error', err); });
-    socket.on('message', (data) => {
-      // incoming message
-      const convId = String(data.message.conversation || data.conversationId || data.message.conversation);
-      if (activeThread && String(activeThread._id) === String(convId)) {
+    const socketUrl = (window.NXT_API||'/api').replace('/api','');
+    socket = io(socketUrl, {auth:{token:Auth.getToken()}});
+    socket.on('connect_error', err => console.warn('Socket error',err));
+    socket.on('message', data => {
+      const convId = String(data.conversationId||data.message?.conversation);
+      if (activeThread && String(activeThread._id)===convId) {
         activeThread.msgs.push(data.message);
         renderMessages();
       } else {
-        // increment unread locally and refresh conversations
         loadConversations();
-        Toast.show('New message received', 'info');
+        Toast.show('New message received','info');
       }
     });
-    socket.on('conversation:update', (data) => {
-      loadConversations();
+    socket.on('typing', ({conversationId}) => {
+      if (activeThread && String(activeThread._id)===String(conversationId)) {
+        const a = document.getElementById('typingArea');
+        a.style.display = 'block';
+        clearTimeout(a._timeout);
+        a._timeout = setTimeout(() => a.style.display='none', 3000);
+      }
     });
+  } catch(e) { console.warn('Socket init failed',e); }
 
-    // join conversation when opened
-    const origOpenThread = openThread;
-    openThread = async function(id) {
-      if (socket && activeThread) socket.emit('leave:conversation', activeThread._id || activeThread.id);
-      if (socket) socket.emit('join:conversation', id);
-      return origOpenThread(id);
-    };
-  } catch (e) {
-    console.warn('Socket init failed', e);
-  }
-
-  // Auto-open from URL param (userid or user)
+  // Auto-open from URL param
   const urlUserId = new URLSearchParams(window.location.search).get('userid') || new URLSearchParams(window.location.search).get('user');
   if (urlUserId) {
     (async () => {
       try {
-        const res = await api.post('/messages/conversations', { recipientId: urlUserId });
+        const res = await api.post('/messages/conversations', {recipientId:urlUserId});
         await loadConversations();
         openThread(res.conversation._id);
-      } catch (err) { console.error(err); }
+      } catch(err) { console.error(err); }
     })();
+  } else {
+    loadConversations();
   }
 </script>
 </body>

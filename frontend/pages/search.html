@@ -2,27 +2,41 @@
 <html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Search — UX-HUB</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Search — Nxt-door</title>
+  <meta name="description" content="Search creators, videos, and live experiences on Nxt-door. Africa's premier adult creator platform." />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:site_name" content="Nxt-door" />
+  <meta property="og:title" content="Search — Nxt-door" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#e50914" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Nxt-door" />
+  <link rel="apple-touch-icon" href="/assets/icons/icon-192.svg" />
+  <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css" rel="stylesheet">
   <link rel="stylesheet" href="/assets/css/main.css" />
   <style>
-    .search-page { display:flex; flex-direction:column; gap:24px; }
-    .search-panel { display:flex; gap:14px; flex-wrap:wrap; align-items:center; margin-bottom:20px; }
-    .search-panel .input-group { flex:1; min-width:250px; }
-    .search-panel input { width:100%; }
-    .search-results { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:20px; }
-    .search-result { background:var(--surface); border:1px solid var(--border); border-radius:1rem; overflow:hidden; cursor:pointer; transition:transform var(--t),box-shadow var(--t); }
-    .search-result:hover { transform:translateY(-3px); box-shadow:var(--shadow); }
-    .search-result-body { padding:16px; }
-    .search-title { margin:0 0 8px; font-size:1rem; font-weight:700; }
-    .search-meta { color:var(--text3); font-size:0.85rem; margin-bottom:12px; }
-    .search-empty { display:none; min-height:220px; align-items:center; justify-content:center; text-align:center; gap:12px; color:var(--text3); }
-    .search-empty .ti { font-size:40px; color:var(--text2); }
-    @media(max-width:1024px){ .search-results { grid-template-columns:repeat(2,minmax(0,1fr)); } }
-    @media(max-width:720px){ .search-results { grid-template-columns:1fr; } }
+    .search-hero{background:var(--surface);border-bottom:1px solid var(--border);padding:28px 24px;margin-bottom:24px}
+    .search-hero h1{font-size:1.8rem;margin:0 0 16px}
+    .search-bar{display:flex;gap:10px;max-width:600px}
+    .search-bar .input-group{flex:1}
+    .search-filters{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+    .filter-chip{padding:6px 14px;border-radius:var(--radius-full);border:1px solid var(--border);background:none;color:var(--text3);font-size:0.8rem;font-weight:600;cursor:pointer;transition:all var(--t);font-family:var(--font-body)}
+    .filter-chip.active{border-color:var(--red);color:var(--red);background:rgba(229,9,20,0.08)}
+    .search-results{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px}
+    .search-result{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;cursor:pointer;transition:transform var(--t),box-shadow var(--t)}
+    .search-result:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg)}
+    .search-result-cover{height:140px;background:linear-gradient(135deg,#2D1B69,#1A2D1A);position:relative}
+    .search-result-body{padding:14px 16px}
+    .search-result-name{font-size:0.95rem;font-weight:700;margin:0 0 4px}
+    .search-result-meta{font-size:0.78rem;color:var(--text3)}
+    .search-empty{min-height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:12px;color:var(--text3)}
+    .search-empty .ti{font-size:48px;color:var(--text4)}
   </style>
 </head>
 <body>
@@ -30,99 +44,128 @@
   <aside class="app-sidebar" id="appSidebar"></aside>
   <header class="app-header" id="appHeader"></header>
   <div class="page-wrap">
-    <main class="main-content">
-      <div class="inner-lg">
-        <div class="page-header" style="margin-bottom:24px; display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap;">
-          <div>
-            <h1>Search</h1>
-            <p>Find creators, videos, and live experiences across the platform.</p>
-          </div>
-        </div>
-        <div class="search-page">
-          <div class="search-panel">
-            <div class="input-group">
-              <i class="ti ti-search"></i>
-              <input id="searchInput" class="input" type="text" placeholder="Search creators, videos, streams..." />
-            </div>
-            <button class="btn btn-brand btn-md" id="searchButton">Search</button>
-          </div>
-          <div id="searchState" class="search-empty">
+    <main class="main-content" style="padding-top:0">
+      <div class="search-hero">
+        <h1>Discover Creators</h1>
+        <div class="search-bar">
+          <div class="input-group">
             <i class="ti ti-search"></i>
-            <div>
-              <strong>No search query yet.</strong>
-              <p>Type a keyword and hit search to discover creators and trending videos.</p>
-            </div>
+            <input id="searchInput" class="input" type="search" placeholder="Search creators, content, live streams..." />
           </div>
-          <div id="searchResults" class="search-results"></div>
+          <button class="btn btn-brand btn-md" id="searchButton"><i class="ti ti-search"></i> Search</button>
         </div>
+        <div class="search-filters">
+          <button class="filter-chip active" data-type="all">All</button>
+          <button class="filter-chip" data-type="creators">Creators</button>
+          <button class="filter-chip" data-type="videos">Videos</button>
+          <button class="filter-chip" data-type="live">Live Now</button>
+        </div>
+      </div>
+      <div class="inner-lg">
+        <div id="searchState" class="search-empty">
+          <i class="ti ti-search"></i>
+          <div>
+            <strong style="font-size:1rem">Find your next favourite creator</strong>
+            <p style="margin:8px 0 0;font-size:0.85rem">Search by name, category, or location to discover creators across East Africa.</p>
+          </div>
+        </div>
+        <div id="searchResults" class="search-results"></div>
       </div>
     </main>
   </div>
   <script src="/assets/js/app.js"></script>
   <script src="/assets/js/layout.js"></script>
+  <script src="/assets/js/pwa.js"></script>
   <script>
     Layout.init('Search');
 
     const searchInput = document.getElementById('searchInput');
-    const searchButton = document.getElementById('searchButton');
-    const resultsContainer = document.getElementById('searchResults');
-    const searchState = document.getElementById('searchState');
+    const resultsEl = document.getElementById('searchResults');
+    const stateEl = document.getElementById('searchState');
+    let activeType = 'all';
 
-    function getQueryParam(name) {
-      return new URLSearchParams(window.location.search).get(name) || '';
+    document.querySelectorAll('.filter-chip').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-chip').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        activeType = btn.dataset.type;
+        const q = searchInput.value.trim();
+        if (q) runSearch(q);
+      });
+    });
+
+    function getCoverColor(seed) {
+      const c=['#2D1B69','#1A2D1A','#2D2D1A','#1A1A2D','#2D2A1A'];
+      return c[[...seed].reduce((s,ch)=>s+ch.charCodeAt(0),0)%c.length];
     }
 
-    function renderSearchItem(video) {
-      const creator = video.uploader?.username || 'Creator';
-      return `
-        <div class="search-result" onclick="window.location='/pages/live-watch.html?id=${video._id}'">
-          <div class="search-result-body">
-            <div class="search-title">${video.title ? video.title.replace(/</g,'&lt;').replace(/>/g,'&gt;') : 'Untitled video'}</div>
-            <div class="search-meta">${creator} · ${video.category || 'Creator content'} · ${video.views || 0} views</div>
-            <p style="margin:0;color:var(--text3);font-size:0.92rem;line-height:1.6;">${video.description ? video.description.replace(/</g,'&lt;').replace(/>/g,'&gt;').substring(0,100) + '...' : 'No description available.'}</p>
-          </div>
-        </div>`;
+    function renderCreator(c) {
+      const name = c.username||c.displayName||'Creator';
+      const color = getCoverColor(name);
+      return `<div class="search-result" onclick="window.location='/pages/profile.html?id=${c._id}'">
+        <div class="search-result-cover" style="background:${color};display:flex;align-items:center;justify-content:center">
+          ${c.avatar?`<img src="${c.avatar}" style="width:100%;height:100%;object-fit:cover"/>`:`<div class="avatar" style="background:rgba(0,0,0,0.3);font-size:1.8rem">${fmt.initials(name)}</div>`}
+          ${c.isOnline?'<div style="position:absolute;top:10px;right:10px"><span class="tag tag-online"><span class="live-dot" style="width:6px;height:6px;margin-right:4px"></span>Online</span></div>':''}
+        </div>
+        <div class="search-result-body">
+          <div class="search-result-name">${fmt.esc(name)}</div>
+          <div class="search-result-meta">${c.location||'East Africa'} &middot; ${c.uploadCount||0} posts</div>
+        </div>
+      </div>`;
+    }
+
+    function renderVideo(v) {
+      const creator = v.uploader?.username||'Creator';
+      return `<div class="search-result" onclick="window.location='/pages/live-watch.html?id=${v._id}'">
+        <div class="search-result-cover" style="background:#1a1a2d;display:flex;align-items:center;justify-content:center">
+          <i class="ti ti-player-play-filled" style="font-size:32px;color:rgba(255,255,255,0.5)"></i>
+        </div>
+        <div class="search-result-body">
+          <div class="search-result-name">${fmt.esc(v.title||'Video')}</div>
+          <div class="search-result-meta">${fmt.esc(creator)} &middot; ${v.views||0} views</div>
+        </div>
+      </div>`;
     }
 
     async function runSearch(query) {
-      resultsContainer.innerHTML = '';
-      if (!query.trim()) {
-        searchState.style.display = 'flex';
-        return;
-      }
-      searchState.style.display = 'none';
+      resultsEl.innerHTML = '';
+      if (!query.trim()) { stateEl.style.display='flex'; return; }
+      stateEl.style.display='none';
+      resultsEl.innerHTML = '<div style="grid-column:1/-1;padding:20px;text-align:center"><div class="spinner"></div></div>';
       try {
-        const response = await api.get(`/videos?search=${encodeURIComponent(query.trim())}`);
-        const videos = response.videos || [];
+        if (activeType==='creators'||activeType==='all') {
+          const r = await api.get(`/users?role=creator&search=${encodeURIComponent(query)}&limit=20`);
+          const creators = r.users||[];
+          if (creators.length) { resultsEl.innerHTML = creators.map(renderCreator).join(''); return; }
+        }
+        const r = await api.get(`/videos?search=${encodeURIComponent(query)}&limit=20`);
+        const videos = r.videos||[];
         if (!videos.length) {
-          searchState.innerHTML = `<i class="ti ti-alert-circle"></i><div><strong>No results found for “${query}”.</strong><p>Try a broader keyword or search for a different creator.</p></div>`;
-          searchState.style.display = 'flex';
+          stateEl.innerHTML = `<i class="ti ti-mood-sad"></i><div><strong>No results for "${fmt.esc(query)}"</strong><p style="margin:8px 0 0;font-size:0.85rem">Try a different search term or browse categories on the home page.</p></div>`;
+          stateEl.style.display='flex';
+          resultsEl.innerHTML='';
           return;
         }
-        resultsContainer.innerHTML = videos.map(renderSearchItem).join('');
-      } catch (err) {
-        searchState.innerHTML = `<i class="ti ti-alert-circle"></i><div><strong>Unable to complete search.</strong><p>Please try again in a moment.</p></div>`;
-        searchState.style.display = 'flex';
+        resultsEl.innerHTML = videos.map(renderVideo).join('');
+      } catch(err) {
+        stateEl.innerHTML = `<i class="ti ti-alert-circle"></i><div><strong>Search failed</strong><p style="margin:8px 0 0;font-size:0.85rem">${err.message||'Please try again.'}</p></div>`;
+        stateEl.style.display='flex';
+        resultsEl.innerHTML='';
       }
     }
 
     function startSearch() {
-      const query = searchInput.value.trim();
-      if (!query) return;
-      window.history.replaceState({}, '', `/pages/search.html?q=${encodeURIComponent(query)}`);
-      runSearch(query);
+      const q = searchInput.value.trim();
+      if (!q) return;
+      window.history.replaceState({},''`/pages/search.html?q=${encodeURIComponent(q)}`);
+      runSearch(q);
     }
 
-    searchButton.addEventListener('click', startSearch);
-    searchInput.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter') startSearch();
-    });
+    document.getElementById('searchButton').addEventListener('click', startSearch);
+    searchInput.addEventListener('keydown', e => { if(e.key==='Enter') startSearch(); });
 
-    const initialQuery = getQueryParam('q');
-    if (initialQuery) {
-      searchInput.value = initialQuery;
-      runSearch(initialQuery);
-    }
+    const initialQuery = new URLSearchParams(window.location.search).get('q');
+    if (initialQuery) { searchInput.value=initialQuery; runSearch(initialQuery); }
   </script>
 </body>
 </html>

@@ -2,29 +2,39 @@
 <html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Notifications — UX-HUB</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Notifications — Nxt-door</title>
+  <meta name="robots" content="noindex" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#e50914" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Nxt-door" />
+  <link rel="apple-touch-icon" href="/assets/icons/icon-192.svg" />
+  <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css">
   <link rel="stylesheet" href="/assets/css/main.css" />
   <style>
-    .notif-panel { display:flex;flex-direction:column;gap:18px; }
-    .notif-card { background:var(--surface);border:1px solid var(--border);border-radius:18px;overflow:hidden; }
-    .notif-card-header { padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between; }
-    .notif-card-header h3 { margin:0;font-size:1rem;letter-spacing:-.02em; }
-    .notif-list { display:flex;flex-direction:column; }
-    .notif-item { padding:16px 22px;display:flex;align-items:flex-start;gap:14px;border-bottom:1px solid var(--border); }
-    .notif-item:last-child { border-bottom:none; }
-    .notif-item.read { opacity:0.72; }
-    .notif-icon { width:42px;height:42px;border-radius:14px;background:var(--brand-light);display:flex;align-items:center;justify-content:center;color:var(--brand);flex-shrink:0; }
-    .notif-body { flex:1;min-width:0; }
-    .notif-title { font-size:0.96rem;font-weight:700;margin-bottom:4px; }
-    .notif-description { font-size:0.82rem;color:var(--text3);line-height:1.5; }
-    .notif-meta { margin-top:10px;font-size:0.78rem;color:var(--text4);display:flex;justify-content:space-between;align-items:center; }
-    .empty-notifications { padding:48px 22px;text-align:center;color:var(--text3); }
-    .empty-notifications .ti { font-size:46px;margin-bottom:16px; }
-    .notif-actions { padding:18px 22px;display:flex;justify-content:flex-end;gap:12px;border-top:1px solid var(--border); }
+    .notif-panel{display:flex;flex-direction:column;gap:18px}
+    .notif-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;overflow:hidden}
+    .notif-card-header{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+    .notif-card-header h3{margin:0;font-size:1rem}
+    .notif-list{display:flex;flex-direction:column}
+    .notif-item{padding:16px 22px;display:flex;align-items:flex-start;gap:14px;border-bottom:1px solid var(--border);transition:background var(--t)}
+    .notif-item:hover{background:var(--surface2)}
+    .notif-item:last-child{border-bottom:none}
+    .notif-item.read{opacity:0.65}
+    .notif-icon{width:42px;height:42px;border-radius:14px;background:rgba(229,9,20,0.12);display:flex;align-items:center;justify-content:center;color:var(--red);flex-shrink:0}
+    .notif-body{flex:1;min-width:0}
+    .notif-title{font-size:0.96rem;font-weight:700;margin-bottom:4px}
+    .notif-description{font-size:0.82rem;color:var(--text3);line-height:1.5}
+    .notif-meta{margin-top:10px;font-size:0.78rem;color:var(--text4);display:flex;justify-content:space-between;align-items:center}
+    .empty-notifications{padding:48px 22px;text-align:center;color:var(--text3)}
+    .empty-notifications .ti{font-size:46px;margin-bottom:16px;display:block}
+    .notif-actions{padding:18px 22px;display:flex;justify-content:flex-end;gap:12px;border-top:1px solid var(--border)}
   </style>
 </head>
 <body>
@@ -32,7 +42,7 @@
 <aside class="app-sidebar" id="appSidebar"></aside>
 <header class="app-header" id="appHeader"></header>
 <div class="page-wrap">
-  <main class="main-content" style="display:flex;flex-direction:column;gap:20px">
+  <main class="main-content">
     <div class="notif-panel">
       <div class="notif-card">
         <div class="notif-card-header">
@@ -43,7 +53,7 @@
           <a href="/pages/settings.html" class="btn btn-outline btn-sm">Manage alerts</a>
         </div>
         <div class="notif-actions">
-          <button class="btn btn-surface btn-sm" onclick="loadNotifications()">Refresh</button>
+          <button class="btn btn-surface btn-sm" onclick="loadNotifications()"><i class="ti ti-refresh"></i> Refresh</button>
           <button class="btn btn-brand btn-sm" onclick="markAllRead()">Mark all read</button>
         </div>
         <div class="notif-list" id="notificationList"></div>
@@ -53,54 +63,47 @@
 </div>
 <script src="/assets/js/app.js"></script>
 <script src="/assets/js/layout.js"></script>
+<script src="/assets/js/pwa.js"></script>
 <script>
   Auth.requireAuth('/login.html');
   Layout.init('Notifications');
 
   async function loadNotifications() {
+    const list = document.getElementById('notificationList');
+    list.innerHTML = '<div class="empty-notifications"><div class="spinner"></div></div>';
     try {
       const res = await api.get('/notifications');
-      const list = document.getElementById('notificationList');
-      if (!res.success || !Array.isArray(res.notifications) || res.notifications.length === 0) {
-        list.innerHTML = `<div class="empty-notifications"><i class="ti ti-bell"></i><p>No notifications yet.</p></div>`;
+      if (!res.success||!Array.isArray(res.notifications)||!res.notifications.length) {
+        list.innerHTML = `<div class="empty-notifications"><i class="ti ti-bell"></i><p style="font-weight:600">No notifications yet.</p><p style="font-size:0.85rem;margin-top:6px">You'll see activity here when creators post, send messages, or your subscriptions update.</p></div>`;
         return;
       }
-
-      list.innerHTML = res.notifications.map((n) => {
-        const icon = n.type === 'message' ? 'ti-message' : n.type === 'video' ? 'ti-video' : 'ti-bell';
-        const created = new Date(n.createdAt).toLocaleString('en-US', { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' });
-        return `
-          <div class="notif-item ${n.read ? 'read' : ''}">
-            <div class="notif-icon"><i class="ti ${icon}"></i></div>
-            <div class="notif-body">
-              <div class="notif-title">${n.title}</div>
-              <div class="notif-description">${n.message || ''}</div>
-              <div class="notif-meta">
-                <span>${created}</span>
-                ${n.read ? '<span class="badge badge-sm">Read</span>' : '<span class="badge badge-sm badge-success">New</span>'}
-              </div>
+      list.innerHTML = res.notifications.map(n => {
+        const iconMap = {message:'ti-message',video:'ti-video',subscription:'ti-crown',tip:'ti-coin',live:'ti-live-view'};
+        const icon = iconMap[n.type]||'ti-bell';
+        const created = new Date(n.createdAt).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
+        return `<div class="notif-item ${n.read?'read':''}">
+          <div class="notif-icon"><i class="ti ${icon}"></i></div>
+          <div class="notif-body">
+            <div class="notif-title">${fmt.esc(n.title||'Notification')}</div>
+            <div class="notif-description">${fmt.esc(n.message||'')}</div>
+            <div class="notif-meta">
+              <span>${created}</span>
+              ${n.read?'<span class="tag tag-surface" style="font-size:0.65rem">Read</span>':'<span class="tag tag-brand" style="font-size:0.65rem">New</span>'}
             </div>
           </div>
-        `;
+        </div>`;
       }).join('');
-    } catch (err) {
-      document.getElementById('notificationList').innerHTML = `<div class="empty-notifications"><i class="ti ti-alert-circle"></i><p>Unable to load notifications.</p></div>`;
-      console.error(err);
+    } catch(err) {
+      list.innerHTML = `<div class="empty-notifications"><i class="ti ti-alert-circle"></i><p>Unable to load notifications.</p></div>`;
     }
   }
 
   async function markAllRead() {
     try {
-      const res = await api.post('/notifications/read-all');
-      if (res.success) {
-        Toast.show('All notifications marked read.', 'success');
-        loadNotifications();
-        const dot = document.getElementById('notifDot');
-        if (dot) dot.style.display = 'none';
-      }
-    } catch (err) {
-      Toast.show(err.message || 'Could not mark notifications read.', 'error');
-    }
+      await api.post('/notifications/read-all');
+      Toast.show('All notifications marked read.','success');
+      loadNotifications();
+    } catch(err) { Toast.show(err.message||'Could not mark read.','error'); }
   }
 
   loadNotifications();
