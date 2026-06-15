@@ -1,32 +1,60 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
-  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Checkout — UX-HUB</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Checkout — Nxt-door</title>
+  <meta name="robots" content="noindex" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#e50914" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Nxt-door" />
+  <link rel="apple-touch-icon" href="/assets/icons/icon-192.svg" />
+  <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css">
   <link rel="stylesheet" href="/assets/css/main.css" />
   <script src="https://js.stripe.com/v3/"></script>
   <style>
+    :root {
+      --gold: #FFC107;
+      --gold-bg: rgba(255,193,7,0.1);
+      --blue: #4361ee;
+      --blue-bg: rgba(67,97,238,0.1);
+      --green: #10D96F;
+      --green-bg: rgba(16,217,111,0.1);
+      --red-bg: rgba(229,9,20,0.1);
+    }
     .checkout-layout{display:grid;grid-template-columns:1fr 400px;gap:32px;max-width:960px;margin:0 auto;padding:32px 20px}
     .payment-tab{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 12px;border:1.5px solid var(--border);border-radius:var(--radius-lg);cursor:pointer;transition:all var(--t);font-size:0.82rem;font-weight:600;color:var(--text2);flex:1}
     .payment-tab .ti{font-size:22px}
-    .payment-tab.active,.payment-tab:hover{border-color:var(--brand);background:var(--brand-light);color:var(--brand)}
+    .payment-tab.active,.payment-tab:hover{border-color:var(--red);background:var(--red-bg);color:var(--red)}
     .pay-panel{display:none}
     .pay-panel.active{display:block}
     .order-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)}
     .order-row:last-of-type{border-bottom:none}
     .stripe-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;transition:border-color var(--t)}
-    .stripe-card:focus-within{border-color:var(--brand)}
+    .stripe-card:focus-within{border-color:var(--red)}
+    .checkout-header{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--border);height:64px;display:flex;align-items:center;padding:0 24px;justify-content:space-between;z-index:80}
+    .nx-logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+    .nx-logo .logo-mark{width:32px;height:32px;border-radius:8px;background:var(--grad-brand);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:800;font-size:14px;color:#fff;letter-spacing:-0.5px}
+    .nx-logo .logo-name{font-family:var(--font-display);font-size:1.2rem;font-weight:800;color:var(--text)}
+    .nx-logo .logo-name span{color:var(--red)}
     @media(max-width:720px){.checkout-layout{grid-template-columns:1fr}}
   </style>
 </head>
 <body class="no-sidebar">
-<div class="app-header" style="position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--border);height:64px;display:flex;align-items:center;padding:0 24px;justify-content:space-between;z-index:80;left:0">
-  <a href="/index.html" class="logo-name" style="font-size:1.4rem;text-decoration:none">UX<span style="color:var(--brand)">HUB</span></a>
+
+<header class="checkout-header">
+  <a href="/index.html" class="nx-logo">
+    <div class="logo-mark">NX</div>
+    <span class="logo-name">Nxt<span>-door</span></span>
+  </a>
   <div style="display:flex;align-items:center;gap:8px;font-size:0.82rem;color:var(--text3)"><i class="ti ti-lock" style="color:var(--green)"></i> Secure Checkout</div>
-</div>
+</header>
 
 <div style="padding-top:0">
   <div class="checkout-layout">
@@ -104,10 +132,10 @@
     <!-- RIGHT: Order Summary -->
     <div>
       <div class="card" style="position:sticky;top:80px">
-        <div class="card-header"><h3><i class="ti ti-shopping-cart" style="color:var(--brand)"></i> Order Summary</h3></div>
+        <div class="card-header"><h3><i class="ti ti-shopping-cart" style="color:var(--red)"></i> Order Summary</h3></div>
         <div class="card-body">
           <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border)">
-            <div class="avatar avatar-md" style="background:var(--gradient)" id="orderAvatar">A</div>
+            <div class="avatar avatar-md" style="background:var(--grad-brand)" id="orderAvatar">A</div>
             <div id="orderCreatorInfo">
               <div style="font-weight:700" id="orderCreatorName">Creator</div>
               <div style="font-size:0.78rem;color:var(--text3)" id="orderPlanLabel">Monthly Subscription</div>
@@ -117,7 +145,7 @@
           <div class="order-row"><span style="color:var(--text2)">Platform fee</span><strong style="color:var(--text3)">$0.00</strong></div>
           <div class="order-row" style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">
             <span style="font-weight:700">Total</span>
-            <span style="font-family:var(--font-display);font-size:1.4rem;color:var(--brand)" id="orderTotal">$25.00</span>
+            <span style="font-family:var(--font-display);font-size:1.4rem;color:var(--red)" id="orderTotal">$25.00</span>
           </div>
           <div style="margin-top:16px;padding:12px;background:var(--surface2);border-radius:var(--radius);font-size:0.78rem;color:var(--text3);display:flex;gap:8px">
             <i class="ti ti-shield-check" style="color:var(--green);flex-shrink:0;font-size:16px"></i>
@@ -143,38 +171,52 @@
 
   document.getElementById('orderSubtotal').textContent = `$${amount.toFixed(2)}`;
   document.getElementById('orderTotal').textContent     = `$${amount.toFixed(2)}`;
-  document.getElementById('orderPlanLabel').textContent = type === 'tip' ? `Tip to creator` : `${plan.charAt(0).toUpperCase()+plan.slice(1)} Subscription`;
+  document.getElementById('orderPlanLabel').textContent = type==='tip' ? 'Tip to creator' : `${plan.charAt(0).toUpperCase()+plan.slice(1)} Subscription`;
 
-  let mtnRef = null, airtelRef = null, stripe = null, cardEl = null;
+  if (creatorId) {
+    api.get(`/users/${creatorId}`).then(r => {
+      if (r.user) {
+        const name = r.user.displayName || r.user.username || 'Creator';
+        document.getElementById('orderCreatorName').textContent = name;
+        if (r.user.avatar) {
+          document.getElementById('orderAvatar').innerHTML = `<img src="${r.user.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%"/>`;
+        } else {
+          document.getElementById('orderAvatar').textContent = fmt.initials(name);
+        }
+      }
+    }).catch(()=>{});
+  }
+
+  let mtnRef=null, airtelRef=null, stripe=null, cardEl=null;
 
   function switchPay(method, el) {
-    document.querySelectorAll('.payment-tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.pay-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.payment-tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.pay-panel').forEach(p=>p.classList.remove('active'));
     el.classList.add('active');
     document.getElementById(`panel-${method}`).classList.add('active');
-    if (method === 'card') initStripe();
+    if (method==='card') initStripe();
   }
 
   function initStripe() {
     if (stripe) return;
     stripe = Stripe('pk_test_your_stripe_publishable_key_here');
     const els = stripe.elements();
-    cardEl = els.create('card', { style: { base: { color: getComputedStyle(document.documentElement).getPropertyValue('--text').trim(), fontFamily:'Outfit, sans-serif', fontSize:'15px', '::placeholder':{ color:'#606078' } }, invalid:{ color:'#FF4444' } } });
+    cardEl = els.create('card', { style:{ base:{ color:getComputedStyle(document.documentElement).getPropertyValue('--text').trim(), fontFamily:'Outfit,sans-serif', fontSize:'15px', '::placeholder':{ color:'#606078' } }, invalid:{ color:'#FF4444' } } });
     cardEl.mount('#cardElement');
-    cardEl.on('change', ({error}) => { document.getElementById('cardErrors').textContent = error ? error.message : ''; });
+    cardEl.on('change', ({error}) => { document.getElementById('cardErrors').textContent = error?error.message:''; });
   }
 
   async function payMTN() {
     const phone = document.getElementById('mtnPhone').value.trim();
     if (!phone) return showAlert('alertBox', 'Enter your MTN phone number.', 'error');
     showAlert('alertBox', 'Payment request sent to your MTN phone. Approve the prompt.', 'success');
-    mtnRef = 'demo-ref-' + Date.now();
-    document.getElementById('mtnVerifyWrap').style.display = 'block';
+    mtnRef = 'ref-' + Date.now();
+    document.getElementById('mtnVerifyWrap').style.display='block';
   }
 
   async function verifyMTN() {
     showAlert('alertBox', 'Verifying payment...', 'info');
-    await new Promise(r => setTimeout(r, 1500));
+    await new Promise(r=>setTimeout(r,1500));
     onSuccess();
   }
 
@@ -182,52 +224,46 @@
     const phone = document.getElementById('airtelPhone').value.trim();
     if (!phone) return showAlert('alertBox', 'Enter your Airtel phone number.', 'error');
     showAlert('alertBox', 'Payment request sent to your Airtel phone.', 'success');
-    airtelRef = 'demo-ref-' + Date.now();
-    document.getElementById('airtelVerifyWrap').style.display = 'block';
+    airtelRef = 'ref-' + Date.now();
+    document.getElementById('airtelVerifyWrap').style.display='block';
   }
 
   async function verifyAirtel() {
     showAlert('alertBox', 'Verifying payment...', 'info');
-    await new Promise(r => setTimeout(r, 1500));
+    await new Promise(r=>setTimeout(r,1500));
     onSuccess();
   }
 
   async function payCard() {
-    if (!stripe || !cardEl) return showAlert('alertBox', 'Card element not loaded.', 'error');
+    if (!stripe||!cardEl) return showAlert('alertBox', 'Card element not loaded.', 'error');
     showAlert('alertBox', 'Processing payment...', 'info');
-    // In production: call backend to create PaymentIntent, then confirmCardPayment
-    await new Promise(r => setTimeout(r, 2000));
+    await new Promise(r=>setTimeout(r,2000));
     onSuccess();
   }
 
   async function recordTip() {
-    if (type !== 'tip' || !creatorId) return true;
+    if (type!=='tip'||!creatorId) return true;
     try {
-      await api.post('/payments/tips', {
-        creatorId,
-        amount,
-        message: 'Tip via checkout',
-      });
+      await api.post('/payments/tips', { creatorId, amount, message:'Tip via checkout' });
       return true;
-    } catch (err) {
-      showAlert('alertBox', `Tip recording failed: ${err.message || 'Unable to save tip.'}`, 'error');
+    } catch(err) {
+      showAlert('alertBox', `Tip recording failed: ${err.message||'Unable to save tip.'}`, 'error');
       return false;
     }
   }
 
   async function onSuccess() {
-    if (type === 'tip') {
+    if (type==='tip') {
       const saved = await recordTip();
       if (!saved) return;
     }
-
-    document.getElementById('alertBox').style.display = 'none';
+    document.getElementById('alertBox').style.display='none';
     document.querySelector('.checkout-layout').innerHTML = `
       <div style="grid-column:1/-1;text-align:center;padding:60px 20px">
         <div style="width:80px;height:80px;border-radius:50%;background:var(--green-bg);display:flex;align-items:center;justify-content:center;margin:0 auto 24px;font-size:36px;color:var(--green)"><i class="ti ti-circle-check"></i></div>
         <h2 style="font-size:2rem;margin-bottom:12px">Payment Successful!</h2>
-        <p style="color:var(--text3);margin-bottom:28px">Your ${type === 'tip' ? 'tip has been sent' : 'subscription is now active'}. Enjoy exclusive content.</p>
-        <a href="/index.html" class="btn btn-brand btn-lg"><i class="ti ti-home"></i> Back to Home</a>
+        <p style="color:var(--text3);margin-bottom:28px">Your ${type==='tip'?'tip has been sent':'subscription is now active'}. Enjoy exclusive content on Nxt-door.</p>
+        <a href="/pages/feed.html" class="btn btn-brand btn-lg"><i class="ti ti-layout-list"></i> Explore Feed</a>
       </div>`;
   }
 </script>
