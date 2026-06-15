@@ -1,5 +1,5 @@
 /* ════════════════════════════════════════════════════
-   NXT-DOOR — Shared App Utilities v2.0
+   NXT-DOOR — Shared App Utilities v2.1
 ════════════════════════════════════════════════════ */
 
 const API = window.NXT_API || '/api';
@@ -8,7 +8,6 @@ const API = window.NXT_API || '/api';
 const Auth = {
   _TK: 'nxtdoor_token',
   _US: 'nxtdoor_user',
-  // Migrate legacy ux-hub keys on first run
   migrate() {
     const legToken = localStorage.getItem('uxhub_token');
     const legUser  = localStorage.getItem('uxhub_user');
@@ -170,7 +169,8 @@ window.cookieAccept = Cookies.accept;
 
 // ── SIDEBAR ────────────────────────────────────────────────────────────
 const Sidebar = {
-  isOpen: () => document.body.classList.contains('sidebar-open'),
+  isOpen:     () => document.body.classList.contains('sidebar-open'),
+  isMini:     () => document.body.classList.contains('sidebar-mini'),
   open: () => {
     document.body.classList.add('sidebar-open');
     document.body.classList.remove('sidebar-collapsed');
@@ -184,8 +184,16 @@ const Sidebar = {
     document.querySelector('.app-sidebar')?.classList.add('closed');
     document.querySelector('.sidebar-overlay')?.classList.remove('open');
   },
-  toggle: () => Sidebar.isOpen() ? Sidebar.close() : Sidebar.open(),
+  toggle:     () => Sidebar.isOpen() ? Sidebar.close() : Sidebar.open(),
+  toggleMini: () => {
+    const going = !Sidebar.isMini();
+    document.body.classList.toggle('sidebar-mini', going);
+    localStorage.setItem('nxtdoor_sidebar_mini', going ? '1' : '0');
+  },
   init: () => {
+    if (localStorage.getItem('nxtdoor_sidebar_mini') === '1') {
+      document.body.classList.add('sidebar-mini');
+    }
     window.innerWidth > 1280 ? Sidebar.open() : Sidebar.close();
     window.addEventListener('resize', () => {
       window.innerWidth > 1280 ? Sidebar.open() : Sidebar.close();
@@ -194,6 +202,83 @@ const Sidebar = {
 };
 window.toggleSidebar = Sidebar.toggle;
 window.Sidebar = Sidebar;
+
+// ── FOLLOW MODULE ──────────────────────────────────────────────────────
+const Follow = {
+  _KEY: 'nxtdoor_following',
+  _set: null,
+  _load() {
+    if (this._set) return;
+    try { this._set = new Set(JSON.parse(localStorage.getItem(this._KEY) || '[]')); }
+    catch { this._set = new Set(); }
+  },
+  _save() { localStorage.setItem(this._KEY, JSON.stringify([...this._set])); },
+  isFollowing(userId) { this._load(); return this._set.has(String(userId || '')); },
+  async toggle(userId) {
+    this._load();
+    const id = String(userId);
+    const was = this._set.has(id);
+    was ? this._set.delete(id) : this._set.add(id);
+    this._save();
+    try {
+      await api.post(`/users/${id}/follow`);
+    } catch (e) {
+      was ? this._set.add(id) : this._set.delete(id);
+      this._save();
+      throw e;
+    }
+    return !was;
+  },
+};
+window.Follow = Follow;
+
+// ── LIKES MODULE ──────────────────────────────────────────────────────
+const Likes = {
+  _KEY: 'nxtdoor_likes',
+  _set: null,
+  _load() {
+    if (this._set) return;
+    try { this._set = new Set(JSON.parse(localStorage.getItem(this._KEY) || '[]')); }
+    catch { this._set = new Set(); }
+  },
+  _save() { localStorage.setItem(this._KEY, JSON.stringify([...this._set])); },
+  isLiked(postId) { this._load(); return this._set.has(String(postId || '')); },
+  setLiked(postId, val) {
+    this._load();
+    val ? this._set.add(String(postId)) : this._set.delete(String(postId));
+    this._save();
+  },
+};
+window.Likes = Likes;
+
+// ── SAVES MODULE ──────────────────────────────────────────────────────
+const Saves = {
+  _KEY: 'nxtdoor_saves',
+  _set: null,
+  _load() {
+    if (this._set) return;
+    try { this._set = new Set(JSON.parse(localStorage.getItem(this._KEY) || '[]')); }
+    catch { this._set = new Set(); }
+  },
+  _save() { localStorage.setItem(this._KEY, JSON.stringify([...this._set])); },
+  isSaved(postId) { this._load(); return this._set.has(String(postId || '')); },
+  async toggle(postId) {
+    this._load();
+    const id = String(postId);
+    const was = this._set.has(id);
+    was ? this._set.delete(id) : this._set.add(id);
+    this._save();
+    try {
+      await api.post(`/posts/${id}/save`);
+    } catch (e) {
+      was ? this._set.add(id) : this._set.delete(id);
+      this._save();
+      throw e;
+    }
+    return !was;
+  },
+};
+window.Saves = Saves;
 
 // ── MODAL ─────────────────────────────────────────────────────────────
 const Modal = {
@@ -213,7 +298,7 @@ const Toast = {
       container.style.cssText = 'position:fixed;bottom:72px;right:16px;z-index:9000;display:flex;flex-direction:column;gap:8px;max-width:320px;pointer-events:none;';
       document.body.appendChild(container);
     }
-    const icons = { success:'ti-circle-check', error:'ti-alert-circle', warning:'ti-alert-triangle', info:'ti-info-circle' };
+    const icons  = { success:'ti-circle-check', error:'ti-alert-circle', warning:'ti-alert-triangle', info:'ti-info-circle' };
     const colors = { success:'var(--green)', error:'var(--red)', warning:'var(--orange)', info:'var(--blue)' };
     const t = document.createElement('div');
     t.style.cssText = `background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px;font-size:0.86rem;box-shadow:var(--shadow-lg);animation:fadeIn 0.25s ease;pointer-events:auto;`;
@@ -267,7 +352,13 @@ document.addEventListener('DOMContentLoaded', () => {
   Cookies.init();
   Sidebar.init();
 
-  // Theme toggle buttons
+  // Inject enhancements CSS
+  const enh = document.createElement('link');
+  enh.rel = 'stylesheet';
+  enh.href = '/assets/css/enhancements.css';
+  document.head.appendChild(enh);
+
+  // Theme toggles
   document.querySelectorAll('.theme-toggle').forEach(btn => {
     btn.addEventListener('click', Theme.toggle);
   });
@@ -275,8 +366,14 @@ document.addEventListener('DOMContentLoaded', () => {
   // Sidebar overlay
   document.querySelector('.sidebar-overlay')?.addEventListener('click', Sidebar.close);
 
-  // Hamburger
-  document.querySelector('.hamburger-btn')?.addEventListener('click', Sidebar.toggle);
+  // Hamburger: mini-toggle on desktop, open/close on mobile
+  document.querySelector('.hamburger-btn')?.addEventListener('click', () => {
+    if (window.innerWidth > 1280) {
+      Sidebar.toggleMini();
+    } else {
+      Sidebar.toggle();
+    }
+  });
 
   // Close modals on backdrop click
   document.querySelectorAll('.modal-backdrop').forEach(m => {

@@ -19,7 +19,9 @@
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
-    // Show install banner if not dismissed recently
+    // Notify layout.js to show the sidebar install button
+    document.dispatchEvent(new CustomEvent('pwa-ready'));
+    // Show banner if not recently dismissed
     const dismissed = localStorage.getItem('nxtdoor_pwa_dismissed');
     if (!dismissed || Date.now() - parseInt(dismissed) > 7 * 24 * 60 * 60 * 1000) {
       setTimeout(showPWABanner, 3000);
@@ -29,7 +31,7 @@
   window.addEventListener('appinstalled', () => {
     deferredPrompt = null;
     hidePWABanner();
-    if (window.Toast) Toast.show('Nxt-door installed successfully! 🎉', 'success');
+    if (window.Toast) Toast.show('Nxt-door installed! \u{1F389}', 'success');
   });
 
   function showPWABanner() {
@@ -63,7 +65,10 @@
 
   window.PWA = {
     install: async () => {
-      if (!deferredPrompt) return;
+      if (!deferredPrompt) {
+        if (window.Toast) Toast.show('App is already installed or not supported on this browser.', 'info');
+        return;
+      }
       hidePWABanner();
       deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
@@ -76,5 +81,6 @@
       localStorage.setItem('nxtdoor_pwa_dismissed', Date.now().toString());
       hidePWABanner();
     },
+    isInstalled: () => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone,
   };
 })();

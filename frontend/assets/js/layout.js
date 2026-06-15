@@ -1,5 +1,5 @@
 /* ════════════════════════════════════════════════════
-   NXT-DOOR — Layout Builder v2.0
+   NXT-DOOR — Layout Builder v2.1
    Injects sidebar + header + bottom nav
 ════════════════════════════════════════════════════ */
 
@@ -16,7 +16,7 @@ const Layout = {
       { icon: 'ti-message',     label: 'Messages',     href: '/pages/messages.html',    page: 'messages.html',     authOnly: true, badgeId: 'unreadCount' },
       { icon: 'ti-bell',        label: 'Notifications',href: '/pages/notifications.html',page:'notifications.html',authOnly: true },
       { icon: 'ti-calendar',    label: 'Bookings',     href: '/pages/bookings.html',    page: 'bookings.html',     authOnly: true },
-      { icon: 'ti-heart',       label: 'Saved',        href: '/pages/saved.html',       page: 'saved.html',        authOnly: true },
+      { icon: 'ti-bookmark',    label: 'Saved',        href: '/pages/saved.html',       page: 'saved.html',        authOnly: true },
       { icon: 'ti-wallet',      label: 'Wallet',       href: '/pages/wallet.html',      page: 'wallet.html',       authOnly: true },
       { icon: 'ti-user-circle', label: 'Profile',      href: '/pages/profile.html',     page: 'profile.html',      authOnly: true },
       { icon: 'ti-settings',    label: 'Settings',     href: '/pages/settings.html',    page: 'settings.html',     authOnly: true },
@@ -67,6 +67,13 @@ const Layout = {
         </div>`;
     }
 
+    const pwaInstall = `
+      <div id="sidebarPwaWrap" style="display:none;padding:4px 12px">
+        <button class="nav-link" onclick="window.PWA && PWA.install()" style="width:100%;border:none;background:none;cursor:pointer;text-align:left" aria-label="Install app">
+          <i class="ti ti-download"></i><span>Install App</span>
+        </button>
+      </div>`;
+
     const userFooter = user ? `
       <div class="sidebar-user">
         <a href="/pages/settings.html" style="text-decoration:none;">
@@ -100,6 +107,7 @@ const Layout = {
         </div>
       </a>
       ${sectionsHtml}
+      ${pwaInstall}
       ${userFooter}`;
   },
 
@@ -107,7 +115,7 @@ const Layout = {
     const user = Auth.getUser();
     return `
       <div class="header-left">
-        <button class="hamburger-btn" onclick="toggleSidebar()" aria-label="Toggle menu">
+        <button class="hamburger-btn" aria-label="Toggle menu">
           <i class="ti ti-menu-2"></i>
         </button>
         ${title
@@ -163,10 +171,9 @@ const Layout = {
         </div>
       </a>
       ${user ? `
-      <a href="/pages/messages.html" class="bottom-nav-item ${active('messages.html')}" aria-label="Messages" style="position:relative">
-        <i class="ti ti-message"></i>
-        <span>DMs</span>
-        <span class="bottom-nav-badge" id="bottomMsgBadge" style="display:none">0</span>
+      <a href="/pages/feed.html" class="bottom-nav-item ${active('feed.html')}" aria-label="Feed">
+        <i class="ti ti-home"></i>
+        <span>Feed</span>
       </a>
       <a href="/pages/settings.html" class="bottom-nav-item ${active('settings.html')}" aria-label="Profile">
         <div class="avatar avatar-xs">
@@ -229,6 +236,12 @@ const Layout = {
         }
       });
     }
+
+    // Show PWA install button when available
+    document.addEventListener('pwa-ready', () => {
+      const wrap = document.getElementById('sidebarPwaWrap');
+      if (wrap) wrap.style.display = 'block';
+    });
   },
 };
 window.Layout = Layout;
