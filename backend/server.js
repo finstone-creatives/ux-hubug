@@ -1,26 +1,24 @@
 require('dotenv').config();
-const fs = require('fs');
+const fs      = require('fs');
 const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet');
+const cors    = require('cors');
+const helmet  = require('helmet');
 const rateLimit = require('express-rate-limit');
-const path = require('path');
-const http = require('http');
+const path    = require('path');
+const http    = require('http');
 const { Server } = require('socket.io');
 const connectDB = require('./config/db');
-const jwt = require('jsonwebtoken');
+const jwt     = require('jsonwebtoken');
 const socketManager = require('./socket');
 
 const app = express();
 const frontendPath = path.join(__dirname, '../frontend');
 
-// Serve frontend
+// Serve frontend static files
 app.use(express.static(frontendPath));
 
-// Connect DB
 connectDB();
 
-// Security
 app.use(helmet({ crossOriginResourcePolicy: false }));
 
 const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:3000,https://nxt-door.onrender.com')
@@ -57,8 +55,9 @@ const uploadDir = process.env.UPLOAD_PATH
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 app.use('/uploads', express.static(uploadDir));
 
-// Routes
+// API Routes
 app.use('/api/auth',          require('./routes/auth'));
+app.use('/api/stats',         require('./routes/stats'));
 app.use('/api/videos',        require('./routes/videos'));
 app.use('/api/users',         require('./routes/users'));
 app.use('/api/notifications', require('./routes/notifications'));
@@ -71,11 +70,11 @@ app.use('/api/posts',         require('./routes/posts'));
 app.get('/api/health', (req, res) => res.json({
   status: 'ok',
   app: 'Nxt-door API',
-  version: '2.0.0',
+  version: '2.1.0',
   timestamp: new Date().toISOString(),
 }));
 
-// 404
+// 404 handler
 app.use((req, res) => res.status(404).json({ success: false, message: 'Route not found.' }));
 
 // Error handler
@@ -87,7 +86,7 @@ app.use((err, req, res, next) => {
   res.status(err.status || 500).json({ success: false, message: err.message || 'Server Error' });
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT   = process.env.PORT || 5000;
 const server = http.createServer(app);
 
 const io = new Server(server, {
@@ -96,7 +95,6 @@ const io = new Server(server, {
   pingInterval: 25000,
 });
 
-// Socket auth
 io.use(async (socket, next) => {
   try {
     const token = socket.handshake.auth?.token
@@ -116,16 +114,11 @@ io.on('connection', (socket) => {
   socket.on('join:live',          id => socket.join(`live:${id}`));
   socket.on('leave:live',         id => socket.leave(`live:${id}`));
 
-  // Typing indicator
-  socket.on('typing', ({ convId, username }) => {
-    socket.to(`conv:${convId}`).emit('typing', { username });
-  });
-  socket.on('stop:typing', ({ convId }) => {
-    socket.to(`conv:${convId}`).emit('stop:typing');
-  });
+  socket.on('typing',      ({ convId, username }) => socket.to(`conv:${convId}`).emit('typing', { username }));
+  socket.on('stop:typing', ({ convId })           => socket.to(`conv:${convId}`).emit('stop:typing'));
 });
 
 socketManager.setIO(io);
 
-server.listen(PORT, () => console.log(`🚀 Nxt-door API running on port ${PORT}`));
+server.listen(PORT, () => console.log(`\u{1F680} Nxt-door API running on port ${PORT}`));
 module.exports = app;
