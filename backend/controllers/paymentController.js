@@ -163,8 +163,8 @@ exports.requestMtnPayment = async (req, res) => {
         currency: 'UGX',
         externalId: referenceId,
         payer: { partyIdType: 'MSISDN', partyId: phoneNumber },
-        payerMessage: 'UX-HUB Premium Subscription',
-        payeeNote: `UX-HUB Premium - ${plan}`,
+        payerMessage: 'NxtDoor Premium Subscription',
+        payeeNote: `NxtDoor Premium - ${plan}`,
       },
       {
         headers: {
@@ -263,7 +263,7 @@ exports.requestAirtelPayment = async (req, res) => {
     await axios.post(
       `${process.env.AIRTEL_BASE_URL}/merchant/v1/payments/`,
       {
-        reference: `UX-HUB-${transactionId}`,
+        reference: `NxtDoor-${transactionId}`,
         subscriber: { country: 'UG', currency: 'UGX', msisdn: phoneNumber },
         transaction: { amount, country: 'UG', currency: 'UGX', id: transactionId },
       },

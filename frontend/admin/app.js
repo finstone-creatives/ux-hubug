@@ -1,13 +1,13 @@
 const API = '/api';
 
-function getToken() { return localStorage.getItem('uxhub_token'); }
-function getUser() { const u = localStorage.getItem('uxhub_user'); return u ? JSON.parse(u) : null; }
+function getToken() { return localStorage.getItem('nxtdoor_token'); }
+function getUser() { const u = localStorage.getItem('nxtdoor_user'); return u ? JSON.parse(u) : null; }
 
 // ─── AUTH GUARD ────────────────────────────────────────────────────────────────
 
 function adminLogout() {
-  localStorage.removeItem('uxhub_token');
-  localStorage.removeItem('uxhub_user');
+  localStorage.removeItem('nxtdoor_token');
+  localStorage.removeItem('nxtdoor_user');
   window.location.href = '../login.html';
 }
 

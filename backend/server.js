@@ -30,7 +30,7 @@ if (global.USE_DEMO) {
 
 // Security middleware
 app.use(helmet({ crossOriginResourcePolicy: false }));
-const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:3000,https://ux-hub.onrender.com').split(',').map(origin => origin.trim()).filter(Boolean);
+const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:3000,https://nxtdoor.onrender.com').split(',').map(origin => origin.trim()).filter(Boolean);
 if (!allowedOrigins.includes('http://localhost:5500')) allowedOrigins.push('http://localhost:5500');
 if (!allowedOrigins.includes('http://127.0.0.1:5500')) allowedOrigins.push('http://127.0.0.1:5500');
 const corsOptions = {
@@ -254,7 +254,7 @@ setTimeout(() => {
     console.log('DEMO ACCOUNTS (password for all except admin: Test1234!)');
     console.log('   Creators: amara@example.com  |  zara@example.com  |  rose@example.com');
     console.log('   Fan:      fan1@example.com');
-    console.log('   Admin:    admin@uxhub.local / Admin123!');
+    console.log('   Admin:    admin@nxtdoor.local / Admin123!');
     console.log('   All features fully functional in demo (subscriptions, live, messages, posts, payments)');
     console.log('════════════════════════════════════════════════════════════');
   }

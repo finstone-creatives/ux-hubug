@@ -23,7 +23,7 @@ Open http://localhost:5000
 **Demo logins (password for creators & fans: `Test1234!`)**  
 - Creators: `amara@example.com` (Kampala dancer), `zara@example.com` (Nairobi fashion), `rose@example.com`  
 - Fan: `fan1@example.com`  
-- Admin: `admin@uxhub.local` / `Admin123!`
+- Admin: `admin@nxtdoor.local` / `Admin123!`
 
 All features fully work in demo: 
 - Browse & beautiful profile pages
@@ -41,7 +41,7 @@ Mobile experience: bottom navigation, FAB create button, full touch friendly, sa
 ## 📁 Project Structure
 
 ```
-ux-hub/
+nxtdoor/
 ├── backend/                  # Node.js + Express API
 │   ├── config/db.js          # MongoDB connection
 │   ├── controllers/          # Business logic
@@ -105,7 +105,7 @@ Fill in your `.env` file:
 
 ```env
 PORT=5000
-MONGO_URI=mongodb://localhost:27017/uxhub
+MONGO_URI=mongodb://localhost:27017/nxtdoor
 JWT_SECRET=your_long_random_secret_here
 
 STRIPE_SECRET_KEY=sk_live_...
@@ -158,7 +158,7 @@ Open: `http://localhost:3000`
 **Update API URL:** In `js/main.js`, `login.html`, `register.html`, `video.html`, `premium.html`, and `admin/app.js`, update:
 ```js
 const API = 'http://localhost:5000/api';
-// → change to your live domain e.g. 'https://api.uxhub.ug/api'
+// → change to your live domain e.g. 'https://api.nxtdoor.africa/api'
 ```
 
 **Stripe publishable key:** In `premium.html`, replace:
@@ -272,7 +272,7 @@ The platform is already production-grade in code structure.
 ---
 
 ## 📦 Deployment Notes
-- Use **PM2** to keep Node.js running: `pm2 start server.js --name uxhub`
+- Use **PM2** to keep Node.js running: `pm2 start server.js --name nxtdoor`
 - Use **Nginx** as reverse proxy for the API
 - Host frontend on Nginx, Vercel, or Netlify
 - Use **MongoDB Atlas** for cloud DB
@@ -281,4 +281,4 @@ The platform is already production-grade in code structure.
 
 ---
 
-© 2026 UX-HUB. All rights reserved.
+© 2026 NxtDoor. All rights reserved. 18+ only.

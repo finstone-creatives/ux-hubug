@@ -4,9 +4,9 @@ let currentFilter = 'all';
 
 // ─── AUTH STATE ────────────────────────────────────────────────────────────────
 
-function getToken() { return localStorage.getItem('uxhub_token'); }
+function getToken() { return localStorage.getItem('nxtdoor_token'); }
 function getUser() {
-  const u = localStorage.getItem('uxhub_user');
+  const u = localStorage.getItem('nxtdoor_user');
   return u ? JSON.parse(u) : null;
 }
 
@@ -31,20 +31,20 @@ function renderHeaderActions() {
 }
 
 function logout() {
-  localStorage.removeItem('uxhub_token');
-  localStorage.removeItem('uxhub_user');
+  localStorage.removeItem('nxtdoor_token');
+  localStorage.removeItem('nxtdoor_user');
   window.location.reload();
 }
 
 // ─── AGE GATE ──────────────────────────────────────────────────────────────────
 
 function enterSite() {
-  sessionStorage.setItem('uxhub_age_ok', '1');
+  sessionStorage.setItem('nxtdoor_age_ok', '1');
   document.getElementById('ageGate').style.display = 'none';
 }
 
 function checkAgeGate() {
-  if (!sessionStorage.getItem('uxhub_age_ok')) {
+  if (!sessionStorage.getItem('nxtdoor_age_ok')) {
     document.getElementById('ageGate').style.display = 'flex';
   } else {
     document.getElementById('ageGate').style.display = 'none';
@@ -54,12 +54,12 @@ function checkAgeGate() {
 // ─── COOKIES ───────────────────────────────────────────────────────────────────
 
 function acceptCookies() {
-  localStorage.setItem('uxhub_cookies', '1');
+  localStorage.setItem('nxtdoor_cookies', '1');
   document.getElementById('cookieBanner').style.display = 'none';
 }
 
 function checkCookies() {
-  if (localStorage.getItem('uxhub_cookies')) {
+  if (localStorage.getItem('nxtdoor_cookies')) {
     const banner = document.getElementById('cookieBanner');
     if (banner) banner.style.display = 'none';
   }

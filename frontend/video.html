@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Watch — UX-HUB</title>
+  <title>Watch — NxtDoor</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
@@ -49,8 +49,8 @@
 
 <script>
   const API = '/api';
-  function getToken() { return localStorage.getItem('uxhub_token'); }
-  function getUser() { const u = localStorage.getItem('uxhub_user'); return u ? JSON.parse(u) : null; }
+  function getToken() { return localStorage.getItem('nxtdoor_token'); }
+  function getUser() { const u = localStorage.getItem('nxtdoor_user'); return u ? JSON.parse(u) : null; }
 
   function renderHeaderActions() {
     const container = document.getElementById('headerActions');
@@ -65,8 +65,8 @@
   }
 
   function logout() {
-    localStorage.removeItem('uxhub_token');
-    localStorage.removeItem('uxhub_user');
+    localStorage.removeItem('nxtdoor_token');
+    localStorage.removeItem('nxtdoor_user');
     window.location.href = 'index.html';
   }
 
@@ -98,7 +98,7 @@
       const videoSrc = `${API.replace('/api','')}/uploads/${v.filename}`;
       const views = v.views >= 1000000 ? `${(v.views/1e6).toFixed(1)}M` : v.views >= 1000 ? `${(v.views/1000).toFixed(1)}K` : v.views;
 
-      document.title = `${v.title} — UX-HUB`;
+      document.title = `${v.title} — NxtDoor`;
       document.getElementById('videoContent').innerHTML = `
         <div class="video-player-wrap">
           <video controls autoplay>

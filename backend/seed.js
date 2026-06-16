@@ -28,8 +28,8 @@ const sampleUsers = [
     uploadCount: 3,
   },
   {
-    username: 'uxhub_admin',
-    email: 'admin@uxhub.local',
+    username: 'nxtdoor_admin',
+    email: 'admin@nxtdoor.local',
     password: 'Admin123!',
     dateOfBirth: new Date('1990-01-01'),
     ageVerified: true,
@@ -137,7 +137,7 @@ const seed = async () => {
     console.log('  Amara  — amara@example.com / Test1234!');
     console.log('  Zara   — zara@example.com / Test1234!');
     console.log('Admin account:');
-    console.log('  admin  — admin@uxhub.local / Admin123!');
+    console.log('  admin  — admin@nxtdoor.local / Admin123!');
     process.exit(0);
   } catch (err) {
     console.error('Seed failed:', err);

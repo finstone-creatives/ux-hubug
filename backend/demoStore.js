@@ -115,7 +115,7 @@ let users = [
     _id: 'u_admin',
     username: 'platform_admin',
     displayName: 'NxtDoor Admin',
-    email: 'admin@uxhub.local',
+    email: 'admin@nxtdoor.local',
     password: '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5xK0Y9v7pZ8eC',
     role: 'admin',
     status: 'active',
@@ -133,7 +133,7 @@ const TEST_PW_HASH = '$2a$12$SckiefkCFkj25.qr.SsvEuVAP5qnETB78KFyBCb7scDdnQSRnk4
 const ADMIN_PW_HASH = '$2a$12$30H5hOsyd9n2DhX1JMiPnOa9qxBYHcbEd6eUonUI1wijFtcNHKZcW';
 
 for (let u of users) {
-  if (u.email === 'admin@uxhub.local') {
+  if (u.email === 'admin@nxtdoor.local') {
     u.password = ADMIN_PW_HASH;
   } else {
     u.password = TEST_PW_HASH;

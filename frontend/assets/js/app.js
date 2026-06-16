@@ -100,7 +100,7 @@ window.api = api;
 // ── THEME ───────────────────────────────────────────────────────────
 const Theme = {
   _KEY: 'nxtdoor_theme',
-  get:   () => localStorage.getItem('nxtdoor_theme') || localStorage.getItem('uxhub_theme') || 'dark',
+  get:   () => localStorage.getItem('nxtdoor_theme') || 'dark',
   set(theme) {
     localStorage.setItem(this._KEY, theme);
     document.documentElement.setAttribute('data-theme', theme);
