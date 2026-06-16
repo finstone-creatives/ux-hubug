@@ -17,8 +17,15 @@ const frontendPath = path.join(__dirname, '../frontend');
 // Serve frontend static files
 app.use(express.static(frontendPath));
 
-// Connect DB
-connectDB();
+// Connect DB (graceful demo fallback)
+connectDB().catch(() => { /* handled inside */ });
+
+// Initialize demo store when running in demo mode
+let DemoStore = null;
+if (global.USE_DEMO) {
+  DemoStore = require('./demoStore');
+  console.log('🎭 Demo store loaded with rich sample creators, posts, messages & live data.');
+}
 
 // Security middleware
 app.use(helmet({ crossOriginResourcePolicy: false }));
@@ -81,7 +88,13 @@ app.use('/api/payments', require('./routes/payments'));
 app.use('/api/messages', require('./routes/messages'));
 
 // Health check
-app.get('/api/health', (req, res) => res.json({ status: 'UX-HUB API running ✅' }));
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: global.USE_DEMO ? 'NxtDoor DEMO MODE (in-memory) ✅' : 'NxtDoor API running ✅',
+    demo: !!global.USE_DEMO,
+    time: new Date().toISOString()
+  });
+});
 
 // 404
 app.use((req, res) => res.status(404).json({ success: false, message: 'Route not found.' }));
@@ -199,6 +212,20 @@ io.on('connection', (socket) => {
 
 socketManager.setIO(io);
 
-server.listen(PORT, () => console.log(`🚀 UX-HUB Server running on port ${PORT}`));
+server.listen(PORT, () => {
+  console.log(`🚀 NxtDoor Server running on port ${PORT}`);
+});
+
+setTimeout(() => {
+  if (global.USE_DEMO) {
+    console.log('════════════════════════════════════════════════════════════');
+    console.log('🎭 DEMO ACCOUNTS (password for all except admin: Test1234!)');
+    console.log('   Creators: amara@example.com  |  zara@example.com  |  rose@example.com');
+    console.log('   Fan:      fan1@example.com');
+    console.log('   Admin:    admin@uxhub.local / Admin123!');
+    console.log('   All features fully functional in demo (subscriptions, live, messages, posts, payments)');
+    console.log('════════════════════════════════════════════════════════════');
+  }
+}, 600);
 
 module.exports = app;

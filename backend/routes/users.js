@@ -64,10 +64,16 @@ router.post('/me/creator',    protect, upgradeToCreator);
 router.post('/:id/follow', protect, async (req, res) => {
   try {
     const targetId  = req.params.id;
-    const myId      = req.user._id.toString();
+    const myId      = req.user._id ? req.user._id.toString() : req.user.id;
 
     if (targetId === myId) {
       return res.status(400).json({ success: false, message: 'You cannot follow yourself.' });
+    }
+
+    if (global.USE_DEMO && require('../demoStore')) {
+      const Demo = require('../demoStore');
+      const result = await Demo.follow(myId, targetId);
+      return res.json({ success: true, following: result.following });
     }
 
     const target = await User.findById(targetId).select('_id').lean();

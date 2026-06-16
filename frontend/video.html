@@ -110,8 +110,8 @@
         <div class="video-page-meta">
           <span>👁 ${views} views</span>
           <span>👤 ${v.uploader?.username || 'Unknown'}</span>
-          <span>📅 ${new Date(v.createdAt).toLocaleDateString()}</span>
-          <span>🎬 ${v.resolution}</span>
+          <span><i class="ti ti-calendar"></i> ${new Date(v.createdAt).toLocaleDateString()}</span>
+          <span><i class="ti ti-video"></i> ${v.resolution}</span>
           ${v.isPremium ? '<span style="color:var(--gold)">⭐ Premium</span>' : ''}
         </div>
         <div class="video-page-actions">

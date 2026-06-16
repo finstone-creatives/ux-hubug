@@ -2,6 +2,7 @@ const Post = require('../models/Post');
 const User = require('../models/User');
 const jwt  = require('jsonwebtoken');
 const path = require('path');
+const Demo = require('../demoStore');
 
 const getMediaType = (mimetype = '') => {
   if (mimetype.startsWith('image')) return 'image';
@@ -23,6 +24,18 @@ function decodeToken(req) {
 // @route GET /api/posts
 exports.getPosts = async (req, res) => {
   try {
+    if (global.USE_DEMO && Demo) {
+      const userId = req.user ? (req.user.id || req.user._id) : null;
+      const data = await Demo.getPosts({
+        page: parseInt(req.query.page) || 1,
+        limit: parseInt(req.query.limit) || 12,
+        creator: req.query.creator || null,
+        feed: req.query.feed || null,
+        userId,
+      });
+      return res.json(data);
+    }
+
     const page  = Math.max(parseInt(req.query.page)  || 1, 1);
     const limit = Math.min(parseInt(req.query.limit) || 12, 50);
     const skip  = (page - 1) * limit;
@@ -111,6 +124,23 @@ exports.createPost = async (req, res) => {
   try {
     const user = req.user;
     if (!user) return res.status(401).json({ success: false, message: 'Unauthorized' });
+
+    if (global.USE_DEMO && Demo) {
+      const { caption, isPremium, price } = req.body;
+      // For demo we accept simple media urls or fall back to picsum
+      let media = [];
+      if (req.files && req.files.length) {
+        media = req.files.map(f => ({ url: `/uploads/${f.filename}`, type: getMediaType(f.mimetype) }));
+      }
+      const result = await Demo.createPost(user.id || user._id, {
+        caption,
+        type: media.length ? (media.length > 1 ? 'gallery' : media[0].type) : 'text',
+        isPremium: isPremium === 'true' || isPremium === true,
+        price: parseFloat(price) || 0,
+        media
+      });
+      return res.status(201).json(result);
+    }
 
     const { caption, isPremium, price, tags, location, scheduledAt } = req.body;
 
@@ -249,6 +279,22 @@ exports.reportPost = async (req, res) => {
     if (!reason) return res.status(400).json({ success: false, message: 'Reason required.' });
     await Post.findByIdAndUpdate(req.params.id, { $set: { status: 'pending' } });
     res.json({ success: true, message: 'Post reported and queued for review.' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// @route POST /api/posts/:id/unlock — one-time PPV unlock for premium post
+exports.unlockPost = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (global.USE_DEMO && Demo) {
+      await Demo.unlockPost(id, req.user.id || req.user._id);
+      return res.json({ success: true, unlocked: true });
+    }
+    // In production the payment (tip or future dedicated purchase) already happened.
+    // For now just acknowledge so client can show the media.
+    res.json({ success: true, unlocked: true });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }

@@ -344,10 +344,10 @@ async function loadRevenue() {
   `;
 
   const methodLabels = {
-    stripe: '💳 Stripe / Card',
-    mtn_momo: '📱 MTN MoMo',
-    airtel_money: '📱 Airtel Money',
-    card: '💳 Card',
+    stripe: 'Card / Stripe',
+    mtn_momo: 'MTN MoMo',
+    airtel_money: 'Airtel Money',
+    card: 'Card',
   };
 
   document.getElementById('revBreakdown').innerHTML = data.byMethod.map(m => `

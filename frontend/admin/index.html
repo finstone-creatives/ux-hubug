@@ -23,19 +23,19 @@
 
   <nav class="sidebar-nav">
     <button class="nav-item active" onclick="showSection('dashboard')">
-      <span class="nav-icon">📊</span> Dashboard
+      <span class="nav-icon"><i class="ti ti-dashboard"></i></span> Dashboard
     </button>
     <button class="nav-item" onclick="showSection('users')">
-      <span class="nav-icon">👥</span> Users
+      <span class="nav-icon"><i class="ti ti-users"></i></span> Users
     </button>
     <button class="nav-item" onclick="showSection('videos')">
       <span class="nav-icon">🎦</span> Video Moderation
     </button>
     <button class="nav-item" onclick="showSection('ads')">
-      <span class="nav-icon">📢</span> Ad Management
+      <span class="nav-icon"><i class="ti ti-speakerphone"></i></span> Ad Management
     </button>
     <button class="nav-item" onclick="showSection('revenue')">
-      <span class="nav-icon">💰</span> Revenue
+      <span class="nav-icon"><i class="ti ti-cash"></i></span> Revenue
     </button>
   </nav>
 
@@ -47,7 +47,7 @@
 
 <!-- MOBILE TOP BAR -->
 <div class="topbar">
-  <button class="topbar-toggle" onclick="toggleSidebar()">☰</button>
+  <button class="topbar-toggle" onclick="toggleSidebar()"><i class="ti ti-menu-2"></i></button>
   <span class="topbar-title">Nxt-door cPanel</span>
 </div>
 
@@ -145,7 +145,7 @@
     </div>
     <div class="modal-overlay" id="adModal">
       <div class="modal">
-        <button class="modal-close" onclick="closeAdModal()">✕</button>
+        <button class="modal-close" onclick="closeAdModal()"><i class="ti ti-x"></i></button>
         <h3 id="adModalTitle">Create Ad</h3>
         <form id="adForm" onsubmit="saveAd(event)">
           <input type="hidden" id="adId" />

@@ -1,9 +1,10 @@
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY || 'sk_test_demo');
 const axios = require('axios');
 const { v4: uuidv4 } = require('uuid');
 const Subscription = require('../models/Subscription');
 const Tip = require('../models/Tip');
 const User = require('../models/User');
+const Demo = require('../demoStore');
 
 const PREMIUM_PRICE_USD = parseFloat(process.env.PREMIUM_PRICE_USD) || 9.99;
 const PREMIUM_PRICE_UGX = parseInt(process.env.PREMIUM_PRICE_UGX) || 37000;
@@ -20,6 +21,13 @@ const addPremiumDays = async (userId, days = 30) => {
 
 exports.createStripeIntent = async (req, res) => {
   try {
+    if (global.USE_DEMO) {
+      const { plan } = req.body;
+      const amount = plan === 'yearly' ? Math.round(PREMIUM_PRICE_USD * 10 * 100) : Math.round(PREMIUM_PRICE_USD * 100);
+      // Demo: fake client secret that the frontend can "confirm"
+      return res.json({ success: true, clientSecret: 'demo_pi_' + Date.now(), amount, demo: true });
+    }
+
     const { plan } = req.body; // monthly | yearly
     const amount = plan === 'yearly' ? Math.round(PREMIUM_PRICE_USD * 10 * 100) : Math.round(PREMIUM_PRICE_USD * 100);
 
@@ -37,6 +45,15 @@ exports.createStripeIntent = async (req, res) => {
 
 exports.confirmStripePayment = async (req, res) => {
   try {
+    if (global.USE_DEMO) {
+      const { plan = 'monthly' } = req.body;
+      const days = plan === 'yearly' ? 365 : 30;
+      if (Demo) await Demo.mockSubscribe(req.user.id || req.user._id, 'platform', 'stripe');
+      // Grant premium in real path too if needed, but demo does it
+      await addPremiumDays(req.user.id, days).catch(() => {});
+      return res.json({ success: true, message: 'Premium activated! (demo)', demo: true });
+    }
+
     const { paymentIntentId, plan } = req.body;
     const intent = await stripe.paymentIntents.retrieve(paymentIntentId);
 
@@ -75,6 +92,14 @@ exports.sendTip = async (req, res) => {
 
     if (!creatorId || !parsedAmount || parsedAmount <= 0) {
       return res.status(400).json({ success: false, message: 'Valid creator and amount are required.' });
+    }
+
+    if (global.USE_DEMO && Demo) {
+      const result = await Demo.mockTip(creatorId, req.user.id || req.user._id, parsedAmount, message);
+      // Broadcast tip via socket if live context
+      const io = require('../socket').getIO ? require('../socket').getIO() : null;
+      if (io) io.emit('live:tip', { liveId: creatorId, amount: parsedAmount, message, username: 'You' });
+      return res.json({ success: true, message: 'Tip sent! Thank you.', tip: result.tip });
     }
 
     const creator = await User.findById(creatorId);
@@ -119,7 +144,14 @@ const getMtnToken = async () => {
 
 exports.requestMtnPayment = async (req, res) => {
   try {
-    const { phoneNumber, plan } = req.body;
+    const { phoneNumber, plan, creatorId } = req.body;
+    if (global.USE_DEMO && Demo) {
+      const amt = PREMIUM_PRICE_UGX;
+      if (creatorId) await Demo.mockSubscribe(req.user.id || req.user._id, creatorId, 'mtn');
+      const ref = 'MTN' + Date.now().toString().slice(-9);
+      return res.json({ success: true, message: '✅ MTN MoMo approved instantly (demo mode). Premium unlocked!', referenceId: ref, demo: true });
+    }
+
     const amount = PREMIUM_PRICE_UGX;
     const referenceId = uuidv4();
     const token = await getMtnToken();
@@ -167,6 +199,11 @@ exports.requestMtnPayment = async (req, res) => {
 exports.verifyMtnPayment = async (req, res) => {
   try {
     const { referenceId } = req.params;
+    if (global.USE_DEMO) {
+      await addPremiumDays(req.user.id, 30).catch(() => {});
+      return res.json({ success: true, message: 'Payment confirmed. Premium unlocked! (demo)', demo: true });
+    }
+
     const token = await getMtnToken();
 
     const response = await axios.get(

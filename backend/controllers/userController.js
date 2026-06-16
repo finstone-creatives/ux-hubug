@@ -3,9 +3,16 @@ const Video = require('../models/Video');
 const Conversation = require('../models/Conversation');
 const Subscription = require('../models/Subscription');
 const Tip = require('../models/Tip');
+const Demo = require('../demoStore');
 
 exports.getCreators = async (req, res) => {
   try {
+    if (global.USE_DEMO && Demo) {
+      const search = (req.query.search || '').trim();
+      const list = await Demo.listCreators({ limit: parseInt(req.query.limit) || 12, q: search });
+      return res.json({ success: true, users: list });
+    }
+
     const search = (req.query.search || '').trim();
     const role = req.query.role;
     const limit = parseInt(req.query.limit, 10) || 24;
@@ -36,6 +43,20 @@ exports.getCreators = async (req, res) => {
 
 exports.getUser = async (req, res) => {
   try {
+    if (global.USE_DEMO && Demo) {
+      const profile = await Demo.getUserById(req.params.id);
+      if (!profile) return res.status(404).json({ success: false, message: 'User not found.' });
+      // Also return some posts for the profile page
+      const postsRes = await Demo.getPosts({ creator: req.params.id, limit: 8 });
+      return res.json({
+        success: true,
+        user: profile,
+        posts: postsRes.posts || [],
+        videos: [],
+        stats: { uploads: profile.uploadCount || 0, followers: profile.followers || 0 },
+      });
+    }
+
     const user = await User.findById(req.params.id).select('-password');
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found.' });

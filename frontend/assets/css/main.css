@@ -3,77 +3,129 @@
    Africa's Premier Creator Platform
 ═════════════════════════════════════════════════════════════════ */
 
-/* ── BRAND VARIABLES ───────────────────────────────────────────────────── */
+/* ── BRAND VARIABLES — NxtDoor: Premium African Creator Experience ───── */
 :root {
-  /* Brand Colors */
-  --red:          #e50914;
-  --red-dark:     #c0070f;
-  --red-dim:      rgba(229,9,20,0.12);
-  --red-glow:     rgba(229,9,20,0.35);
-  --pink:         #e500cc;
-  --pink-dark:    #b800a8;
-  --pink-dim:     rgba(229,0,204,0.12);
-  --pink-glow:    rgba(229,0,204,0.35);
+  /* Passion + Prestige (OnlyFans-of-Africa luxury) */
+  --red:          #9F1E25;      /* deep elegant burgundy-red */
+  --red-dark:     #7A161C;
+  --red-dim:      rgba(159,30,37,0.14);
+  --red-glow:     rgba(159,30,37,0.32);
 
-  /* Surfaces - Dark (default) */
-  --bg:           #000000;
-  --bg2:          #060606;
-  --surface:      #0d0d0d;
-  --surface2:     #111111;
-  --card:         #141414;
-  --card2:        #1a1a1a;
-  --card3:        #222222;
+  --gold:         #C9A24E;      /* warm African gold */
+  --gold-dark:    #A07F35;
+  --gold-dim:     rgba(201,162,78,0.14);
+  --gold-glow:    rgba(201,162,78,0.25);
 
-  /* Text */
-  --text:         #f0f0f0;
-  --text2:        #c0c0c0;
-  --text3:        #888888;
-  --text4:        #555555;
+  --accent:       #B45309;      /* rich terracotta */
 
-  /* Borders */
-  --border:       #1e1e1e;
-  --border2:      #2a2a2a;
-  --border3:      #363636;
+  /* Surfaces - Ultra-premium dark */
+  --bg:           #050505;
+  --bg2:          #0A0A0A;
+  --surface:      #101010;
+  --surface2:     #171717;
+  --card:         #1C1C1C;
+  --card2:        #242424;
+  --card3:        #2A2A2A;
+
+  /* Text — high contrast, refined */
+  --text:         #F5F5F5;
+  --text2:        #C8C8C8;
+  --text3:        #8A8A8A;
+  --text4:        #5C5C5C;
+
+  /* Borders — subtle luxury */
+  --border:       #252525;
+  --border2:      #323232;
+  --border3:      #404040;
 
   /* Semantic */
-  --green:        #22c55e;
-  --green-dim:    rgba(34,197,94,0.12);
-  --orange:       #f97316;
-  --orange-dim:   rgba(249,115,22,0.12);
-  --gold:         #f59e0b;
-  --gold-dim:     rgba(245,158,11,0.12);
-  --blue:         #3b82f6;
-  --blue-dim:     rgba(59,130,246,0.12);
+  --green:        #16A34A;
+  --green-dim:    rgba(22,163,74,0.14);
+  --orange:       #EA580C;
+  --orange-dim:   rgba(234,88,12,0.14);
+  --blue:         #2563EB;
+  --blue-dim:     rgba(37,99,235,0.14);
 
   /* Layout */
-  --sidebar-w:    264px;
-  --header-h:     60px;
-  --bottom-h:     62px;
-  --radius:       8px;
-  --radius-lg:    14px;
-  --radius-xl:    20px;
+  --sidebar-w:    268px;
+  --header-h:     64px;
+  --bottom-h:     64px;
+  --radius:       10px;
+  --radius-lg:    16px;
+  --radius-xl:    22px;
   --radius-full:  9999px;
 
   /* Typography */
-  --font-display: 'Sora', -apple-system, sans-serif;
-  --font-body:    'Outfit', -apple-system, sans-serif;
+  --font-display: 'Sora', -apple-system, system-ui, sans-serif;
+  --font-body:    'Outfit', -apple-system, system-ui, sans-serif;
 
   /* Effects */
-  --shadow:       0 4px 24px rgba(0,0,0,0.55);
-  --shadow-lg:    0 8px 48px rgba(0,0,0,0.7);
-  --shadow-red:   0 6px 28px var(--red-glow);
-  --shadow-pink:  0 6px 28px var(--pink-glow);
-  --t:            0.2s ease;
-  --t-lg:         0.35s cubic-bezier(0.4,0,0.2,1);
-  --t-spring:     0.4s cubic-bezier(0.34,1.56,0.64,1);
+  --shadow:       0 4px 20px rgba(0,0,0,0.6);
+  --shadow-lg:    0 10px 48px rgba(0,0,0,0.75);
+  --shadow-gold:  0 6px 24px var(--gold-glow);
+  --t:            0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --t-lg:         0.32s cubic-bezier(0.4, 0, 0.2, 1);
+  --t-spring:     0.38s cubic-bezier(0.34, 1.56, 0.64, 1);
 
-  /* Gradients */
-  --grad-brand:   linear-gradient(135deg, var(--red) 0%, var(--pink) 100%);
-  --grad-dark:    linear-gradient(180deg, #0d0d0d 0%, #000 100%);
-  --grad-glow:    radial-gradient(ellipse at 50% -20%, rgba(229,9,20,0.18) 0%, transparent 65%);
+  /* Gradients — sophisticated */
+  --grad-brand:   linear-gradient(135deg, var(--red) 0%, #C2410F 100%);
+  --grad-gold:    linear-gradient(135deg, var(--gold) 0%, #D4AF37 100%);
+  --grad-dark:    linear-gradient(180deg, #101010 0%, #050505 100%);
+  --grad-glow:    radial-gradient(ellipse at 50% -25%, rgba(201,162,78,0.1) 0%, transparent 70%);
   --gradient:     var(--grad-brand);
   --brand:        var(--red);
   --brand-light:  var(--red-dim);
+}
+
+/* Premium buttons, cards, live polish */
+.btn {
+  font-weight: 600;
+  letter-spacing: -.1px;
+}
+.btn-brand {
+  background: var(--grad-brand);
+  color: white;
+  border: none;
+}
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--text);
+}
+.btn-outline:hover { background: var(--surface2); border-color: var(--border3); }
+
+.creator-card {
+  transition: transform .2s var(--t), box-shadow .2s var(--t);
+  border: 1px solid var(--border);
+  background: var(--card);
+  border-radius: var(--radius-lg);
+}
+.creator-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+.creator-card-cover { position: relative; background-size: cover; background-position: center; }
+.creator-card-body { padding: 13px 15px 16px; }
+
+.live-card {
+  background: var(--card);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  transition: transform .18s ease;
+}
+.live-card:hover { transform: translateY(-2px); }
+
+.badge-live { background: var(--red); color: #fff; font-weight:700; }
+
+.text-gradient {
+  background: linear-gradient(90deg, #fff, var(--gold));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Mobile ultra refinements */
+@media (max-width: 640px) {
+  .creator-card-cover { min-height: 132px !important; }
+  .hero-title { font-size: 1.75rem !important; line-height: 1.05 !important; }
+  .page-wrap { padding-bottom: 78px; }
 }
 
 /* Light theme */

@@ -298,7 +298,7 @@
     
     div.innerHTML = `
       <div style="display:flex;align-items:flex-start;gap:8px;">
-        <div style="width:24px;height:24px;border-radius:50%;${avatarStyle}display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:600;flex-shrink:0;">${isTip ? '💰' : initials}</div>
+        <div style="width:24px;height:24px;border-radius:50%;${avatarStyle}display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:600;flex-shrink:0;">${isTip ? '$' : initials}</div>
         <div style="flex:1;min-width:0;">
           <span class="live-msg-name" style="color:${isTip?'var(--gold)':(isHost?'var(--red)':'var(--brand)')};">${username}</span>
           ${isTip ? `<span style="color:var(--gold);font-weight:600;"><i class="ti ti-coin" style="font-size:0.8rem;"></i> $${tipAmount}</span>` : ''}

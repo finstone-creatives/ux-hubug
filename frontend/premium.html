@@ -34,12 +34,12 @@
 
   <!-- FEATURES -->
   <ul class="premium-features">
-    <li>✅ Unlimited HD & 4K video access</li>
-    <li>✅ Zero ads while watching</li>
-    <li>✅ Priority video uploads</li>
-    <li>✅ Premium-only exclusive content</li>
-    <li>✅ Download for offline viewing</li>
-    <li>✅ Cancel anytime</li>
+    <li><i class="ti ti-check" style="color:var(--green);margin-right:6px"></i> Unlimited HD &amp; 4K video access</li>
+    <li><i class="ti ti-check" style="color:var(--green);margin-right:6px"></i> Zero ads while watching</li>
+    <li><i class="ti ti-check" style="color:var(--green);margin-right:6px"></i> Priority video uploads</li>
+    <li><i class="ti ti-check" style="color:var(--green);margin-right:6px"></i> Premium-only exclusive content</li>
+    <li><i class="ti ti-check" style="color:var(--green);margin-right:6px"></i> Download for offline viewing</li>
+    <li><i class="ti ti-check" style="color:var(--green);margin-right:6px"></i> Cancel anytime</li>
   </ul>
 
   <div class="alert" id="alertBox" style="display:none"></div>
@@ -49,9 +49,9 @@
     <h3>Choose Payment Method</h3>
 
     <div class="payment-tabs">
-      <button class="pay-tab active" onclick="showPayMethod('mtn')">📱 MTN MoMo</button>
-      <button class="pay-tab" onclick="showPayMethod('airtel')">📱 Airtel Money</button>
-      <button class="pay-tab" onclick="showPayMethod('card')">💳 Card / Stripe</button>
+      <button class="pay-tab active" onclick="showPayMethod('mtn')"><i class="ti ti-device-mobile"></i> MTN MoMo</button>
+      <button class="pay-tab" onclick="showPayMethod('airtel')"><i class="ti ti-device-mobile"></i> Airtel Money</button>
+      <button class="pay-tab" onclick="showPayMethod('card')"><i class="ti ti-credit-card"></i> Card / Stripe</button>
     </div>
 
     <!-- MTN -->
@@ -61,12 +61,12 @@
         <input type="tel" id="mtnPhone" placeholder="e.g. 0771234567" />
       </div>
       <button class="btn-primary pay-btn" onclick="payMTN()">
-        📱 Pay with MTN MoMo
+        <i class="ti ti-device-mobile"></i> Pay with MTN MoMo
       </button>
       <p class="pay-note">You'll receive a prompt on your MTN line to approve the payment.</p>
       <div class="verify-section" id="mtnVerify" style="display:none">
         <p>After approving on your phone:</p>
-        <button class="btn-outline verify-btn" onclick="verifyMTN()">✓ Confirm MTN Payment</button>
+        <button class="btn-outline verify-btn" onclick="verifyMTN()"><i class="ti ti-check"></i> Confirm MTN Payment</button>
       </div>
     </div>
 
@@ -77,12 +77,12 @@
         <input type="tel" id="airtelPhone" placeholder="e.g. 0701234567" />
       </div>
       <button class="btn-primary pay-btn" onclick="payAirtel()">
-        📱 Pay with Airtel Money
+        <i class="ti ti-device-mobile"></i> Pay with Airtel Money
       </button>
       <p class="pay-note">You'll receive a prompt on your Airtel line to approve the payment.</p>
       <div class="verify-section" id="airtelVerify" style="display:none">
         <p>After approving on your phone:</p>
-        <button class="btn-outline verify-btn" onclick="verifyAirtel()">✓ Confirm Airtel Payment</button>
+        <button class="btn-outline verify-btn" onclick="verifyAirtel()"><i class="ti ti-check"></i> Confirm Airtel Payment</button>
       </div>
     </div>
 
@@ -94,7 +94,7 @@
         <div id="card-errors" class="card-error"></div>
       </div>
       <button class="btn-primary pay-btn" onclick="payStripe()">
-        💳 Pay with Card
+        <i class="ti ti-credit-card"></i> Pay with Card
       </button>
       <p class="pay-note">Secured by Stripe. We never store your card details.</p>
     </div>
@@ -156,7 +156,7 @@
       const data = await res.json();
       if (data.success) {
         mtnReferenceId = data.referenceId;
-        showAlert('✅ Check your MTN phone and approve the payment prompt, then click confirm below.', 'success');
+        showAlert('Check your MTN phone and approve the payment prompt, then click confirm below.', 'success');
         document.getElementById('mtnVerify').style.display = 'block';
       } else {
         showAlert(data.message, 'error');
@@ -173,7 +173,7 @@
       });
       const data = await res.json();
       if (data.success) {
-        showAlert('🎉 Premium activated! Enjoy UX-HUB.', 'success');
+        showAlert('Premium activated! Enjoy NxtDoor.', 'success');
         setTimeout(() => window.location.href = 'index.html', 2000);
       } else {
         showAlert(data.message || 'Payment not confirmed yet. Please try again.', 'error');
@@ -198,7 +198,7 @@
       const data = await res.json();
       if (data.success) {
         airtelTransactionId = data.transactionId;
-        showAlert('✅ Check your Airtel phone and approve the payment, then click confirm below.', 'success');
+        showAlert('Check your Airtel phone and approve the payment, then click confirm below.', 'success');
         document.getElementById('airtelVerify').style.display = 'block';
       } else {
         showAlert(data.message, 'error');
@@ -215,7 +215,7 @@
       });
       const data = await res.json();
       if (data.success) {
-        showAlert('🎉 Premium activated! Enjoy UX-HUB.', 'success');
+        showAlert('Premium activated! Enjoy NxtDoor.', 'success');
         setTimeout(() => window.location.href = 'index.html', 2000);
       } else {
         showAlert(data.message || 'Payment not confirmed yet. Please try again.', 'error');
@@ -276,7 +276,7 @@
       const confirmData = await confirmRes.json();
 
       if (confirmData.success) {
-        showAlert('🎉 Premium activated! Enjoy UX-HUB.', 'success');
+        showAlert('Premium activated! Enjoy NxtDoor.', 'success');
         setTimeout(() => window.location.href = 'index.html', 2000);
       } else {
         showAlert(confirmData.message, 'error');

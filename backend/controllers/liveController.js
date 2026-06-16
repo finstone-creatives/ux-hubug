@@ -1,10 +1,15 @@
 const User = require('../models/User');
 const socketManager = require('../socket');
+const Demo = require('../demoStore');
 
 const LIVE_FIELDS = 'username displayName avatar coverImage role isLive liveTitle liveCategory liveAccess liveStartedAt liveViewers location creatorCategory creatorPitch';
 
 exports.getLiveSessions = async (req, res) => {
   try {
+    if (global.USE_DEMO && Demo) {
+      const data = await Demo.getLiveSessions();
+      return res.json(data);
+    }
     const liveCreators = await User.find({ role: 'creator', isLive: true, status: 'active' })
       .select(LIVE_FIELDS)
       .sort({ liveStartedAt: -1 });
@@ -42,6 +47,11 @@ exports.getLiveSession = async (req, res) => {
 
 exports.startLive = async (req, res) => {
   try {
+    if (global.USE_DEMO && Demo) {
+      const data = await Demo.startLive(req.user.id || req.user._id, req.body);
+      return res.json(data);
+    }
+
     if (req.user.role !== 'creator') {
       return res.status(403).json({ success: false, message: 'Only creators can start live streams.' });
     }
@@ -73,6 +83,11 @@ exports.startLive = async (req, res) => {
 
 exports.endLive = async (req, res) => {
   try {
+    if (global.USE_DEMO && Demo) {
+      const data = await Demo.stopLive(req.user.id || req.user._id);
+      return res.json(data);
+    }
+
     if (req.user.role !== 'creator') {
       return res.status(403).json({ success: false, message: 'Only creators can end live streams.' });
     }

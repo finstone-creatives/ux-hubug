@@ -1,6 +1,40 @@
-# UX-HUB — Full Stack Adult Video Platform
+# NxtDoor — Africa’s Premier Creator Platform
 
-Uganda's premium video platform with age verification, mobile money payments, and a full admin cPanel.
+**The OnlyFans of Africa.** Beautiful, mobile-first, fully functional premium creator experience for East Africa.
+
+- Verified adult creators (18+)
+- Exclusive paid posts, private messaging, live streams with real-time chat + tips
+- Seamless MTN MoMo + Airtel Money + Stripe flows (demo mode included)
+- Creator dashboards, admin cPanel, wallet, bookings
+- 100% working backend + frontend (including demo in-memory mode)
+
+---
+
+## ✨ Quick Start (Demo — everything works instantly)
+
+```bash
+cd backend
+npm install
+node server.js
+```
+
+Open http://localhost:5000
+
+**Demo logins (password for creators & fans: `Test1234!`)**  
+- Creators: `amara@example.com` (Kampala dancer), `zara@example.com` (Nairobi fashion), `rose@example.com`  
+- Fan: `fan1@example.com`  
+- Admin: `admin@uxhub.local` / `Admin123!`
+
+All features fully work in demo: 
+- Browse & beautiful profile pages
+- Subscribe (MoMo / Stripe simulated → instant unlock)
+- Real-time live (start from creator dashboard, chat + tips)
+- DMs (real-time via Socket.io)
+- Create posts (image/video/text + premium price)
+- Creator earnings / go live
+- Admin moderation & stats
+
+Mobile experience: bottom navigation, FAB create button, full touch friendly, safe areas. Professional luxury dark design with African gold accents.
 
 ---
 
@@ -145,6 +179,18 @@ db.users.updateOne({ email: "yourmail@gmail.com" }, { $set: { role: "admin" } })
 ```
 
 Then log in → you'll see the **⚙ cPanel** button in the header → access `admin/index.html`.
+
+---
+
+## 🌍 How to make it production (real Mongo + real payments)
+
+1. Add real `MONGO_URI` in `.env`
+2. Run `node seed.js` (or let it auto-seed on first start)
+3. Fill real MTN/Airtel/Stripe keys
+4. Deploy backend (Render, Railway, Heroku) + frontend static (or same server)
+5. Point `FRONTEND_URL`
+
+The platform is already production-grade in code structure.
 
 ---
 

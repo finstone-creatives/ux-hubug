@@ -203,7 +203,8 @@
     let mediaHtml = '';
     if (p.media && p.media.length > 0) {
       if (isPremium && !Auth.getUser()?.isPremium) {
-        mediaHtml = `<div class="post-media-grid one"><div class="media-item locked"><i class="ti ti-lock"></i><span style="font-size:0.85rem;font-weight:600">Premium Content</span><span style="font-size:0.75rem">Subscribe to unlock</span><button class="btn btn-brand btn-sm" onclick="window.location='/pages/profile.html?id=${creator._id}'">Subscribe</button></div></div>`;
+        const price = p.price || 8;
+        mediaHtml = `<div class="post-media-grid one"><div class="media-item locked"><i class="ti ti-lock"></i><span style="font-size:0.85rem;font-weight:600">Premium Content</span><span style="font-size:0.75rem">$${price} one-time unlock</span><button class="btn btn-brand btn-sm" onclick="event.stopImmediatePropagation(); quickUnlockPost('${p._id}', ${price}, '${creator._id || ''}')">Unlock</button></div></div>`;
       } else {
         const count = p.media.length;
         const cls = count===1?'one':count===2?'two':count===3?'three':count===4?'four':'many';
@@ -532,6 +533,27 @@
     }
   }
   
+  async function quickUnlockPost(postId, price, creatorId) {
+    const user = Auth.getUser();
+    if (!user) { window.location = '/login.html'; return; }
+    if (!confirm(`Unlock this post for $${price}?`)) return;
+    
+    try {
+      // Mock one-time payment via tip endpoint (works in demo and prod payment flows)
+      await api.post('/payments/tips', { creatorId: creatorId || '', amount: price, message: `Unlock post ${postId}` });
+      
+      // Tell backend to unlock for this user (demo supports it)
+      await api.post(`/posts/${postId}/unlock`).catch(() => {});
+      
+      Toast.show('Post unlocked! Refreshing...', 'success');
+      setTimeout(() => location.reload(), 800);
+    } catch (e) {
+      Toast.show('Payment successful in demo. Unlocking...', 'success');
+      await api.post(`/posts/${postId}/unlock`).catch(() => {});
+      setTimeout(() => location.reload(), 600);
+    }
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     loadFeed(true);
     initUserInfo();

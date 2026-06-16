@@ -4,12 +4,19 @@ const User = require('../models/User');
 const socketManager = require('../socket');
 const { createNotification } = require('./notificationController');
 const jwt = require('jsonwebtoken');
+const Demo = require('../demoStore');
 
 exports.createOrGetConversation = async (req, res) => {
   try {
     const { recipientId } = req.body;
     if (!recipientId) return res.status(400).json({ success: false, message: 'recipientId required' });
-    if (recipientId === String(req.user._id)) return res.status(400).json({ success: false, message: 'Cannot message yourself' });
+    const myId = req.user.id || req.user._id;
+    if (recipientId === String(myId)) return res.status(400).json({ success: false, message: 'Cannot message yourself' });
+
+    if (global.USE_DEMO && Demo) {
+      const data = await Demo.getOrCreateConversation(String(myId), String(recipientId));
+      return res.json(data);
+    }
 
     // Find existing conversation between the two
     let conv = await Conversation.findOne({ participants: { $all: [req.user._id, recipientId] } });
@@ -25,6 +32,11 @@ exports.createOrGetConversation = async (req, res) => {
 
 exports.getConversations = async (req, res) => {
   try {
+    const myId = req.user.id || req.user._id;
+    if (global.USE_DEMO && Demo) {
+      const data = await Demo.getConversations(String(myId));
+      return res.json(data);
+    }
     const convs = await Conversation.find({ participants: req.user._id }).sort({ updatedAt: -1 }).limit(200).populate('participants', 'username avatar');
     res.json({ success: true, conversations: convs });
   } catch (err) {
@@ -35,6 +47,11 @@ exports.getConversations = async (req, res) => {
 exports.getMessages = async (req, res) => {
   try {
     const { id } = req.params;
+    const myId = req.user.id || req.user._id;
+    if (global.USE_DEMO && Demo) {
+      const data = await Demo.getMessages(id, String(myId));
+      return res.json(data);
+    }
     const conv = await Conversation.findById(id);
     if (!conv) return res.status(404).json({ success: false, message: 'Conversation not found' });
     if (!conv.participants.map(p => String(p)).includes(String(req.user._id))) {
@@ -51,6 +68,16 @@ exports.sendMessage = async (req, res) => {
   try {
     const { id } = req.params; // conversation id
     const { text, attachments } = req.body;
+    const myId = req.user.id || req.user._id;
+
+    if (global.USE_DEMO && Demo) {
+      const data = await Demo.sendMessage(id, String(myId), text || '');
+      // also broadcast via socket
+      const io = socketManager.getIO ? socketManager.getIO() : null;
+      if (io) io.to(`conversation:${id}`).emit('message:new', data.message);
+      return res.json(data);
+    }
+
     const conv = await Conversation.findById(id);
     if (!conv) return res.status(404).json({ success: false, message: 'Conversation not found' });
     if (!conv.participants.map(p => String(p)).includes(String(req.user._id))) {

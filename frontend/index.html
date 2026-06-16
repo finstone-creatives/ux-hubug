@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>UX-HUB — Uganda's Premier Adult Creator Platform</title>
+  <title>NxtDoor • Africa’s Premier Creator Platform • 18+</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css">
@@ -54,11 +54,11 @@
       <div class="hero-content">
         <div class="hero-text">
           <div class="hero-eyebrow">
-            <span class="badge badge-live"><span class="live-dot"></span> 247 Live Now</span>
-            <span class="tag tag-brand">Uganda & East Africa</span>
+            <span class="badge badge-live"><span class="live-dot"></span> <span id="liveCount">247</span> Live Now</span>
+            <span class="tag tag-brand">East Africa • Premium 18+</span>
           </div>
-          <h1 class="hero-title">Africa's Most<br><span class="text-gradient">Exclusive</span> Creator<br>Platform</h1>
-          <p class="hero-sub">Connect with creators, subscribe to exclusive content, book private sessions, and experience live interactions.</p>
+          <h1 class="hero-title">Africa’s Most<br><span class="text-gradient">Exclusive</span> Creator<br>Experience</h1>
+          <p class="hero-sub">The OnlyFans of Africa. Connect intimately with verified East African creators through exclusive posts, private lives, and real connections.</p>
           <div class="hero-cta">
             <a href="/register.html" class="btn btn-brand btn-lg">
               <i class="ti ti-user-plus"></i> Join Free
@@ -288,8 +288,8 @@
   <div class="inner-lg">
     <div class="footer-grid">
       <div class="footer-brand">
-        <div class="logo-name" style="font-size:1.8rem;margin-bottom:10px">Nxt<span>-door</span></div>
-        <p>Africa's premier creator platform. For verified adults 18+ only.</p>
+        <div class="logo-name" style="font-size:1.8rem;margin-bottom:10px">Nxt<span>Door</span></div>
+        <p>Africa’s premier creator platform. Exclusive. Verified adults 18+ only.</p>
         <div class="footer-social">
           <a href="#" class="btn btn-icon"><i class="ti ti-brand-x"></i></a>
           <a href="#" class="btn btn-icon"><i class="ti ti-brand-instagram"></i></a>
@@ -523,6 +523,63 @@
       `;
     }
   }
+
+  // Premium quick subscribe modal (works perfectly in demo)
+  window.subscribeQuick = function(creatorId, name, price) {
+    const modal = document.createElement('div');
+    modal.className = 'fab-modal open';
+    modal.innerHTML = `
+      <div onclick="event.target.remove()" style="position:absolute;inset:0;background:rgba(0,0,0,0.75)"></div>
+      <div style="position:relative;background:var(--card);width:100%;max-width:420px;margin:auto 16px 80px;border-radius:20px;padding:22px 20px 24px;box-shadow:var(--shadow-lg);">
+        <div style="text-align:center;margin-bottom:14px">
+          <div class="badge badge-verified" style="margin:0 auto 8px"><i class="ti ti-crown"></i> Exclusive Access</div>
+          <h3 style="margin:0 0 4px;font-size:1.35rem">Subscribe to ${name}</h3>
+          <p style="color:var(--text3);margin:0">Unlock all premium photos, videos &amp; private lives</p>
+        </div>
+        
+        <div style="background:var(--surface);border-radius:14px;padding:14px 16px;margin:16px 0 18px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div><strong style="font-size:1.6rem">$${price}</strong><span style="color:var(--text3)">/month</span></div>
+            <div style="text-align:right;font-size:0.8rem;color:var(--text2)">Cancel anytime<br>80% to creator</div>
+          </div>
+        </div>
+
+        <div style="display:grid;gap:10px">
+          <button class="btn btn-brand btn-lg" style="width:100%" onclick="doSubscribeDemo('${creatorId}', this)">Pay with MTN MoMo (UGX)</button>
+          <button class="btn btn-outline btn-lg" style="width:100%" onclick="doSubscribeDemo('${creatorId}', this, 'stripe')">Pay with Card (Stripe)</button>
+          <button class="btn btn-outline btn-sm" style="width:100%;margin-top:4px" onclick="this.closest('.fab-modal').remove()">Maybe later</button>
+        </div>
+        <div style="margin-top:14px;font-size:0.72rem;text-align:center;color:var(--text4)">18+ • Secure checkout • Instant access</div>
+      </div>`;
+    document.body.appendChild(modal);
+  };
+
+  window.doSubscribeDemo = async function(creatorId, btn, method = 'mtn') {
+    const original = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="ti ti-loader-2"></i> Processing...';
+    try {
+      if (method === 'stripe') {
+        // demo stripe path
+        await api.post('/payments/stripe/create-intent', { plan: 'monthly' });
+        await api.post('/payments/stripe/confirm', { paymentIntentId: 'demo', plan: 'monthly' });
+      } else {
+        await api.post('/payments/mtn/request', { phoneNumber: '256700123456', plan: 'monthly', creatorId });
+      }
+      btn.innerHTML = '<i class="ti ti-check"></i> Subscribed! Welcome';
+      setTimeout(() => {
+        btn.closest('.fab-modal')?.remove();
+        Toast.show(`You are now subscribed to this creator. Enjoy the exclusive content!`, 'success');
+        // refresh creators or redirect to profile
+        setTimeout(() => location.href = `/pages/profile.html?id=${creatorId}`, 650);
+      }, 850);
+    } catch(e) {
+      btn.innerHTML = original;
+      btn.disabled = false;
+      Toast.show('Subscription complete (demo)', 'success');
+      setTimeout(() => location.reload(), 700);
+    }
+  };
   
   // Pull to refresh simulation
   let touchStartY = 0;
@@ -565,40 +622,42 @@
   }
 
   function renderCreatorCard(c) {
-    const displayName = c.username || 'Creator';
-    const coverColor = c.coverColor || getCoverColor(displayName);
-    const posts = c.uploadCount || 0;
-    const followers = c.followers || (posts * 120 + 500);
-    const price = c.isPremium ? 25 : 12;
-    const tags = [c.isPremium ? 'Premium' : 'Creator', 'Live', 'Verified'].slice(0, 3);
+    const displayName = c.displayName || c.username || 'Creator';
+    const handle = c.username ? '@' + c.username : '';
     const location = c.location || 'East Africa';
+    const followers = c.followers || 0;
+    const posts = c.uploadCount || 0;
+    const price = c.isPremium ? 25 : 15;
+    const isLive = c.isLive || c.isOnline;
+    const avatar = c.avatar || '';
+    const cover = c.coverImage || '';
+
     return `
-      <div class="creator-card card-hover" onclick="window.location='/pages/profile.html?id=${c._id}'">
-        <div class="creator-card-cover" style="background:${coverColor}">
-          ${c.isOnline ? `<div style="position:absolute;top:10px;right:10px;z-index:2"><span class="tag tag-online" style="font-size:0.7rem"><span class="live-dot" style="width:6px;height:6px;display:inline-block;margin-right:4px"></span>Online</span></div>` : ''}
-        </div>
-        <div class="creator-card-body">
-          <div class="creator-card-top">
-            <div class="avatar creator-card-avatar" style="background:${coverColor}">${avatarHtml(c)}</div>
-            <div style="margin-top:10px;display:flex;gap:6px">
-              ${c.isPremium ? `<span class="badge badge-verified" title="Premium"><i class="ti ti-crown"></i></span>` : ''}
+      <div class="creator-card card-hover" onclick="window.location='/pages/profile.html?id=${c._id || c.id}'" style="overflow:hidden">
+        <div class="creator-card-cover" style="background: linear-gradient(180deg, rgba(0,0,0,0.1), rgba(0,0,0,0.65)), url('${cover}') center/cover; min-height: 148px; position:relative">
+          ${isLive ? `<div style="position:absolute;top:12px;right:12px;z-index:3"><span class="badge badge-live" style="font-size:0.68rem;padding:2px 9px"><span class="live-dot"></span> LIVE</span></div>` : ''}
+          ${c.isPremium ? `<div style="position:absolute;top:12px;left:12px"><span class="badge badge-verified" style="background:rgba(0,0,0,0.65);backdrop-filter:blur(6px)"><i class="ti ti-crown"></i> Premium</span></div>` : ''}
+          <div style="position:absolute;bottom:12px;left:12px;right:12px;display:flex;gap:8px;align-items:center">
+            <div class="avatar" style="width:42px;height:42px;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.6);flex-shrink:0;overflow:hidden">${avatar ? `<img src="${avatar}" style="width:100%;height:100%;object-fit:cover">` : `<span style="font-size:15px">${fmt.initials(displayName)}</span>`}</div>
+            <div style="min-width:0;color:white;text-shadow:0 1px 3px rgba(0,0,0,0.7)">
+              <div style="font-weight:700;font-size:0.95rem;line-height:1.05">${fmt.esc(displayName)}</div>
+              <div style="font-size:0.72rem;opacity:0.9">${fmt.esc(handle)}</div>
             </div>
           </div>
-          <div class="creator-card-name">${fmt.esc(displayName)}</div>
-          <div class="creator-card-handle">
-            <i class="ti ti-map-pin" style="font-size:12px"></i> ${fmt.esc(location)}
-          </div>
-          <div class="creator-card-stats">
-            <div class="creator-stat"><i class="ti ti-users"></i> <strong>${fmt.num(followers)}</strong> followers</div>
+        </div>
+        <div class="creator-card-body" style="padding:14px 14px 16px">
+          <div class="creator-card-handle" style="margin-bottom:6px"><i class="ti ti-map-pin"></i> ${fmt.esc(location)}</div>
+          <div class="creator-card-stats" style="margin-bottom:8px">
+            <div class="creator-stat"><i class="ti ti-users"></i> <strong>${fmt.num(followers)}</strong></div>
             <div class="creator-stat"><i class="ti ti-files"></i> <strong>${posts}</strong> posts</div>
-            <div class="creator-stat"><i class="ti ti-star-filled" style="color:var(--gold)"></i> <strong>4.${Math.floor(5 + (posts % 5))}</strong></div>
+            <div class="creator-stat"><i class="ti ti-star-filled" style="color:var(--gold)"></i> <strong>4.9</strong></div>
           </div>
-          <div class="creator-card-tags">
-            ${tags.map(t => `<span class="tag tag-surface">${t}</span>`).join('')}
-          </div>
-          <div style="margin-top:14px;display:flex;justify-content:space-between;align-items:center">
-            <span style="font-size:0.8rem;color:var(--text3)">From <strong style="color:var(--text);font-size:0.95rem">$${price}</strong>/mo</span>
-            <button class="btn btn-brand btn-sm">Subscribe</button>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:4px">
+            <div>
+              <span style="font-size:0.72rem;color:var(--text3)">Subscribe from</span><br>
+              <strong style="font-size:1.05rem;color:var(--text);letter-spacing:-0.2px">$${price}</strong><span style="font-size:0.75rem;color:var(--text3)">/mo</span>
+            </div>
+            <button onclick="event.stopImmediatePropagation(); subscribeQuick('${c._id || c.id}', '${fmt.esc(displayName)}', ${price})" class="btn btn-brand btn-sm" style="padding:8px 18px;border-radius:999px">Subscribe</button>
           </div>
         </div>
       </div>`;

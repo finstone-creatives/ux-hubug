@@ -8,6 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css" rel="stylesheet">
   <link rel="stylesheet" href="/assets/css/main.css" />
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   <style>
     .watch-layout { display:grid; grid-template-columns:1fr 380px; gap:24px; }
     .main-player { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-xl); overflow:hidden; }
@@ -171,7 +172,7 @@
       const avatarBg = isTip ? 'linear-gradient(135deg,var(--gold),#B8860B)' : (isSelf ? 'var(--grad-brand)' : 'var(--card3)');
       const usernameColor = isTip ? 'var(--gold)' : (isSelf ? 'var(--red)' : 'var(--text)');
       msg.innerHTML = `
-        <div class="chat-avatar" style="background:${avatarBg};color:white;font-size:0.7rem;font-weight:600;display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;flex-shrink:0;">${isTip ? '💰' : initials}</div>
+        <div class="chat-avatar" style="background:${avatarBg};color:white;font-size:0.7rem;font-weight:600;display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;flex-shrink:0;">${isTip ? '$' : initials}</div>
         <div class="chat-content" style="flex:1;min-width:0;">
           <span class="chat-username" style="font-weight:600;font-size:0.85rem;color:${usernameColor};">${username}${isSelf && !isTip ? ' <span style="color:var(--red);font-size:0.75rem;">(You)</span>' : ''}<span class="chat-time" style="font-size:0.7rem;color:var(--text4);margin-left:6px;">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span></span>
           <div class="chat-text" style="font-size:0.85rem;color:var(--text2);line-height:1.4;margin-top:2px;word-break:break-word;">${fmt.esc(text)}</div>
@@ -262,7 +263,7 @@
         });
         
         // Welcome message
-        addSystemMessage('👋 Welcome to the live chat! Be respectful.');
+        addSystemMessage('Welcome to the live chat! Be respectful.');
         
         // Connect to Socket.io for real-time chat
         connectSocket(currentLiveId);
@@ -427,7 +428,7 @@
       
       socket.on('live:tip', (data) => {
         if (data.liveId === liveId) {
-          addChatMessage(data.username, `💰 Tipped $${data.amount}${data.message ? ': ' + data.message : ''}`, false, true);
+          addChatMessage(data.username, `Tipped $${data.amount}${data.message ? ': ' + data.message : ''}`, false, true);
           // Show tip animation
           showTipAnimation(data.amount);
         }
@@ -489,7 +490,7 @@
       Toast.show(`Tip of $${amount} sent! ${msg ? 'Message: ' + msg : ''}`, 'success');
       closeTipModal();
       // Add tip message to chat
-      addChatMessage('You', `💰 Tipped $${amount}${msg ? ': ' + msg : ''}`, true, true);
+      addChatMessage('You', `Tipped $${amount}${msg ? ': ' + msg : ''}`, true, true);
     }
   </script>
 </body>

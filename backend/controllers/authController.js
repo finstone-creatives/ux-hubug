@@ -1,14 +1,35 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const Demo = require('../demoStore');
 
 const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRE });
+  return jwt.sign({ id }, process.env.JWT_SECRET || 'demo-secret', { expiresIn: process.env.JWT_EXPIRE || '7d' });
 };
+
+function sendUser(user, includeMore = false) {
+  return {
+    id: user._id || user.id,
+    username: user.username,
+    displayName: user.displayName,
+    email: user.email,
+    role: user.role,
+    accountType: user.role,
+    isPremium: user.isPremium,
+    avatar: user.avatar,
+    premiumExpiry: user.premiumExpiry,
+    location: user.location,
+  };
+}
 
 // @desc    Register user
 // @route   POST /api/auth/register
 exports.register = async (req, res) => {
   try {
+    if (global.USE_DEMO && Demo) {
+      const data = await Demo.register(req.body);
+      return res.status(201).json(data);
+    }
+
     const { username, displayName, email, password, dateOfBirth, ageConfirmed, accountType, role } = req.body;
 
     if (!ageConfirmed) {
@@ -43,17 +64,7 @@ exports.register = async (req, res) => {
     res.status(201).json({
       success: true,
       token,
-      user: {
-        id: user._id,
-        username: user.username,
-        displayName: user.displayName,
-        email: user.email,
-        role: user.role,
-        accountType: user.role,
-        isPremium: user.isPremium,
-        privacySettings: user.privacySettings,
-        notificationPreferences: user.notificationPreferences,
-      },
+      user: sendUser(user),
     });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
@@ -68,6 +79,11 @@ exports.login = async (req, res) => {
 
     if (!email || !password) {
       return res.status(400).json({ success: false, message: 'Email and password required.' });
+    }
+
+    if (global.USE_DEMO && Demo) {
+      const data = await Demo.login(email, password);
+      return res.json(data);
     }
 
     const user = await User.findOne({ email }).select('+password');
@@ -87,19 +103,23 @@ exports.login = async (req, res) => {
     res.json({
       success: true,
       token,
-      user: {
-        id: user._id,
-        username: user.username,
-        displayName: user.displayName,
-        email: user.email,
-        role: user.role,
-        accountType: user.role,
-        isPremium: user.isPremium,
-        premiumExpiry: user.premiumExpiry,
-        privacySettings: user.privacySettings,
-        notificationPreferences: user.notificationPreferences,
-      },
+      user: sendUser(user, true),
     });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// @desc Get current user
+exports.getMe = async (req, res) => {
+  try {
+    if (global.USE_DEMO && Demo) {
+      const user = await Demo.getMe(req.user.id);
+      return res.json({ success: true, user });
+    }
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+    res.json({ success: true, user: sendUser(user, true) });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
