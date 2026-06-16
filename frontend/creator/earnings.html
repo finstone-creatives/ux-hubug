@@ -17,6 +17,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css">
   <link rel="stylesheet" href="/assets/css/main.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 <div class="sidebar-overlay" onclick="Sidebar.close()"></div>
@@ -47,7 +48,9 @@
 
       <div class="card" style="margin-bottom:24px">
         <div class="card-header"><h3><i class="ti ti-chart-bar" style="color:var(--red)"></i> Monthly Breakdown</h3></div>
-        <div class="card-body" style="display:flex;align-items:flex-end;gap:10px;height:180px;padding-bottom:28px" id="earningsChart"></div>
+        <div class="card-body">
+          <canvas id="earningsChart" height="80"></canvas>
+        </div>
       </div>
 
       <div style="display:grid;grid-template-columns:1fr 360px;gap:24px">
@@ -155,18 +158,30 @@
       document.getElementById('tipsValue').textContent = fmt.money(data.tipsAndPpv||0);
       document.getElementById('allTimeValue').textContent = fmt.money(data.allTimeEarnings||0);
 
-      const chart = Array.isArray(res.monthlyBreakdown) ? res.monthlyBreakdown : [];
-      const chartEl = document.getElementById('earningsChart');
-      if (chart.length) {
-        const max = Math.max(...chart.map(d=>d.amount||0),1);
-        chartEl.innerHTML = chart.map(d=>`
-          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px">
-            <div style="font-size:0.68rem;color:var(--text3);font-weight:600">${fmt.money(d.amount||0)}</div>
-            <div style="width:100%;background:var(--grad-brand);border-radius:5px 5px 0 0;height:${Math.max(6,Math.round((d.amount||0)/max*140))}px"></div>
-            <div style="font-size:0.7rem;color:var(--text3)">${fmt.esc(d.label)}</div>
-          </div>`).join('');
-      } else {
-        chartEl.innerHTML = '<div style="color:var(--text3);font-size:0.85rem;text-align:center;width:100%;align-self:center">No earnings data yet. Start posting content!</div>';
+      const chartData = Array.isArray(res.monthlyBreakdown) ? res.monthlyBreakdown : [];
+      const ctx = document.getElementById('earningsChart');
+      if (ctx && chartData.length) {
+        new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: chartData.map(d => d.label),
+            datasets: [{
+              label: 'Net Earnings (USD)',
+              data: chartData.map(d => d.amount || 0),
+              backgroundColor: '#C9A24E',
+              borderColor: '#A07F35',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: { y: { beginAtZero: true, ticks: { color: '#888' } }, x: { ticks: { color: '#888' } } },
+            plugins: { legend: { display: false } }
+          }
+        });
+      } else if (ctx) {
+        ctx.parentElement.innerHTML = '<div style="color:var(--text3);font-size:0.85rem;text-align:center;padding:40px">No earnings data yet. Start posting content!</div>';
       }
 
       const txs = Array.isArray(res.transactions) ? res.transactions : [];

@@ -16,7 +16,7 @@ window.viewPost = window.viewPost || async function(postId) {
     modal.style.cssText = 'display:flex;position:fixed;inset:0;z-index:9000;align-items:center;justify-content:center;background:rgba(0,0,0,0.9);backdrop-filter:blur(8px);';
 
     const mediaHtml = post.media?.length ? post.media.map(m => {
-      if (m.type === 'video') return `<video src="${m.url}" controls style="width:100%;max-height:400px;border-radius:12px;margin-bottom:16px;"></video>`;
+      if (m.type === 'video') return `<video src="${m.url}" controls preload="metadata" poster="${m.thumbnail || ''}" style="width:100%;max-height:400px;border-radius:12px;margin-bottom:16px;"></video>`;
       return `<img src="${m.url}" style="width:100%;max-height:400px;object-fit:cover;border-radius:12px;margin-bottom:16px;">`;
     }).join('') : '';
 

@@ -2,6 +2,7 @@ const Post = require('../models/Post');
 const User = require('../models/User');
 const jwt  = require('jsonwebtoken');
 const path = require('path');
+const { exec } = require('child_process');
 const Demo = require('../demoStore');
 
 const getMediaType = (mimetype = '') => {
@@ -149,6 +150,17 @@ exports.createPost = async (req, res) => {
       type: getMediaType(file.mimetype),
       size: file.size,
     }));
+
+    // Generate thumbnail for first video (better player support)
+    if (media.length && media[0].type === 'video') {
+      const videoFile = req.files[0];
+      const videoPath = path.join(uploadDir || __dirname + '/../uploads', 'posts', videoFile.filename);
+      const thumbName = videoFile.filename.replace(/\.[^/.]+$/, '.jpg');
+      const thumbPath = path.join(uploadDir || __dirname + '/../uploads', 'posts', thumbName);
+      exec(`ffmpeg -i "${videoPath}" -ss 00:00:01 -vframes 1 -y "${thumbPath}"`, (err) => {
+        if (!err) media[0].thumbnail = `/uploads/posts/${thumbName}`;
+      });
+    }
 
     const postType = media.length === 0 ? 'text'
       : media.length > 1               ? 'gallery'
