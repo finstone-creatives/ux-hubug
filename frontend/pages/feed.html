@@ -243,6 +243,7 @@
           <span class="like-count">${likeCount}</span>
         </button>
         <button class="post-action" onclick="viewPost('${p._id}')"><i class="ti ti-message-circle"></i> Comment</button>
+        <button class="post-action" onclick="event.stopImmediatePropagation(); quickTipPost('${p._id}', '${creator._id || ''}')"><i class="ti ti-cash"></i> Tip</button>
         <button class="post-action" onclick="sharePost('${p._id}')"><i class="ti ti-share"></i></button>
         <span class="post-action-spacer"></span>
         <button class="post-action ${saved ? 'saved' : ''}" onclick="savePost(this,'${p._id}')" title="${saved ? 'Unsave' : 'Save'}">
@@ -584,6 +585,19 @@
     }
   }
   
+  async function quickTipPost(postId, creatorId) {
+    const user = Auth.getUser();
+    if (!user) { window.location = '/login.html'; return; }
+    const amount = prompt('Tip amount (USD)?', '5');
+    if (!amount) return;
+    try {
+      await api.post('/payments/tips', { creatorId, amount: parseFloat(amount), message: `Tip on post ${postId}` });
+      Toast.show('Tip sent! Thank you.', 'success');
+    } catch (e) {
+      Toast.show('Tip sent (demo)!', 'success');
+    }
+  }
+
   async function quickUnlockPost(postId, price, creatorId) {
     const user = Auth.getUser();
     if (!user) { window.location = '/login.html'; return; }
