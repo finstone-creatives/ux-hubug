@@ -132,7 +132,7 @@ const seed = async () => {
       });
     }
 
-    console.log('✅ Seed complete. Sample users and videos are available.');
+    console.log('Seed complete. Sample users and videos are available.');
     console.log('Test creator accounts:');
     console.log('  Amara  — amara@example.com / Test1234!');
     console.log('  Zara   — zara@example.com / Test1234!');

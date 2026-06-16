@@ -202,7 +202,7 @@ async function loadPendingVideos() {
 
   grid.innerHTML = data.videos.map(v => `
     <div class="mod-card">
-      <div class="mod-thumb">🎬</div>
+      <div class="mod-thumb"><i class="ti ti-video" style="font-size:18px"></i></div>
       <div class="mod-info">
         <div class="mod-title">${escHtml(v.title)}</div>
         <div class="mod-meta">

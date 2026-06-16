@@ -7,7 +7,7 @@ const connectDB = async () => {
       useUnifiedTopology: true,
       serverSelectionTimeoutMS: 5000,
     });
-    console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
+    console.log(`MongoDB Connected: ${conn.connection.host}`);
     global.USE_DEMO = false;
   } catch (error) {
     console.warn(`⚠️  MongoDB not available (${error.message}). Running in DEMO MODE with in-memory data.`);

@@ -57,8 +57,23 @@
         <div class="search-filters">
           <button class="filter-chip active" data-type="all">All</button>
           <button class="filter-chip" data-type="creators">Creators</button>
-          <button class="filter-chip" data-type="videos">Videos</button>
           <button class="filter-chip" data-type="live">Live Now</button>
+        </div>
+        <div class="search-filters" style="margin-top:8px">
+          <span style="font-size:0.7rem;color:var(--text3);align-self:center;margin-right:4px">Region:</span>
+          <button class="filter-chip" data-loc="Kampala">Kampala</button>
+          <button class="filter-chip" data-loc="Nairobi">Nairobi</button>
+          <button class="filter-chip" data-loc="Lagos">Lagos</button>
+          <button class="filter-chip" data-loc="Accra">Accra</button>
+          <button class="filter-chip" data-loc="Johannesburg">Jo'burg</button>
+        </div>
+        <div class="search-filters" style="margin-top:4px">
+          <span style="font-size:0.7rem;color:var(--text3);align-self:center;margin-right:4px">Vibe:</span>
+          <button class="filter-chip" data-cat="Model">Models</button>
+          <button class="filter-chip" data-cat="Dancer">Dancers</button>
+          <button class="filter-chip" data-cat="Musician">Musicians</button>
+          <button class="filter-chip" data-cat="Lifestyle">Lifestyle</button>
+          <button class="filter-chip" data-cat="Escort">Escorts</button>
         </div>
       </div>
       <div class="inner-lg">
@@ -76,6 +91,7 @@
   <script src="/assets/js/app.js"></script>
   <script src="/assets/js/layout.js"></script>
   <script src="/assets/js/pwa.js"></script>
+  <script src="/assets/js/post-utils.js"></script>
   <script>
     Layout.init('Search');
 
@@ -84,13 +100,36 @@
     const stateEl = document.getElementById('searchState');
     let activeType = 'all';
 
+    let activeLoc = '';
+    let activeCat = '';
+
     document.querySelectorAll('.filter-chip').forEach(btn => {
       btn.addEventListener('click', () => {
-        document.querySelectorAll('.filter-chip').forEach(b=>b.classList.remove('active'));
-        btn.classList.add('active');
-        activeType = btn.dataset.type;
+        if (btn.dataset.type) {
+          document.querySelectorAll('.filter-chip[data-type]').forEach(b=>b.classList.remove('active'));
+          btn.classList.add('active');
+          activeType = btn.dataset.type;
+        }
+        if (btn.dataset.loc !== undefined) {
+          document.querySelectorAll('.filter-chip[data-loc]').forEach(b=>b.classList.remove('active'));
+          if (activeLoc === btn.dataset.loc) {
+            activeLoc = '';
+          } else {
+            btn.classList.add('active');
+            activeLoc = btn.dataset.loc;
+          }
+        }
+        if (btn.dataset.cat !== undefined) {
+          document.querySelectorAll('.filter-chip[data-cat]').forEach(b=>b.classList.remove('active'));
+          if (activeCat === btn.dataset.cat) {
+            activeCat = '';
+          } else {
+            btn.classList.add('active');
+            activeCat = btn.dataset.cat;
+          }
+        }
         const q = searchInput.value.trim();
-        if (q) runSearch(q);
+        runSearch(q);
       });
     });
 

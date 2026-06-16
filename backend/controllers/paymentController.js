@@ -149,7 +149,7 @@ exports.requestMtnPayment = async (req, res) => {
       const amt = PREMIUM_PRICE_UGX;
       if (creatorId) await Demo.mockSubscribe(req.user.id || req.user._id, creatorId, 'mtn');
       const ref = 'MTN' + Date.now().toString().slice(-9);
-      return res.json({ success: true, message: '✅ MTN MoMo approved instantly (demo mode). Premium unlocked!', referenceId: ref, demo: true });
+      return res.json({ success: true, message: 'MTN MoMo approved instantly (demo mode). Premium unlocked!', referenceId: ref, demo: true });
     }
 
     const amount = PREMIUM_PRICE_UGX;

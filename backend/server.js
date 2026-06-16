@@ -24,7 +24,7 @@ connectDB().catch(() => { /* handled inside */ });
 let DemoStore = null;
 if (global.USE_DEMO) {
   DemoStore = require('./demoStore');
-  console.log('🎭 Demo store loaded with rich sample creators, posts, messages & live data.');
+  console.log('Demo store loaded with rich sample creators, posts, messages & live data.');
 }
 
 // Security middleware
@@ -90,7 +90,7 @@ app.use('/api/messages', require('./routes/messages'));
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ 
-    status: global.USE_DEMO ? 'NxtDoor DEMO MODE (in-memory) ✅' : 'NxtDoor API running ✅',
+    status: global.USE_DEMO ? 'NxtDoor DEMO MODE (in-memory)' : 'NxtDoor API running',
     demo: !!global.USE_DEMO,
     time: new Date().toISOString()
   });
@@ -213,13 +213,13 @@ io.on('connection', (socket) => {
 socketManager.setIO(io);
 
 server.listen(PORT, () => {
-  console.log(`🚀 NxtDoor Server running on port ${PORT}`);
+  console.log(`NxtDoor Server running on port ${PORT}`);
 });
 
 setTimeout(() => {
   if (global.USE_DEMO) {
     console.log('════════════════════════════════════════════════════════════');
-    console.log('🎭 DEMO ACCOUNTS (password for all except admin: Test1234!)');
+    console.log('DEMO ACCOUNTS (password for all except admin: Test1234!)');
     console.log('   Creators: amara@example.com  |  zara@example.com  |  rose@example.com');
     console.log('   Fan:      fan1@example.com');
     console.log('   Admin:    admin@uxhub.local / Admin123!');

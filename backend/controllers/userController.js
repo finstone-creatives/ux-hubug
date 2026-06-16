@@ -7,31 +7,38 @@ const Demo = require('../demoStore');
 
 exports.getCreators = async (req, res) => {
   try {
-    if (global.USE_DEMO && Demo) {
-      const search = (req.query.search || '').trim();
-      const list = await Demo.listCreators({ limit: parseInt(req.query.limit) || 12, q: search });
-      return res.json({ success: true, users: list });
-    }
-
     const search = (req.query.search || '').trim();
     const role = req.query.role;
+    const location = (req.query.location || '').trim();
+    const category = (req.query.category || '').trim();
     const limit = parseInt(req.query.limit, 10) || 24;
 
-    const query = { status: 'active' };
-    if (role) {
-      query.role = role;
+    if (global.USE_DEMO && Demo) {
+      const list = await Demo.listCreators({ limit, q: search });
+      // Simple client-side filter for demo for location/category
+      let filtered = list;
+      if (location) filtered = filtered.filter(u => (u.location || '').toLowerCase().includes(location.toLowerCase()));
+      if (category) filtered = filtered.filter(u => (u.creatorCategory || '').toLowerCase().includes(category.toLowerCase()));
+      return res.json({ success: true, users: filtered.slice(0, limit) });
     }
+
+    const query = { status: 'active' };
+    if (role) query.role = role;
+    if (location) query.location = { $regex: location, $options: 'i' };
+    if (category) query.creatorCategory = { $regex: category, $options: 'i' };
 
     if (search) {
       const regex = new RegExp(search, 'i');
       query.$or = [
         { username: regex },
-        { email: regex },
+        { displayName: regex },
+        { bio: regex },
+        { location: regex },
       ];
     }
 
     const users = await User.find(query)
-      .select('username avatar isPremium role uploadCount createdAt')
+      .select('username displayName avatar isPremium role uploadCount createdAt location creatorCategory bio followers isLive')
       .sort({ uploadCount: -1, createdAt: -1 })
       .limit(limit);
 
