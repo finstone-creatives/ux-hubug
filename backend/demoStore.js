@@ -537,7 +537,33 @@ const Demo = {
 
   // Helpers
   getUserByIdSync(id) { return users.find(u => u._id === id); },
-  _dump() { return { users: users.length, posts: posts.length, convos: conversations.length }; }
+  _dump() { return { users: users.length, posts: posts.length, convos: conversations.length }; },
+
+  // POST COMMENTS (demo)
+  async getPostComments(postId) {
+    const p = posts.find(x => x._id === postId);
+    if (!p) return { success: true, comments: [] };
+    const enriched = (p.comments || []).map(c => ({
+      ...c,
+      user: sanitizeUser(users.find(u => u._id === c.user)) || { username: 'user' }
+    }));
+    return { success: true, comments: enriched };
+  },
+
+  async addPostComment(postId, userId, text) {
+    const p = posts.find(x => x._id === postId);
+    if (!p) throw new Error('Post not found');
+    p.comments = p.comments || [];
+    const comment = {
+      _id: generateId('cmt'),
+      user: userId,
+      text: text.slice(0, 500),
+      createdAt: new Date()
+    };
+    p.comments.push(comment);
+    p.commentsCount = p.comments.length;
+    return { success: true, comment: { ...comment, user: sanitizeUser(users.find(u => u._id === userId)) } };
+  }
 };
 
 module.exports = Demo;

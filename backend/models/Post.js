@@ -42,6 +42,11 @@ const postSchema = new mongoose.Schema({
   savesCount: { type: Number, default: 0 },
   commentsCount: { type: Number, default: 0 },
   viewsCount:    { type: Number, default: 0 },
+  comments: [{
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    text: { type: String, trim: true, maxlength: 500 },
+    createdAt: { type: Date, default: Date.now }
+  }],
   tags:       [{ type: String, trim: true, lowercase: true }],
   location:   { type: String, default: '' },
   scheduledAt: { type: Date, default: null },

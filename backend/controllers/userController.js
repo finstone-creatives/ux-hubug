@@ -84,6 +84,34 @@ exports.getUser = async (req, res) => {
 // @desc Get creator dashboard data for current user
 // @route GET /api/users/me/dashboard
 exports.getCreatorDashboard = async (req, res) => {
+  if (global.USE_DEMO && require('../demoStore')) {
+    const Demo = require('../demoStore');
+    // Return rich demo stats so creator dashboard is never empty
+    return res.json({
+      success: true,
+      stats: {
+        earningsThisMonth: 1240,
+        activeSubscribers: 87,
+        totalViews: 24500,
+        totalLikes: 1890,
+        tipsReceived: 320,
+        unreadMessages: 4,
+        payoutAvailable: 980
+      },
+      revenueChart: [
+        { label: 'Jan', amount: 820 },
+        { label: 'Feb', amount: 950 },
+        { label: 'Mar', amount: 1100 },
+        { label: 'Apr', amount: 1340 },
+        { label: 'May', amount: 980 },
+        { label: 'Jun', amount: 1240 }
+      ],
+      recentPosts: [
+        { _id: 'p1', title: 'Golden hour set', views: 1240, likes: 89, status: 'approved', media: [{type:'image', url:'https://picsum.photos/id/1015/80/80'}] },
+        { _id: 'p2', caption: 'New silk drop', views: 670, likes: 41, status: 'approved' }
+      ]
+    });
+  }
   try {
     const userId = req.user._id;
     const now = new Date();

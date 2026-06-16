@@ -299,3 +299,41 @@ exports.unlockPost = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+
+// Comments
+exports.getComments = async (req, res) => {
+  try {
+    if (global.USE_DEMO && Demo) {
+      const data = await Demo.getPostComments(req.params.id);
+      return res.json(data);
+    }
+    const post = await Post.findById(req.params.id).populate('comments.user', 'username avatar displayName');
+    if (!post) return res.status(404).json({ success: false, message: 'Post not found' });
+    res.json({ success: true, comments: post.comments || [] });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+exports.addComment = async (req, res) => {
+  try {
+    const { text } = req.body;
+    if (!text || !text.trim()) return res.status(400).json({ success: false, message: 'Comment text required' });
+    if (global.USE_DEMO && Demo) {
+      const data = await Demo.addPostComment(req.params.id, req.user.id || req.user._id, text);
+      return res.status(201).json(data);
+    }
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.status(404).json({ success: false, message: 'Post not found' });
+    const comment = { user: req.user.id || req.user._id, text: text.trim(), createdAt: new Date() };
+    post.comments = post.comments || [];
+    post.comments.push(comment);
+    post.commentsCount = post.comments.length;
+    await post.save();
+    const populated = await Post.findById(post._id).populate('comments.user', 'username avatar displayName');
+    const newComment = populated.comments[populated.comments.length - 1];
+    res.status(201).json({ success: true, comment: newComment });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};

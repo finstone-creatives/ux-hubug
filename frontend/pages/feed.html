@@ -511,10 +511,20 @@
             <button class="post-action" onclick="toggleLike(this,'${post._id}')" style="${Likes.isLiked(post._id) ? 'color:var(--red);' : ''}">
               <i class="ti ${Likes.isLiked(post._id) ? 'ti-heart-filled' : 'ti-heart'}"></i> ${post.likesCount || 0}
             </button>
-            <button class="post-action"><i class="ti ti-message-circle"></i> ${post.commentsCount || 0}</button>
+            <button class="post-action" onclick="document.getElementById('commentInput-${post._id}').focus()"><i class="ti ti-message-circle"></i> ${post.commentsCount || 0}</button>
             <button class="post-action" onclick="sharePost('${post._id}')"><i class="ti ti-share"></i></button>
             <span style="flex:1;"></span>
             <span style="font-size:0.8rem;color:var(--text4);"><i class="ti ti-eye"></i> ${fmt.num(post.viewsCount || 0)}</span>
+          </div>
+
+          <!-- Comments Section (OnlyFans style) -->
+          <div style="padding:16px 20px;border-top:1px solid var(--border);background:var(--surface);">
+            <div style="font-weight:600;margin-bottom:8px;font-size:0.9rem">Comments</div>
+            <div id="commentsList-${post._id}" style="max-height:180px;overflow-y:auto;margin-bottom:8px;font-size:0.85rem;"></div>
+            <div style="display:flex;gap:8px;">
+              <input id="commentInput-${post._id}" class="input input-sm" style="flex:1;" placeholder="Add a comment..." onkeydown="if(event.key==='Enter') submitComment('${post._id}', this)">
+              <button class="btn btn-brand btn-sm" onclick="submitComment('${post._id}', document.getElementById('commentInput-${post._id}'))"><i class="ti ti-send"></i></button>
+            </div>
           </div>
         </div>
       `;
@@ -528,8 +538,49 @@
       
       // Track view
       api.post(`/posts/${postId}/view`).catch(() => {});
+
+      // Load comments
+      loadCommentsIntoModal(post._id, `commentsList-${post._id}`);
     } catch (err) {
       Toast.show('Could not load post', 'error');
+    }
+  }
+
+  async function loadCommentsIntoModal(postId, containerId) {
+    try {
+      const res = await api.get(`/posts/${postId}/comments`);
+      const listEl = document.getElementById(containerId);
+      if (!listEl) return;
+      if (!res.comments || !res.comments.length) {
+        listEl.innerHTML = '<div style="color:var(--text4);font-size:0.75rem;">No comments yet. Be the first!</div>';
+        return;
+      }
+      listEl.innerHTML = res.comments.map(c => `
+        <div style="margin-bottom:6px;">
+          <strong>${fmt.esc(c.user?.username || 'user')}</strong> 
+          <span style="color:var(--text2);">${fmt.esc(c.text)}</span>
+          <span style="font-size:0.65rem;color:var(--text4);margin-left:6px;">${fmt.timeAgo(c.createdAt)}</span>
+        </div>
+      `).join('');
+    } catch (e) { /* silent */ }
+  }
+
+  async function submitComment(postId, inputEl) {
+    const text = inputEl.value.trim();
+    if (!text) return;
+    try {
+      const res = await api.post(`/posts/${postId}/comments`, { text });
+      inputEl.value = '';
+      // Reload comments in the open modal
+      const listEl = document.getElementById(`commentsList-${postId}`);
+      if (listEl) {
+        const current = listEl.innerHTML;
+        listEl.innerHTML = current + `<div style="margin-bottom:6px;"><strong>${fmt.esc(Auth.getUser()?.username || 'you')}</strong> <span style="color:var(--text2);">${fmt.esc(text)}</span></div>`;
+      }
+      Toast.show('Comment added', 'success', 1500);
+      // Refresh count if possible by reloading post list later
+    } catch (e) {
+      Toast.show('Failed to comment', 'error');
     }
   }
   

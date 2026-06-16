@@ -43,5 +43,7 @@ router.post('/:id/save',       protect, postController.savePost);
 router.post('/:id/view',       postController.viewPost);
 router.post('/:id/report',     protect, postController.reportPost);
 router.post('/:id/unlock',     protect, postController.unlockPost);
+router.get('/:id/comments', postController.getComments);
+router.post('/:id/comments', protect, postController.addComment);
 
 module.exports = router;
