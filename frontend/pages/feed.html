@@ -244,6 +244,8 @@
         </button>
         <button class="post-action" onclick="viewPost('${p._id}')"><i class="ti ti-message-circle"></i> Comment</button>
         <button class="post-action" onclick="event.stopImmediatePropagation(); quickTipPost('${p._id}', '${creator._id || ''}')"><i class="ti ti-cash"></i> Tip</button>
+        <button class="post-action" onclick="repostPost('${p._id}', this)"><i class="ti ti-repeat"></i> <span class="repost-count">${p.repostsCount || 0}</span></button>
+        <button class="post-action" onclick="quotePost('${p._id}')"><i class="ti ti-quote"></i> Quote</button>
         <button class="post-action" onclick="sharePost('${p._id}')"><i class="ti ti-share"></i></button>
         <span class="post-action-spacer"></span>
         <button class="post-action ${saved ? 'saved' : ''}" onclick="savePost(this,'${p._id}')" title="${saved ? 'Unsave' : 'Save'}">
