@@ -17,6 +17,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.14.0/dist/tabler-icons.min.css">
   <link rel="stylesheet" href="/assets/css/main.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body>
 <div class="sidebar-overlay" onclick="Sidebar.close()"></div>
@@ -177,19 +178,45 @@
       const badge = document.getElementById('quickMsgBadge');
       if (stats.unreadMessages>0) { badge.style.display='inline-flex'; badge.textContent=stats.unreadMessages; }
 
+      // Advanced analytics with Chart.js
       const chartData = Array.isArray(res.revenueChart) ? res.revenueChart : [];
-      const chartEl = document.getElementById('revenueChart');
-      if (chartData.length) {
-        const max = Math.max(...chartData.map(d=>d.amount||0),1);
-        chartEl.innerHTML = chartData.map(d=>`
-          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px">
-            <div style="font-size:0.72rem;color:var(--text3);font-weight:600">${fmt.money(d.amount||0)}</div>
-            <div style="width:100%;background:var(--grad-brand);border-radius:6px 6px 0 0;height:${Math.max(6,Math.round((d.amount||0)/max*130))}px"></div>
-            <div style="font-size:0.68rem;color:var(--text3)">${d.label}</div>
-          </div>`).join('');
-      } else {
-        chartEl.innerHTML = '<div style="color:var(--text3);font-size:0.85rem;text-align:center;width:100%">No revenue data yet.</div>';
+      const chartCanvas = document.getElementById('revenueChart');
+      if (chartCanvas && chartData.length) {
+        if (window.dashboardChart) window.dashboardChart.destroy();
+        window.dashboardChart = new Chart(chartCanvas, {
+          type: 'line',
+          data: {
+            labels: chartData.map(d => d.label),
+            datasets: [{
+              label: 'Revenue',
+              data: chartData.map(d => d.amount || 0),
+              borderColor: '#C9A24E',
+              backgroundColor: 'rgba(201,162,78,0.15)',
+              borderWidth: 3,
+              tension: 0.35,
+              fill: true,
+              pointBackgroundColor: '#fff',
+              pointBorderColor: '#C9A24E'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false }, tooltip: { backgroundColor: '#1a1a1a' } },
+            scales: {
+              y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.06)' }, ticks: { color: '#888', callback: v => '$' + v } },
+              x: { grid: { color: 'rgba(255,255,255,0.06)' }, ticks: { color: '#888' } }
+            }
+          }
+        });
+      } else if (chartCanvas) {
+        chartCanvas.parentElement.innerHTML = '<div style="color:var(--text3);font-size:0.85rem;text-align:center;padding:30px">No revenue data yet. Create posts and go live!</div>';
       }
+
+      // Additional stat: engagement rate (example calc)
+      const totalEng = (stats.totalLikes||0) + (stats.totalViews||0)*0.01;
+      const engRate = stats.totalViews ? ((totalEng / stats.totalViews) * 100).toFixed(1) : 0;
+      // You can add more cards dynamically if needed
 
       const posts = Array.isArray(res.recentPosts) ? res.recentPosts : [];
       
@@ -202,7 +229,7 @@
           <td>${fmt.num(p.views||p.viewsCount||0)}</td>
           <td>${fmt.num(p.likes||p.likesCount||0)}</td>
           <td><span class="tag ${p.status==='approved'?'tag-green':p.status==='pending'?'tag-warning':'tag-surface'}">${fmt.esc(p.status||'active')}</span></td>
-          <td><div style="display:flex;gap:6px"><button class="btn btn-icon btn-sm" title="Edit"><i class="ti ti-edit"></i></button><button class="btn btn-icon btn-sm btn-danger" title="Delete" onclick="deletePost('${p._id}')"><i class="ti ti-trash"></i></button></div></td>
+          <td><div style="display:flex;gap:6px"><button class="btn btn-icon btn-sm" title="Edit"><i class="ti ti-edit"></i></button><button class="btn btn-icon btn-sm btn-danger" title="Delete" onclick="deleteMyPost('${p._id}', this)"><i class="ti ti-trash"></i></button></div></td>
         </tr>`).join('');
       
       // Mobile cards
@@ -225,7 +252,7 @@
               </div>
               <div class="mobile-post-actions">
                 <button onclick="editPost('${p._id}')">Edit</button>
-                <button class="btn-delete" onclick="deletePost('${p._id}')">Delete</button>
+                <button class="btn-delete" onclick="deleteMyPost('${p._id}', this)">Delete</button>
               </div>
             </div>
           </div>
@@ -246,6 +273,18 @@
 
   renderCreatorDashboard();
   if (window.innerWidth < 768) document.getElementById('dashGrid').style.gridTemplateColumns='1fr';
+
+  async function deleteMyPost(postId, btnEl) {
+    if (!confirm('Delete this post?')) return;
+    try {
+      if (btnEl) btnEl.disabled = true;
+      await api.delete(`/posts/${postId}`);
+      Toast.show('Post deleted', 'success');
+      renderCreatorDashboard(); // reload
+    } catch(e) {
+      Toast.show('Delete failed', 'error');
+    }
+  }
 </script>
 <!-- Mobile Bottom Navigation -->
 <nav class="mobile-bottom-nav" id="mobileBottomNav">

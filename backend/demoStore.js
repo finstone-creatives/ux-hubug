@@ -391,6 +391,13 @@ const Demo = {
     return { success: true, unlocked: true };
   },
 
+  async repostPost(postId) {
+    const p = posts.find(x => x._id === postId);
+    if (!p) return { success: true, repostsCount: 1 };
+    p.repostsCount = (p.repostsCount || 0) + 1;
+    return { success: true, repostsCount: p.repostsCount };
+  },
+
   // LIVE
   async getLiveSessions() {
     const lives = users.filter(u => u.role === 'creator' && u.isLive && u.status === 'active')

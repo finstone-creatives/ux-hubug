@@ -34,7 +34,7 @@
   <div class="auth-container">
     <div class="auth-visual">
       <div class="visual-content">
-        <div class="logo-glow"><span>NX</span></div>
+        <div class="logo-glow" style="font-size:2.2rem"><span>Nxt</span><span style="color:var(--red)">Door</span></div>
         <h2 class="visual-title">Welcome Back</h2>
         <p class="visual-subtitle">Sign in to continue your journey with Africa's premier creator platform.</p>
         <div class="features-list">
@@ -52,16 +52,20 @@
       </div>
       <div class="alert-box" id="alertBox"><i class="ti ti-alert-circle"></i><span id="alertMessage"></span></div>
       <form id="loginForm" onsubmit="handleLogin(event)">
-        <div class="input-wrapper">
+        <div class="input-group">
           <label for="email">Email Address</label>
-          <i class="ti ti-mail input-icon"></i>
-          <input type="email" id="email" class="input-field" placeholder="you@example.com" required autocomplete="email"/>
+          <div style="position:relative">
+            <i class="ti ti-mail input-icon" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#666;font-size:1.05rem;pointer-events:none"></i>
+            <input type="email" id="email" class="input" style="padding-left:42px" placeholder="you@example.com" required autocomplete="email"/>
+          </div>
         </div>
-        <div class="input-wrapper">
+        <div class="input-group">
           <label for="password">Password</label>
-          <i class="ti ti-lock input-icon"></i>
-          <input type="password" id="password" class="input-field" placeholder="Enter your password" required autocomplete="current-password"/>
-          <button type="button" class="toggle-password" onclick="togglePassword(this)"><i class="ti ti-eye"></i></button>
+          <div style="position:relative">
+            <i class="ti ti-lock input-icon" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#666;font-size:1.05rem;pointer-events:none"></i>
+            <input type="password" id="password" class="input" style="padding-left:42px;padding-right:42px" placeholder="Enter your password" required autocomplete="current-password"/>
+            <button type="button" class="toggle-password" onclick="togglePassword(this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:#666;cursor:pointer"><i class="ti ti-eye"></i></button>
+          </div>
         </div>
         <div class="form-options">
           <label class="remember-me"><input type="checkbox" id="rememberMe"/><span>Remember me</span></label>

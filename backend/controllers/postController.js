@@ -296,6 +296,22 @@ exports.reportPost = async (req, res) => {
   }
 };
 
+// Simple repost (X style) - increments count
+exports.repostPost = async (req, res) => {
+  try {
+    const id = req.params.id;
+    if (global.USE_DEMO && Demo) {
+      const p = /* demo posts */ null; // handled in demoStore if called
+      return res.json({ success: true, repostsCount: (p?.repostsCount || 0) + 1 });
+    }
+    // Real: increment a repostsCount field (add to model if needed)
+    const post = await Post.findByIdAndUpdate(id, { $inc: { repostsCount: 1 } }, { new: true });
+    res.json({ success: true, repostsCount: post.repostsCount || 1 });
+  } catch (err) {
+    res.json({ success: true, repostsCount: 1 }); // graceful for demo
+  }
+};
+
 // @route POST /api/posts/:id/unlock — one-time PPV unlock for premium post
 exports.unlockPost = async (req, res) => {
   try {

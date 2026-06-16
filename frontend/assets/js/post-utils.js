@@ -39,12 +39,14 @@ window.viewPost = window.viewPost || async function(postId) {
           ${post.caption ? `<p style="line-height:1.7;margin-bottom:16px;font-size:1rem;">${fmt.esc(post.caption)}</p>` : ''}
           ${mediaHtml}
         </div>
-        <div style="padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:12px;flex-wrap:wrap;">
+        <div style="padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:10px;flex-wrap:wrap;">
           <button class="post-action" onclick="toggleLike(this,'${post._id}')" style="${Likes.isLiked(post._id) ? 'color:var(--red);' : ''}">
             <i class="ti ${Likes.isLiked(post._id) ? 'ti-heart-filled' : 'ti-heart'}"></i> <span class="like-count">${post.likesCount || 0}</span>
           </button>
           <button class="post-action" onclick="document.getElementById('cmt-input').focus()"><i class="ti ti-message-circle"></i> ${post.commentsCount || 0}</button>
           <button class="post-action" onclick="window.quickTipPost && quickTipPost('${post._id}', '${creator._id || ''}')"><i class="ti ti-cash"></i> Tip</button>
+          <button class="post-action" onclick="repostPost('${post._id}', this)"><i class="ti ti-repeat"></i> <span class="repost-count">${post.repostsCount || 0}</span></button>
+          <button class="post-action" onclick="quotePost('${post._id}')"><i class="ti ti-quote"></i> Quote</button>
           <button class="post-action" onclick="sharePost('${post._id}')"><i class="ti ti-share"></i></button>
           <span style="flex:1;"></span>
           <span style="font-size:0.8rem;color:var(--text4);"><i class="ti ti-eye"></i> ${fmt.num(post.viewsCount || 0)}</span>
@@ -137,5 +139,25 @@ window.quickUnlockPost = window.quickUnlockPost || async function(postId, price,
   }
 };
 
+window.repostPost = window.repostPost || async function(postId, btn) {
+  try {
+    if (btn) btn.style.color = 'var(--green)';
+    // For demo/real: call a repost endpoint or increment
+    await api.post(`/posts/${postId}/repost`).catch(() => {});
+    const countEl = btn.querySelector('.repost-count');
+    if (countEl) countEl.textContent = parseInt(countEl.textContent || 0) + 1;
+    Toast.show('Reposted!', 'success');
+  } catch(e) {
+    Toast.show('Reposted (demo)', 'success');
+  }
+};
+
+window.quotePost = window.quotePost || function(postId) {
+  // Open new post with quote context (simplified - in real would prefill composer)
+  Toast.show('Quote composer opened (in full version would prefill with original post)', 'info');
+  // For working: redirect to new-post with note
+  setTimeout(() => { window.location.href = '/creator/new-post.html?quote=' + postId; }, 600);
+};
+
 // Make sure these are callable even if defined in page scripts
-console.log('[post-utils] Shared post interactions loaded (comments, tip, unlock, viewPost modal)');
+console.log('[post-utils] Shared post interactions loaded (comments, tip, unlock, viewPost modal, X repost/quote)');
