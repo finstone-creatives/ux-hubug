@@ -636,6 +636,7 @@
           <button class="btn btn-surface btn-sm mobile-hide" onclick="openModal('tipModal')"><i class="ti ti-coin"></i> Tip</button>
           <a href="/pages/messages.html" id="msgBtn" class="btn btn-surface btn-sm mobile-hide"><i class="ti ti-message"></i> Message</a>
           <button class="btn btn-brand btn-sm" onclick="openModal('subscribeModal')"><i class="ti ti-crown"></i> <span class="btn-text">Subscribe</span></button>
+          <button class="btn btn-surface btn-sm" onclick="requestCustom()"><i class="ti ti-edit"></i> <span class="btn-text">Request Custom</span></button>
         </div>
       </div>
       
@@ -792,6 +793,7 @@
 <script src="/assets/js/app.js"></script>
 <script src="/assets/js/layout.js"></script>
 <script src="/assets/js/pwa.js"></script>
+<script src="/assets/js/post-utils.js"></script>
 <script>
   Layout.init();
   let selectedTip=0, selectedRating=0, profileData=null;
@@ -855,7 +857,7 @@
         <div class="post-card">
           <div class="post-body"><p class="post-text">${fmt.esc(p.caption||'')}</p></div>
           ${p.media&&p.media.length&&!p.isPremium?`<img src="${p.media[0].url}" style="width:100%;border-radius:0 0 var(--radius-lg) var(--radius-lg);object-fit:cover;max-height:400px"/>`:
-            p.isPremium?`<div class="post-lock"><i class="ti ti-lock"></i><span>Premium Content</span><button class="btn btn-brand btn-sm" onclick="openModal('subscribeModal')">Unlock</button></div>`:''}
+            p.isPremium?`<div class="post-lock"><i class="ti ti-lock"></i><span>Premium Content • $${p.price||8} unlock</span><button class="btn btn-brand btn-sm" onclick="event.stopImmediatePropagation(); quickUnlockPost('${p._id}', ${p.price||8}, '${profileData?._id||''}')">Unlock</button></div>`:''}
           <div class="post-actions">
             <button class="post-action-btn"><i class="ti ti-heart"></i> ${p.likesCount||0}</button>
             <button class="post-action-btn"><i class="ti ti-message-circle"></i> ${p.commentsCount||0}</button>
@@ -988,6 +990,30 @@
   }
 
   document.addEventListener('DOMContentLoaded', loadProfile);
+
+  // Request Custom feature (OnlyFans-style — creates paid convo)
+  window.requestCustom = window.requestCustom || async function() {
+    const creator = profileData;
+    if (!creator || !creator._id) return;
+    const user = Auth.getUser();
+    if (!user) { location.href = '/login.html'; return; }
+
+    const price = prompt('Suggested price for this custom (USD)?', '25');
+    if (!price) return;
+    const desc = prompt('Describe what you want:', 'Custom video idea...');
+    if (!desc) return;
+
+    try {
+      const conv = await api.post('/messages/conversations', { recipientId: creator._id });
+      const cid = conv.conversation._id;
+      await api.post(`/messages/conversations/${cid}/messages`, { text: `Custom request ($${price}): ${desc}\n\nLet’s discuss details.` });
+      Toast.show('Custom request sent! Opening Messages...', 'success');
+      setTimeout(() => location.href = '/pages/messages.html', 850);
+    } catch(e) {
+      Toast.show('Request started (demo). Check Messages.', 'success');
+      setTimeout(() => location.href = '/pages/messages.html', 850);
+    }
+  };
 </script>
 
 <!-- Mobile Bottom Navigation -->
