@@ -10,6 +10,7 @@ const { Server } = require('socket.io');
 const connectDB = require('./config/db');
 const jwt = require('jsonwebtoken');
 const socketManager = require('./socket');
+const ai = require('./ai');
 
 const app = express();
 const frontendPath = path.join(__dirname, '../frontend');
@@ -86,6 +87,37 @@ app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/payments', require('./routes/payments'));
 app.use('/api/messages', require('./routes/messages'));
+
+// AI routes (DeepSeek powered - set DEEPSEEK_API_KEY in Render env)
+app.post('/api/ai/caption', async (req, res) => {
+  try {
+    const { prompt } = req.body;
+    const caption = await ai.generateCaption(prompt || 'exclusive content');
+    res.json({ success: true, caption });
+  } catch (e) {
+    res.json({ success: true, caption: 'Exclusive content just for you. What would you like to see?' });
+  }
+});
+
+app.post('/api/ai/ideas', async (req, res) => {
+  try {
+    const { bio } = req.body;
+    const ideas = await ai.generateContentIdeas(bio || '');
+    res.json({ success: true, ideas });
+  } catch (e) {
+    res.json({ success: true, ideas: ['Exclusive behind the scenes', 'Live Q&A and tips', 'Custom request special'] });
+  }
+});
+
+app.post('/api/ai/live-goals', async (req, res) => {
+  try {
+    const { topic } = req.body;
+    const goals = await ai.suggestLiveTipGoals(topic || 'live show');
+    res.json({ success: true, goals });
+  } catch (e) {
+    res.json({ success: true, goals: '$50 - Top off\n$150 - Special dance\n$300 - Full reveal' });
+  }
+});
 
 // Health check
 app.get('/api/health', (req, res) => {

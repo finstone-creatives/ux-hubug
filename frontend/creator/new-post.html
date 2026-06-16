@@ -84,7 +84,10 @@
 
         <div class="card"><div class="card-body">
           <div class="label mb-12">Caption</div>
-          <textarea class="textarea" id="caption" placeholder="Write something for your fans..." rows="4" maxlength="2000"></textarea>
+          <div style="display:flex;gap:8px">
+            <textarea class="textarea" id="caption" placeholder="Write something for your fans..." rows="4" maxlength="2000" style="flex:1"></textarea>
+            <button type="button" class="btn btn-outline btn-sm" onclick="generateAICaption()" title="Generate with DeepSeek AI"><i class="ti ti-magic"></i></button>
+          </div>
           <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:var(--text3);margin-top:6px">
             <span>Markdown supported</span><span><span id="charCount">0</span>/2000</span>
           </div>
@@ -243,6 +246,20 @@
 
   function saveDraft() {
     Toast.show('Draft saved locally. Publishing will send it to the server.','info');
+  }
+
+  async function generateAICaption() {
+    const prompt = document.getElementById('caption').value.trim() || 'sexy exclusive behind the scenes';
+    const btns = document.querySelectorAll('button[onclick*="generateAICaption"]');
+    if (btns.length) btns[0].innerHTML = '<i class="ti ti-loader"></i>';
+    try {
+      const res = await api.post('/ai/caption', { prompt });
+      if (res.caption) {
+        document.getElementById('caption').value = res.caption;
+        document.getElementById('charCount').textContent = res.caption.length;
+      }
+    } catch(e) {}
+    if (btns.length) btns[0].innerHTML = '<i class="ti ti-magic"></i>';
   }
 </script>
 </body>

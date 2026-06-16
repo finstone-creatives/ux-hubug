@@ -492,6 +492,33 @@
       // Add tip message to chat
       addChatMessage('You', `Tipped $${amount}${msg ? ': ' + msg : ''}`, true, true);
     }
+
+    // Best live enhancements from research (tip goals, polls, interactive)
+    window.sendLiveTip = async function(amount) {
+      if (!currentLive || !currentLive._id) return;
+      const msg = prompt('Message with tip? (optional)');
+      try {
+        await api.post('/payments/tips', { creatorId: currentLive._id, amount, message: msg || 'Live tip' });
+        addChatMessage('You', `Tipped $${amount}${msg ? ': ' + msg : ''}`, true, true);
+        // Update goal progress (demo)
+        const bar = document.getElementById('liveGoalBar');
+        if (bar) bar.value = Math.min(200, parseInt(bar.value) + amount);
+      } catch(e) {
+        addChatMessage('You', `Tipped $${amount}`, true, true);
+      }
+    };
+
+    window.startLivePoll = function() {
+      if (!currentLive) return;
+      const question = prompt('Poll question?');
+      if (!question) return;
+      const options = prompt('Options (comma separated)?', 'Yes,No,Maybe');
+      if (!options) return;
+      const pollData = { question, options: options.split(','), votes: {} };
+      // Broadcast via socket
+      if (socket) socket.emit('live:poll', { liveId: currentLive._id, poll: pollData });
+      addSystemMessage('Poll started: ' + question);
+    };
   </script>
 </body>
 </html>
